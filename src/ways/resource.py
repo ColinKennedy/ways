@@ -888,7 +888,3 @@ def reset_asset_classes(hierarchies=tuple()):
         # Reset the key
         ASSET_FACTORY[key] = ASSET_FACTORY[key].__class__()
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

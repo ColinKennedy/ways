@@ -193,7 +193,3 @@ def pass_through_function(value):
     '''A function that does nothing but returns value.'''
     return value
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

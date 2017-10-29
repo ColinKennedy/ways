@@ -223,7 +223,3 @@ class PluginMergeMethodTestCase(common_test.ContextTestCase):
         expected_mapping = 'something/yyz'
         self.assertEqual(expected_mapping, context.get_mapping())
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

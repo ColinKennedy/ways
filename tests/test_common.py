@@ -41,7 +41,3 @@ class ParseTestCase(unittest.TestCase):
 
         self.assertFalse(common.expand_string(pattern, text))
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

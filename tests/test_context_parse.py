@@ -341,7 +341,3 @@ class ContextParserMethodTestCase(common_test.ContextTestCase):
 
         self.assertEqual(set(parser.get_tokens()), {'THING', 'JOB'})
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

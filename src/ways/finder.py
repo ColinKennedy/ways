@@ -166,7 +166,3 @@ def decorate_all_functions(function_decorator):
         return cls
     return decorator
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

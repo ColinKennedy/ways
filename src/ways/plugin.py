@@ -241,6 +241,3 @@ def get_assignment(obj):
     except AttributeError:
         return common.DEFAULT_ASSIGNMENT
 
-
-if __name__ == '__main__':
-    print(__doc__)

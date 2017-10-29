@@ -256,7 +256,3 @@ def get_all_assignments():
     '''set[str]: All of the assignments found in our environment.'''
     return set(trace_assignment(plug) for plug in HISTORY.plugin_cache.get('all_plugins', []))
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

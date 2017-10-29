@@ -986,6 +986,3 @@ def clear_aliases():
 def clear_contexts():
     __ContextFactory.clear()
 
-
-if __name__ == '__main__':
-    print(__doc__)

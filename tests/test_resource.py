@@ -722,7 +722,3 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         self.assertTrue(asset_is_default_asset_type)
         self.assertTrue(asset_is_not_default_asset_type)
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

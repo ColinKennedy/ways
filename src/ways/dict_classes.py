@@ -84,6 +84,3 @@ class ReadOnlyDict(collections.Mapping):
 def recursive_default_dict():
     return collections.defaultdict(recursive_default_dict)
 
-
-if __name__ == '__main__':
-    print(__doc__)

@@ -142,6 +142,3 @@ class PathConstructionTestCase(common_test.ContextTestCase):
 #     def test_get_piece_max_depth_failed(self):
 #         pass
 
-
-# if __name__ == '__main__':
-#     print(__doc__)

@@ -348,9 +348,3 @@ def _init_actions():
     common_test.create_action('another_action_here')
     common_test.create_action('action_here')
 
-
-if __name__ == '__main__':
-    # TODO : replace this, later
-    import unittest
-    unittest.main()
-
