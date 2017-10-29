@@ -1,6 +1,0 @@
-[submodule "retro"]
-	path = retro
-	url = https://bitbucket.org/korinkite/retro.git
-[submodule "core"]
-	path = core
-	url = https://bitbucket.org/korinkite/core.git
