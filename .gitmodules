@@ -1,0 +1,6 @@
+[submodule "core"]
+	path = src/ways/core
+	url = https://bitbucket.org/korinkite/core.git
+[submodule "retro"]
+	path = src/ways/retro
+	url = https://bitbucket.org/korinkite/retro.git
