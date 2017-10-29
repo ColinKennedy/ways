@@ -168,7 +168,14 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
+# IMPORT STANDARD LIBRARIES
+import sys
+import os
+
+CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.normpath(os.path.join(CURRENT_DIR, os.pardir, 'src')))
 
 # IMPORT THIRD-PARTY LIBRARIES
 import sphinx_rtd_theme
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
