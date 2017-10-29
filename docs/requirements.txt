@@ -1,6 +1,7 @@
 gitdb2==2.0.3
 GitPython==2.1.7
 PyYAML==3.12
+six==1.11.0
 smmap2==2.0.3
 ways==0.1.0b1
 yamlordereddictloader==0.4.0
