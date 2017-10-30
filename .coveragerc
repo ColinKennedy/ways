@@ -8,7 +8,7 @@ branch = true
 source =
     ways
     tests
-parallel = false
+parallel = true
 
 [report]
 show_missing = true

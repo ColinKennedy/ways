@@ -126,13 +126,6 @@ class DataPlugin(Plugin):
 
         super(DataPlugin, self).__init__()
 
-    def _toggle_read_only(self):
-        '''Change the stored data to be overridable or not.'''
-        try:
-            self._info.settable = not self._info.settable
-        except AttributeError:
-            pass
-
     @classmethod
     def _required_keys(cls):
         '''tuple[str]: Keys that must be set in our Plugin.'''

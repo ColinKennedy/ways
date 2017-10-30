@@ -148,12 +148,6 @@ class ContextParser(object):
 
         return mapping
 
-    def get(self, value, default=None):
-        try:
-            return self[value]
-        except KeyError:
-            return default
-
     def get_tokens(self, required_only=False):
         '''Get the tokens in this instance.
 
@@ -172,7 +166,17 @@ class ContextParser(object):
 
         return list(self.get_all_mapping_details().keys())
 
-    def get_child_tokens(self, token, enclosure=False):
+    def get_child_tokens(self, token):
+        '''Find the child tokens of a given token.
+
+        Args:
+            token (str): The name of the token to get child tokens for.
+
+        Returns:
+            list[str]: The child tokens for the given token. If the given token
+                       is not a parent to any child tokens, return nothing.
+
+        '''
         mapping_details = self.get_all_mapping_details()
 
         try:
@@ -181,7 +185,7 @@ class ContextParser(object):
             return []
 
         if mapping:
-            return find_tokens(mapping, enclosure=enclosure)
+            return find_tokens(mapping)
 
         return []
 
@@ -231,23 +235,19 @@ class ContextParser(object):
         for plugin in itertools.chain([self.context], reversed(self.context.plugins)):
             yield plugin.get_mapping_details()
 
-    def get_token_parse(self, name, parse_type=''):
+    def get_token_parse(self, name, parse_type):
         '''Get the parse expression for some token name.
 
         Args:
             name (str):
                 The name of the token to get parse details from.
             parse_type (str):
-                The engine type whose expression will be returned. If no
-                parse_type is given, the stored parse_type is used.
+                The engine type whose expression will be returned
 
         Returns:
             The parse expression used for the given token.
 
         '''
-        if not parse_type:
-            parse_type = self.parse_type
-
         details = self.get_all_mapping_details()
 
         try:
@@ -263,11 +263,7 @@ class ContextParser(object):
             #
             return ''
 
-        value = engine.get_token_parse(name, self, parse_type)
-        if not value:
-            return ''
-
-        return value
+        return engine.get_token_parse(name, self, parse_type)
 
     def get_str(self, resolve_with='',
                 depth=-1, holdout=None, groups=None, display_tokens=False):
@@ -439,11 +435,9 @@ def is_done(mapping):
     return not re.search(TOKEN_REGEX, mapping)
 
 
-def find_tokens(mapping, enclosure=False):
+def find_tokens(mapping):
     '''list[str]: The tokens to fill in. inside of a mapping.'''
     pattern = TOKEN_REGEX
-    if enclosure:
-        pattern = ENCLOSURE_TOKEN_REGEX
     return re.findall(pattern, mapping)
 
 

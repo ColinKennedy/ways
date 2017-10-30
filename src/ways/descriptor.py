@@ -420,7 +420,13 @@ class GitRemoteDescriptor(GitLocalDescriptor):
         if not path:
             path = tempfile.mkdtemp()
 
-        git.Repo.clone_from(url, path)
+        repo = url.split('/')[-1]
+        if repo.endswith('.git'):
+            repo = repo[:-4]
+
+        if not os.path.isdir(os.path.join(path, repo)):
+            git.Repo.clone_from(url, path)
+
         super(GitRemoteDescriptor, self).__init__(path=path, items=items, branch=branch)
 
 

@@ -229,15 +229,7 @@ class Asset(object):
         parser = self.context.get_parser()
         tokens = parser.get_tokens(required_only=required_only)
 
-        for key, value in six.iteritems(self.info):
-            if parser.is_valid(key, value):
-                parser[key] = value
-
-        unfilled_tokens = []
-        for token in tokens:
-            if token not in parser:
-                unfilled_tokens.append(token)
-        return unfilled_tokens
+        return [token for token in tokens if token not in self.info]
 
     def get_value(self, name):
         '''Get some information about this asset, using a token-name.
@@ -282,7 +274,7 @@ class Asset(object):
 
         return self._get_value(name, parser)
 
-    def _get_value(self, name, parser=None):
+    def _get_value(self, name, parser):
         '''Get some information about this asset, using a token-name.
 
         If the information is directly available, we return it. If it isn't
@@ -310,8 +302,7 @@ class Asset(object):
             name (str): The token to get the value of.
             parser (:obj:`ways.api.ContextParser`, optional):
                 The parse that contains the information about our Context
-                and Asset. If no parser if given, a default object is created
-                for you.
+                and Asset.
 
         Returns:
             str: The value at the given token.
@@ -409,20 +400,13 @@ class Asset(object):
                 except KeyError:
                     return dict()
 
-            if parser is None:
-                parser = self.context.get_parser()
-                for key, value in six.iteritems(self.info):
-                    parser[key] = value
-            else:
-                # If a parser was given, we assume that it was given because
-                # we wanted the parser to persist across multiple sessions.
-                #
-                # In which case, try to get the value if it lives in the parser
-                #
-                try:
-                    return parser[token]
-                except KeyError:
-                    pass
+            # Try once to get the value if the parser already has it
+            # If not, we'll try to search for it
+            #
+            try:
+                return parser[token]
+            except KeyError:
+                pass
 
             details = parser.get_all_mapping_details()
 

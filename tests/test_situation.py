@@ -35,10 +35,8 @@ class ContextAttributeTestCase(common_test.ContextTestCase):
     def test_get_plugins_in_defined_platform(self):
         common_test.create_plugin(hierarchy=('maya', 'exports'), platforms='linux')
         common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='linux')
-        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='*')
         common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='windows')
-
-        os.environ[ways.api.PLATFORMS_ENV_VAR] = 'windows'
+        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='windows')
 
         context = ways.api.get_context('maya/exports/thing')
 
@@ -50,6 +48,16 @@ class ContextAttributeTestCase(common_test.ContextTestCase):
         self.assertEqual(expected_number_of_plugins, 4)
         # This context should be missing at least one plugin
         self.assertEqual(len(context.plugins), 2)
+
+    def test_bad_platform(self):
+        '''Simulate when a user gives a bad value to PLATFORM_ENV_VAR.'''
+        common_test.create_plugin(hierarchy=('maya', 'exports'), platforms='*')
+        os.environ[ways.api.PLATFORM_ENV_VAR] = '<bad_platform_name_here>'
+
+        context = ways.api.get_context('maya/exports')
+
+        with self.assertRaises(OSError):
+            context.validate_plugin('asfdas')
 
 
 class ContextAliasTestCase(common_test.ContextTestCase):
@@ -371,7 +379,25 @@ class ContextCreateTestCase(common_test.ContextTestCase):
         self.assertEqual(('foo', ), context.get_hierarchy())
 
 
-class ContextInheritanceTestCase(unittest.TestCase):
+class ContextMethodTestCase(common_test.ContextTestCase):
+
+    '''Test the methods of a ways.api.Context object.'''
+
+    def test_get_platforms(self):
+        '''Get the platforms of a Context.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+            ''')
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context = ways.api.get_context('foo')
+        self.assertEqual(('*', ), context.get_platforms())
+
+
+class ContextInheritanceTestCase(common_test.ContextTestCase):
 
     '''Test the ways the a Context is meant to inherit from Context objects.
 

@@ -483,7 +483,8 @@ class Context(object):
 
         Raises:
             OSError:
-                If the plugin's OS is not a recognized OS.
+                If the user specified an unrecognized environment using the
+                PLATFORM_ENV_VAR environment variable.
             EnvironmentError:
                 If the plugin's environment does not match this environment.
 
@@ -492,10 +493,13 @@ class Context(object):
 
         '''
         # These platforms are the what platform.system() could return
-        recognized_platforms = {'darwin', 'java', 'linux', 'windows'}
+        try:
+            recognized_platforms = os.environ[common.PLATFORMS_ENV_VAR].split(os.pathsep)
+        except KeyError:
+            recognized_platforms = {'darwin', 'java', 'linux', 'windows'}
 
         system_platform = platform.system().lower()
-        current_platform = os.getenv(common.PLATFORMS_ENV_VAR, system_platform)
+        current_platform = os.getenv(common.PLATFORM_ENV_VAR, system_platform)
 
         if current_platform not in recognized_platforms:
             raise OSError(
@@ -649,8 +653,8 @@ def context_connection_info():
             str: The lowered platform name.
 
         '''
-        platforms = get_platforms(obj)
-        obj_type = type(platforms)
+        platforms = obj.get_platforms()
+        obj_type = platforms.__class__
         return obj_type([plat.lower() for plat in platforms])
 
     def get_mapping(plugins):

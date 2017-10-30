@@ -410,6 +410,107 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         value = asset.get_value('SHOT_NAME')
         self.assertEqual(value, shot_prefix + '_' + shot_id)
 
+    def test_find_token_parse(self):
+        '''Test for when a token has no parse type but has a mapping which does.'''
+        contents = textwrap.dedent(
+            '''
+            globals: {}
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            mapping: "{SOMETHING}"
+                        SOMETHING:
+                            parse:
+                                regex: '\w+'
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+
+        asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
+        value = asset.get_token_parse('SHOT_NAME')
+        self.assertEqual('\w+', value)
+
+    def test_no_token_parse(self):
+        '''Test for when there is not token mapping or parse type.'''
+        contents = textwrap.dedent(
+            '''
+            globals: {}
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            arbitrary: info
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+
+        asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
+        value = asset.get_token_parse('SHOT_NAME')
+        self.assertFalse(value)
+
+    def test_awkward_token_mappings_0001(self):
+        '''If a parent token is missing a value and its child has a bad mappging.
+
+        A user will probably (hopefully) never do this but they may accidentally
+        add a mapping a token and forget to add at least one child token.
+
+        For example this is what Ways would expect:
+
+        .. code-block :: yaml
+
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            mapping: whatever
+
+        But a user might write:
+
+        .. code-block :: yaml
+
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            mapping: "{SOMETHING}"
+                        SOMETHING:
+                            mapping: whatever
+
+        '''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            mapping: "{SOMETHING}"
+                        SOMETHING:
+                            mapping: whatever
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+
+        asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
+
+        # Remove SHOT_NAME so that get_value has to search through SHOT_NAME's
+        # child tokens
+        #
+        del asset.info['SHOT_NAME']
+
+        value = asset.get_value('SHOT_NAME')
+        self.assertFalse(value)
+
     def test_unfilled_tokens_bugfix_0001_required_tokens_missing(self):
         '''Fixing an issue where get_unfilled_tokens was breaking my scripts.
 
