@@ -259,8 +259,9 @@ class HistoryCache(object):
         '''
         info = {'item': description}
 
-        final_descriptor = self._resolve_descriptor(description)
-        if final_descriptor is None:
+        try:
+            final_descriptor = self._resolve_descriptor(description)
+        except ValueError:
             _, _, traceback_ = sys.exc_info()
             info.update(
                 {

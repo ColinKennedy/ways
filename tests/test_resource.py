@@ -91,7 +91,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
 
         self._make_plugin_folder_with_plugin2(contents=contents)
 
-        some_path = '/jobs/some_job/some_other_kind/of/real_folders'
+        some_path = '/jobs/some_job/some_kind/of/real_folders'
         asset = ways.api.get_asset(some_path, context='some/other/context')
 
         self.assertNotEqual(asset, None)
@@ -342,8 +342,38 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
         self._make_plugin_folder_with_plugin2(contents=contents)
 
-        job = 'fooBar_1.342'
-        asset = ways.api.get_asset({'JOB': job}, context='a/context')
+        asset = ways.api.get_asset({'JOB': 'fooBar_1.342'}, context='a/context')
+        value = asset.get_value('JOB_SITE')
+        self.assertEqual(value, '1')
+
+    def test_get_value_from_parent_regex_parser(self):
+        '''Use regex to split a parent token and return some value.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/{JOB}/scene/something/real_folders
+                    mapping_details:
+                        JOB:
+                            mapping: '{JOB_NAME}{JOB_ID}'
+                        JOB_ID:
+                            mapping: '{JOB_SITE}.{JOB_UUID}'
+                        JOB_NAME:
+                            parse:
+                                regex: '[a-zA-Z0-9]+'
+                        JOB_SITE:
+                            parse:
+                                regex: '[123456]'
+                        JOB_UUID:
+                            parse:
+                                regex: '[0-9]{3}'
+
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+
+        asset = ways.api.get_asset({'JOB': 'fooBar1.342'}, context='a/context')
         value = asset.get_value('JOB_SITE')
         self.assertEqual(value, '1')
 
@@ -379,6 +409,107 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         asset = ways.api.get_asset({'SHOT_PREFIX': shot_prefix, 'SHOT_ID': shot_id}, context='a/context')
         value = asset.get_value('SHOT_NAME')
         self.assertEqual(value, shot_prefix + '_' + shot_id)
+
+    def test_find_token_parse(self):
+        '''Test for when a token has no parse type but has a mapping which does.'''
+        contents = textwrap.dedent(
+            '''
+            globals: {}
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            mapping: "{SOMETHING}"
+                        SOMETHING:
+                            parse:
+                                regex: '\w+'
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+
+        asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
+        value = asset.get_token_parse('SHOT_NAME')
+        self.assertEqual('\w+', value)
+
+    def test_no_token_parse(self):
+        '''Test for when there is not token mapping or parse type.'''
+        contents = textwrap.dedent(
+            '''
+            globals: {}
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            arbitrary: info
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+
+        asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
+        value = asset.get_token_parse('SHOT_NAME')
+        self.assertFalse(value)
+
+    def test_awkward_token_mappings_0001(self):
+        '''If a parent token is missing a value and its child has a bad mappging.
+
+        A user will probably (hopefully) never do this but they may accidentally
+        add a mapping a token and forget to add at least one child token.
+
+        For example this is what Ways would expect:
+
+        .. code-block :: yaml
+
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            mapping: whatever
+
+        But a user might write:
+
+        .. code-block :: yaml
+
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            mapping: "{SOMETHING}"
+                        SOMETHING:
+                            mapping: whatever
+
+        '''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/some_job/scene/{SHOT_NAME}/real_folders
+                    mapping_details:
+                        SHOT_NAME:
+                            mapping: "{SOMETHING}"
+                        SOMETHING:
+                            mapping: whatever
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+
+        asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
+
+        # Remove SHOT_NAME so that get_value has to search through SHOT_NAME's
+        # child tokens
+        #
+        del asset.info['SHOT_NAME']
+
+        value = asset.get_value('SHOT_NAME')
+        self.assertFalse(value)
 
     def test_unfilled_tokens_bugfix_0001_required_tokens_missing(self):
         '''Fixing an issue where get_unfilled_tokens was breaking my scripts.
@@ -433,7 +564,6 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         # Define our Contexts
         contents = textwrap.dedent(
             '''
-            globals: {}
             plugins:
                 a_parse_plugin:
                     hierarchy: job
@@ -512,64 +642,64 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         self.assertEqual(len(created_shots), 2)
         self.assertTrue(all((isinstance(shot, ways.api.Asset) for shot in created_shots)))
 
-#     def test_asset_get_value_of_subtoken_that_is_defined(self):
-#         '''Get the string of some subtoken in an Asset.
+    def test_asset_get_value_of_subtoken_that_is_defined(self):
+        '''Get the string of some subtoken in an Asset.
 
-#         This value has been defined in our Asset.
+        This value has been defined in our Asset.
 
-#         '''
-#         pass
+        '''
+        pass
 
-#     def test_asset_get_value_of_subtoken_that_is_not_defined(self):
-#         '''Get the string of some subtoken in an Asset.
+    def test_asset_get_value_of_subtoken_that_is_not_defined(self):
+        '''Get the string of some subtoken in an Asset.
 
-#         This subtoken's value is not defined in our Asset but the parent token's
-#         value is. We are going to forcibly parse the subtoken and return it,
-#         instead.
+        This subtoken's value is not defined in our Asset but the parent token's
+        value is. We are going to forcibly parse the subtoken and return it,
+        instead.
 
-#         '''
-#         pass
+        '''
+        pass
 
-#     def test_asset_get_parse_of_token(self):
-#         '''Get the parse information of some token.'''
-#         pass
+    def test_asset_get_parse_of_token(self):
+        '''Get the parse information of some token.'''
+        pass
 
-#     def test_asset_get_parse_of_subtoken(self):
-#         '''Get the parse information of some subtoken.'''
-#         pass
+    def test_asset_get_parse_of_subtoken(self):
+        '''Get the parse information of some subtoken.'''
+        pass
 
-#     def test_asset_get_str(self):
-#         '''Get the full, resolved path of the Asset.'''
-#         pass
+    def test_asset_get_str(self):
+        '''Get the full, resolved path of the Asset.'''
+        pass
 
-#     def test_asset_get_str_failed_with_missing_required_tokens(self):
-#         '''Try to get the full, resolved path of the Asset but fail.
+    def test_asset_get_str_failed_with_missing_required_tokens(self):
+        '''Try to get the full, resolved path of the Asset but fail.
 
-#         The method fails because there is at least one missing, required token.
+        The method fails because there is at least one missing, required token.
 
-#         '''
-#         pass
+        '''
+        pass
 
-#     def test_asset_context_substitution_with_context(self):
-#         '''Change an Asset object's Context with another Context.
+    def test_asset_context_substitution_with_context(self):
+        '''Change an Asset object's Context with another Context.
 
-#         This is particularly useful when we're dealing with asset management
-#         and we don't know the output path of the asset.
+        This is particularly useful when we're dealing with asset management
+        and we don't know the output path of the asset.
 
-#         Using this system, we can interchange an asset between its location on
-#         a database and where it exists, locally, without rebuilding the instance.
+        Using this system, we can interchange an asset between its location on
+        a database and where it exists, locally, without rebuilding the instance.
 
-#         '''
-#         pass
+        '''
+        pass
 
-#     def test_asset_context_substitution_with_context_fail(self):
-#         '''Fail to substitute a Context with another Context.
+    def test_asset_context_substitution_with_context_fail(self):
+        '''Fail to substitute a Context with another Context.
 
-#         If the substituted Context does not have all of the same required tokens,
-#         it cannot be substituted.
+        If the substituted Context does not have all of the same required tokens,
+        it cannot be substituted.
 
-#         '''
-#         pass
+        '''
+        pass
 
 
 class AssetRegistrationTestCase(common_test.ContextTestCase):
@@ -579,7 +709,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
     def setUp(self):
         '''Reset the registered Asset classes after each test.'''
         super(AssetRegistrationTestCase, self).setUp()
-        ways.api.reset_asset_classes()
+        ways.clear()
 
     def test_register_and_create_a_custom_asset(self):
         '''Return back some class other than a default Asset class.'''
@@ -615,7 +745,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         # Register a new class type for our Context
         context = ways.api.get_context('some/thing/context')
-        ways.api.register_asset_class(SomeNewAssetClass, context)
+        ways.api.register_asset_info(SomeNewAssetClass, context)
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context')
@@ -661,7 +791,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         # Register a new class type for our Context
         context = ways.api.get_context('some/thing/context')
-        ways.api.register_asset_class(
+        ways.api.register_asset_info(
             SomeNewAssetClass, context, init=a_custom_init_function)
 
         # Get back our new class type
@@ -707,13 +837,12 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         self._make_plugin_folder_with_plugin2(contents=contents)
 
         # Create a default Asset
-        some_path = '/jobs/some_job/some_kind/of/real_folders'
+        some_path = '/jobs/some_job/some_kind/of/real_folders/inner'
         asset = ways.api.get_asset(some_path, context='some/thing/context/inner')
         asset_is_default_asset_type = isinstance(asset, ways.api.Asset)
 
         # Register a new class type for our Context
-        context = ways.api.get_context('some/thing/context')
-        ways.api.register_asset_class(SomeNewAssetClass, context, children=True)
+        ways.api.register_asset_info(SomeNewAssetClass, 'some/thing/context', children=True)
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context/inner')

@@ -129,6 +129,14 @@ split_hierarchy = functools.partial(split_into_parts, split=HIERARCHY_SEP)
 split_by_comma = functools.partial(split_into_parts, split=',')
 
 
+def get_platforms(obj):
+    '''tuple[str]: The the platform(s) for the given object.'''
+    try:
+        return obj.get_platforms()
+    except AttributeError:
+        return ('*', )
+
+
 def get_python_files(item):
     '''Get the Python files at some file or directory.
 

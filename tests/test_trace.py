@@ -98,6 +98,21 @@ class TraceTestCase(Common):
         yield finder_
         yield ways.api.AssetFinder(finder_, asset=None)
 
+    def test_trace_assignment(self):
+        '''Get the assignment of various objects.'''
+        context = self._setup_simple_contexts()
+
+        for obj in self._get_object_interfaces(context):
+            obj = ways.api.trace_assignment(obj)
+            try:
+                self.assertNotEqual(obj, ways.api.DEFAULT_ASSIGNMENT)
+            except AssertionError:
+                raise ValueError(obj)
+
+
+        self.assertEqual(ways.api.trace_assignment('invalid_input'),
+                         ways.api.DEFAULT_ASSIGNMENT)
+
     def test_trace_context(self):
         '''Make sure that we can get the Context of any Ways object.'''
         context = self._setup_simple_contexts()
@@ -113,6 +128,8 @@ class TraceTestCase(Common):
         for obj in self._get_object_interfaces(context):
             obj = ways.api.trace_hierarchy(obj)
             self.assertTrue(obj)
+
+        self.assertFalse(ways.api.trace_hierarchy(['invalid_input']))
 
     def test_trace_actions(self):
         '''Reasonably try to get actions for any Ways object.

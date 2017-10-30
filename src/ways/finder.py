@@ -5,7 +5,6 @@
 import collections
 import functools
 import itertools
-import sys
 
 # IMPORT LOCAL LIBRARIES
 from . import finder_common
@@ -119,11 +118,6 @@ class Find(compat.DirMixIn, object):
                           "".format(obj=self.__class__.__name__, attr=name)
                 raise AttributeError(message)
 
-            try:
-                return functools.partial(return_value, context_dict[name])
-            except KeyError:
-                return return_none
-
         return command
 
     def __dir__(self):
@@ -135,34 +129,4 @@ class Find(compat.DirMixIn, object):
 
 
 find_context = finder_common.find_context
-
-
-# TODO : Move somewhere more core
-def decorate_all_functions(function_decorator):
-    '''Make a function decorator into a class decorator.
-
-    This result (a new class decorator) will be applied to all of the
-    methods in the decorated class.
-
-    Reference:
-        https://stackoverflow.com/questions/25828864
-
-    Args:
-        function_decorator: The function(s) of the class to decorate.
-
-    Returns:
-        callable: A new function that's been wrapped with function_decorator.
-
-    '''
-    def decorator(cls):
-        '''Decorate functions with a function that calls function_decorator.'''
-        for name, obj in vars(cls).items():
-            if callable(obj):
-                try:
-                    obj = obj.__func__  # unwrap Python 2 unbound method
-                except AttributeError:
-                    pass  # not needed in Python 3
-                setattr(cls, name, function_decorator(obj))
-        return cls
-    return decorator
 

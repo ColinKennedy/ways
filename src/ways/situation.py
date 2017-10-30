@@ -483,7 +483,8 @@ class Context(object):
 
         Raises:
             OSError:
-                If the plugin's OS is not a recognized OS.
+                If the user specified an unrecognized environment using the
+                PLATFORM_ENV_VAR environment variable.
             EnvironmentError:
                 If the plugin's environment does not match this environment.
 
@@ -492,10 +493,13 @@ class Context(object):
 
         '''
         # These platforms are the what platform.system() could return
-        recognized_platforms = {'darwin', 'java', 'linux', 'windows'}
+        try:
+            recognized_platforms = os.environ[common.PLATFORMS_ENV_VAR].split(os.pathsep)
+        except KeyError:
+            recognized_platforms = {'darwin', 'java', 'linux', 'windows'}
 
         system_platform = platform.system().lower()
-        current_platform = os.getenv(common.PLATFORMS_ENV_VAR, system_platform)
+        current_platform = os.getenv(common.PLATFORM_ENV_VAR, system_platform)
 
         if current_platform not in recognized_platforms:
             raise OSError(
@@ -507,11 +511,7 @@ class Context(object):
 
         # Filter plugins if the its platform does not match our expected platforms
         platform_aliases = {'*', 'all', 'everything'}
-        try:
-            plug_platforms = get_platforms(plugin)
-        except AttributeError:
-            # Maybe the user defined it as a property
-            plug_platforms = plugin.platforms
+        plug_platforms = common.get_platforms(plugin)
 
         # Prevent a Plugin that has a incorrectly-formatted platform
         # from being filtered
@@ -653,8 +653,8 @@ def context_connection_info():
             str: The lowered platform name.
 
         '''
-        platforms = get_platforms(obj)
-        obj_type = type(platforms)
+        platforms = obj.get_platforms()
+        obj_type = platforms.__class__
         return obj_type([plat.lower() for plat in platforms])
 
     def get_mapping(plugins):
@@ -668,7 +668,6 @@ def context_connection_info():
             plugins (list[<plugin.Plugin>]): The plugin to get the mapping of.
 
         Raises:
-            RuntimeError: If no plugins were given to the function.
             RuntimeError: If there is no absolute plugin in our list of plugins,
                           this function cannot be resolved into absolute.
 
@@ -700,9 +699,6 @@ def context_connection_info():
 
             return appended_mapping
 
-        if not plugins:
-            raise RuntimeError('Cannot get mapping - no plugins were found')
-
         try:
             latest_absolute_plugin = next(plugin for plugin in reversed(plugins) if not plugin.get_uses())
         except StopIteration:
@@ -713,15 +709,8 @@ def context_connection_info():
         abs_index = plugins.index(latest_absolute_plugin)
 
         # In order to resolve the absolute mapping, we need a root path to use
-        try:
-            base_mapping = conn.get_right_most_priority(
-                plugins[:abs_index + 1], method=operator.methodcaller('get_mapping'))
-        except NotImplementedError:
-            # No root could be found so just try to save our code by using ''
-            # TODO : Check if this line has unittest. Not sure what it's doing
-            #        anymore
-            #
-            base_mapping = ''
+        base_mapping = conn.get_right_most_priority(
+            plugins[:abs_index + 1], method=operator.methodcaller('get_mapping'))
 
         # TODO : Can't we move this block above base_mapping?
         # The resolved mapping came from an absolute plugin
@@ -877,13 +866,6 @@ def get_context(hierarchy,
         follow_alias=follow_alias,
         force=force,
         *args, **kwargs)
-
-
-def get_platforms(obj):
-    try:
-        return obj.get_platforms()
-    except AttributeError:
-        return '*'
 
 
 def register_context_alias(alias_hierarchy, old_hierarchy, force=False):

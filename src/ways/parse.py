@@ -15,6 +15,7 @@ import six
 
 # IMPORT LOCAL LIBRARIES
 from .core import check
+from . import engine
 
 
 ENCLOSURE_TOKEN_REGEX = r'(\{[^\{\}]+\})'
@@ -147,12 +148,6 @@ class ContextParser(object):
 
         return mapping
 
-    def get(self, value, default=None):
-        try:
-            return self[value]
-        except KeyError:
-            return default
-
     def get_tokens(self, required_only=False):
         '''Get the tokens in this instance.
 
@@ -171,7 +166,17 @@ class ContextParser(object):
 
         return list(self.get_all_mapping_details().keys())
 
-    def get_child_tokens(self, token, enclosure=False):
+    def get_child_tokens(self, token):
+        '''Find the child tokens of a given token.
+
+        Args:
+            token (str): The name of the token to get child tokens for.
+
+        Returns:
+            list[str]: The child tokens for the given token. If the given token
+                       is not a parent to any child tokens, return nothing.
+
+        '''
         mapping_details = self.get_all_mapping_details()
 
         try:
@@ -180,7 +185,7 @@ class ContextParser(object):
             return []
 
         if mapping:
-            return find_tokens(mapping, enclosure=enclosure)
+            return find_tokens(mapping)
 
         return []
 
@@ -230,146 +235,35 @@ class ContextParser(object):
         for plugin in itertools.chain([self.context], reversed(self.context.plugins)):
             yield plugin.get_mapping_details()
 
-    def get_token_parse(self, name, parse_type, groups=False):
+    def get_token_parse(self, name, parse_type):
         '''Get the parse expression for some token name.
 
         Args:
             name (str):
                 The name of the token to get parse details from.
             parse_type (str):
-                The engine type whose expression will be returned. If no
-                parse_type is given, the stored parse_type is used.
-            groups (:obj:`bool`, optional):
-                If True, each parse token will output with (?P<NAME>{value})
-                wrapped around it. If False, it will just return the value.
-                This is more for regex, than anything else
-
-        Todo:
-            groups is gross. Maybe come up with something better. Like a
-            parse-specific group description. Or maybe not.
+                The engine type whose expression will be returned
 
         Returns:
             The parse expression used for the given token.
 
         '''
-        def make_regex_group(name, parse):
-            return '(?P<{name}>{parse})'.format(name=name, parse=parse)
-
-        def _get_parse_type_info(token_details, parse_type):
-            '''Get the serialized information about some token's parse.
-
-            This data typically comes from Plugin Sheets and looks like this:
-
-            Example:
-                >>> token_details = {
-                >>>     'SCENE':
-                >>>         'parse':
-                >>>             'regex': '[A-Z]{5,}'
-                >>>             'glob': '*'
-                >>> }
-                >>> parse_type = 'regex'
-
-                >>> _get_parse_type_info(token_details, parse_type)
-                >>> # Result: '*'
-
-            Returns:
-                str; The contents of the parse type.
-
-            '''
-            return token_details['parse'][parse_type]
-
         details = self.get_all_mapping_details()
 
         try:
-            value = details[name]['parse'][parse_type]
-            if not groups:
-                return value
+            return details[name]['parse'][parse_type]
         except KeyError:
             pass
 
         try:
             mapping = details[name]['mapping']
         except KeyError:
+            # If we don't have a mapping for this token, there's nothing
+            # more that we can do
+            #
             return ''
 
-        raise NotImplementedError('Need to make unittests and "search" for te parse')
-        # def recurse_child_tokens_yield(token, formatter):
-        #     '''Search a token downwards through it children to yield values.
-
-        #     If the formatter can't get a proper value back from a token,
-        #     we use the token's mapping to search down its children
-        #     (its subtokens) recursively until we have a full string.
-
-        #     Args:
-        #         token (str):
-        #             The token to get the parse value of.
-        #         formatter (callable[str]):
-        #             The function that we'll use to in order to get parse details.
-
-        #     Yields:
-        #         tuple[str, str]: A piece of the token.
-
-        #     '''
-        #     # TODO : Note - This function requires regex, to work.
-        #     #        Do something so that we don't have to use it
-        #     #
-        #     child_tokens = self.get_child_tokens(token)
-
-        #     replacements = {}
-        #     if not child_tokens:
-        #         yield
-        #         return
-
-        #     items = dict()
-        #     format_splitter = re.compile('(\{[^{}]+\})')
-        #     mapping = details[token]['mapping']
-        #     mapping_split = [item for item in format_splitter.split(mapping) if item]
-
-        #     for child in child_tokens:
-        #         try:
-        #             value = formatter(details[child])
-        #             items[child] = value
-        #         except KeyError:
-        #             for value in recurse_child_tokens_yield(child, formatter=formatter):
-        #                 items[child] = value
-
-        #     for item in mapping_split:
-        #         try:
-        #             yield (item[1:-1], item.format(**items))
-        #         except KeyError:
-        #             pass
-
-        # def recurse_child_tokens(token, formatter):
-        #     '''Walk a token and search for its parse value, using its children.
-
-        #     If a token has no value for some formatter, we construct it,
-        #     automatically, by using the token's mapping and substituting its
-        #     subtokens recursively until we can get a full string.
-
-        #     Each child token is yielded as they are found, from left to right,
-        #     along with the token's mapping, and the output is joined together
-        #     to build a parse type.
-
-        #     Args:
-        #         token (str):
-        #             The token to get the parse value of.
-        #         formatter (callable[str]):
-        #             The function that we'll use to in order to get parse details.
-
-        #     Returns:
-        #         str: A token's parse type information, using its child subtokens.
-
-        #     '''
-        #     output = list(recurse_child_tokens_yield(token=token, formatter=formatter))
-
-        #     if not groups:
-        #         return ''.join([out[1] for out in output])
-
-        #     return ''.join(
-        #         [make_regex_group(out[0], out[1]) for out in output])
-
-        # formatter = functools.partial(_get_parse_type_info, parse_type=parse_type)
-        # return recurse_child_tokens(name, formatter=formatter)
+        return engine.get_token_parse(name, self, parse_type)
 
     def get_str(self, resolve_with='',
                 depth=-1, holdout=None, groups=None, display_tokens=False):
@@ -507,6 +401,22 @@ class ContextParser(object):
 
         return mapping
 
+    def get_value_from_parent(self, name, parent, parse_type):
+        '''Get the value of a token using another parent token.
+
+        Args:
+            name (str): The token to get the value of.
+            parent (str): The parent token that is believed to have a value.
+                          If it has a value, it is used to parse and return
+                          a value for the name token.
+            parse_type (str): The parse engine to use.
+
+        Returns:
+            The value of the name token.
+
+        '''
+        return engine.get_value_from_parent(name, parent, self, parse_type)
+
     def __getitem__(self, key):
         '''Get the value of some key on this instance.'''
         return self._data[key]
@@ -525,11 +435,9 @@ def is_done(mapping):
     return not re.search(TOKEN_REGEX, mapping)
 
 
-def find_tokens(mapping, enclosure=False):
+def find_tokens(mapping):
     '''list[str]: The tokens to fill in. inside of a mapping.'''
     pattern = TOKEN_REGEX
-    if enclosure:
-        pattern = ENCLOSURE_TOKEN_REGEX
     return re.findall(pattern, mapping)
 
 
