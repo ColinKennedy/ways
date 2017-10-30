@@ -6,19 +6,19 @@ import tempfile
 import textwrap
 import os
 
+# IMPORT THIRD-PARTY LIBRARIES
+import ways.api
+
 # IMPORT 'LOCAL' LIBRARIES
 from . import common_test
-import ways.api
 
 
 class AutoloadTestCase(common_test.ContextTestCase):
 
     '''Test to that Plugins and Descriptors load in the HistoryCache.'''
 
-    def test_load_plugins_from_env_var_file(self):
+    def test_plugins_from_env_file(self):
         '''Mimic a user adding plugins to a pathfinder environment variable.'''
-        temp_directory = tempfile.mkdtemp()
-
         plugin_file_contents = textwrap.dedent(
             """\
             # IMPORT STANDARD LIBRARIES
@@ -106,7 +106,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
             isinstance(ways.api.get_asset(info=path, context='some/thing2/context'),
                        ways.api.Asset))
 
-    def test_load_plugins_from_env_var_folder(self):
+    def test_plugins_from_env_folder(self):
         '''Mimic a user adding plugin folders to a pathfinder env var.'''
         temp_directory = tempfile.mkdtemp()
 
@@ -187,8 +187,6 @@ class AutoloadTestCase(common_test.ContextTestCase):
 
         # Add the path to our env var
         os.environ[ways.api.PLUGINS_ENV_VAR] = temp_directory
-
-        history = self.cache
 
         # Note: This method normally runs on init but because of other tests
         #       instantiating the HistoryCache, we just re-add our plugins

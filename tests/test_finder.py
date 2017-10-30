@@ -4,15 +4,15 @@
 '''test the classes and methods for finder.py.'''
 
 # IMPORT STANDARD LIBRARIES
-import unittest
 import tempfile
 import textwrap
 import os
 
-# IMPORT 'LOCAL' LIBRARIES
+# IMPORT THIRD-PARTY LIBRARIES
 from ways import finder
+
+# IMPORT 'LOCAL' LIBRARIES
 from . import common_test
-import ways.api
 
 
 class PathConstructionTestCase(common_test.ContextTestCase):

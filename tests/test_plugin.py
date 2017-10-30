@@ -36,7 +36,7 @@ class PluginCreationTestCase(common_test.ContextTestCase):
 
     def test_create_plugin_from_json(self):
         '''Read a JSON file directly and make a plugin from it.'''
-        hierarchy = ('27ztt' , 'whatever')
+        hierarchy = ('27ztt', 'whatever')
 
         # Build our context file and an action to go with it
         contents = textwrap.dedent(
@@ -56,7 +56,6 @@ class PluginCreationTestCase(common_test.ContextTestCase):
 
     def test_create_plugin_from_yaml(self):
         '''Read a YAML file directly and make a plugin from it.'''
-        hierarchy = ('27ztt' , 'whatever')
         contents = textwrap.dedent(
             '''
             globals: {}
@@ -65,14 +64,13 @@ class PluginCreationTestCase(common_test.ContextTestCase):
                     hierarchy: 27ztt/whatever
             ''')
 
-        folder = tempfile.mkdtemp()
-
         self._make_plugin_folder_with_plugin2(contents=contents, ending='.yml')
 
         context = ways.api.get_context('27ztt/whatever')
         self.assertEqual(context.get_hierarchy(), ('27ztt', 'whatever'))
 
     def test_failed_plugin_duplicate_uses(self):
+        '''When a user has two exact same hierarchies in uses, raise Exception.'''
         contents = textwrap.dedent(
             '''
             globals: {}
@@ -138,6 +136,9 @@ class PluginCreationTestCase(common_test.ContextTestCase):
 
 
 class PluginMethodTestCase(common_test.ContextTestCase):
+
+    '''Test the methods on a generic ways.api.Plugin class.'''
+
     def test_get_groups_failed(self):
         '''If a Plugin is created incorrectly, try to fix the groups.'''
         contents = {
@@ -203,6 +204,7 @@ class PluginMergeMethodTestCase(common_test.ContextTestCase):
     '''Test that individual methods work for relative plugins.'''
 
     def test_get_mapping(self):
+        '''Make sure get_mapping works properly with a relative Plugin setup.'''
         contents = textwrap.dedent(
             '''
             plugins:

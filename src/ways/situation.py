@@ -23,6 +23,7 @@ elsewhere in the code (like metadata).
 # IMPORT STANDARD LIBRARIES
 import collections
 import functools
+import itertools
 import operator
 import platform
 import copy

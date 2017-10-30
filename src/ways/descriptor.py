@@ -18,6 +18,7 @@ GitRemoteDescriptor - Get plugin files from an online git repository
 import collections
 import functools
 import itertools
+import tempfile
 import copy
 import glob
 import json
@@ -132,9 +133,6 @@ class FileDescriptor(object):
 
         plugins = []
 
-        duplicate_uses_message = 'Plugin: "{plug}" has duplicate hierarchies ' \
-                                 'in uses, "{uses}". Remove all duplicates.'
-
         # Turn files into gold - Plugin gold!
         for file_ in files:
             data = try_load(file_)
@@ -168,48 +166,86 @@ class FileDescriptor(object):
                 else:
                     plugin_assignment = plugin_assignment_
 
-                # There are two types of Context-Plugins, absolute and relative
-                # If a plugin has 'uses' defined, that plugin is relative
-                # because it needs another plugin/Context to function.
-                #
-                # We use all Context hierarchies defined in 'uses' to create
-                # absolute plugins from each relative plugin
-                #
-                uses_hierarchies = info.get('uses', [])
+                plugins.extend(self._build_plugins(file_, plugin, info, plugin_assignment))
 
-                # TODO : has_duplicate_hierarchies stops bugs from occurring
-                #        if a user wrote a plugin that has duplicate items in
-                #        'uses'. This could even just be a copy/paste error
-                #        and basically should never be intentional
-                #
-                #        That said, just raising an error is really bad. We
-                #        should just "continue" and log the failure so that
-                #        a user can look it up, later
-                #
-                # TODOID: 751 (search for related sections with this ID)
-                #
-                if uses_hierarchies:
-                    duplicates = _get_duplicates(uses_hierarchies)
-                    if duplicates:
-                        raise ValueError(duplicate_uses_message.format(
-                            plug=plugin, uses=duplicates))
+        return plugins
 
-                    for hierarchy in uses_hierarchies:
-                        if is_valid_plugin(hierarchy, info):
-                            continue
+    @classmethod
+    def _build_plugins(cls, source, plugin, info, assignment):
+        '''Create a Plugin or multiple Plugin objects.
 
-                        context = sit.get_context(
-                            hierarchy, assignment=plugin_assignment, force=True)
-                        info_ = self._make_relative_context_absolute(info, parent=context)
-                        plugin_data = dict_classes.ReadOnlyDict(info_)
-                        plugin = plug.DataPlugin(
-                            sources=(file_, ), info=plugin_data, assignment=plugin_assignment)
-                        plugins.append((plugin, plugin_assignment))
-                else:
-                    plugin_data = dict_classes.ReadOnlyDict(info)
-                    plugin = plug.DataPlugin(
-                        sources=(file_, ), info=plugin_data, assignment=plugin_assignment)
-                    plugins.append((plugin, plugin_assignment))
+        This method is a companion to get_plugins and basically just exists
+        to make it get_plugins more readable.
+
+        Args:
+            source (str):
+                The location to a file on disk that defined plugin.
+            plugin (str):
+                The key that was used in the Plugin Sheet file where the plugin
+                was defined.
+            info (dict[str]):
+                Any data about the plugin to include when the Plugin initializes.
+                In particular, "uses" is retrieved to figure out if plugin is
+                an absolute or relative plugin.
+            assignment (str):
+                The placement that this Plugin will go into.
+
+        Returns:
+            list[<ways.api.DataPlugin>]:
+                Generated plugins. One Plugin object
+                if info.get('uses', []) is empty or several, depending on the
+                length of the list of values that 'uses' returns.
+
+        '''
+        duplicate_uses_message = 'Plugin: "{plug}" has duplicate hierarchies ' \
+                                 'in uses, "{uses}". Remove all duplicates.'
+
+        plugins = []
+        # There are two types of Context-Plugins, absolute and relative
+        # If a plugin has 'uses' defined, that plugin is relative
+        # because it needs another plugin/Context to function.
+        #
+        # We use all Context hierarchies defined in 'uses' to create
+        # absolute plugins from each relative plugin
+        #
+        uses = info.get('uses', [])
+        if uses:
+            duplicates = _get_duplicates(uses)
+
+            # TODO : "if duplicates:" stops bugs from occurring
+            #        if a user wrote a plugin that has duplicate items in
+            #        'uses'. This could even just be a copy/paste error
+            #        and basically should never be intentional
+            #
+            #        That said, just raising an error is really bad. We
+            #        should just "continue" and log the failure so that
+            #        a user can look it up, later
+            #
+            # TODOID: 751 (search for related sections with this ID)
+            #
+            if duplicates:
+                raise ValueError(duplicate_uses_message.format(
+                    plug=plugin, uses=duplicates))
+
+            for hierarchy in uses:
+                if is_valid_plugin(hierarchy, info):
+                    continue
+
+                context = sit.get_context(
+                    hierarchy, assignment=assignment, force=True)
+                info_ = cls._make_relative_context_absolute(info, parent=context)
+
+                plugin = plug.DataPlugin(
+                    sources=(source, ),
+                    info=dict_classes.ReadOnlyDict(info_),
+                    assignment=assignment)
+                plugins.append((plugin, assignment))
+        else:
+            plugin = plug.DataPlugin(
+                sources=(source, ),
+                info=dict_classes.ReadOnlyDict(info),
+                assignment=assignment)
+            plugins.append((plugin, assignment))
 
         return plugins
 
@@ -613,7 +649,7 @@ def try_load(path, default=None, safe=False):
         try:
             with open(path, 'r') as file_:
                 return loader_option(file_)
-        except known_loader_exceptions:
+        except known_loader_exceptions:  # pylint: disable=catching-non-exception
             pass
 
     return default

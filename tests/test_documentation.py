@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 '''A collection of tests for Ways's documentation.
 
@@ -17,6 +19,7 @@ import os
 
 # IMPORT THIRD-PARTY LIBRARIES
 from ways import descriptor as descriptor_
+# pylint: disable=import-error
 from six.moves.urllib import parse
 import ways.api
 
@@ -25,6 +28,9 @@ from . import common_test
 
 
 class GettingStartedTestCase(common_test.ContextTestCase):
+
+    '''Test the code listed in the getting_started.rst documentation file.'''
+
     def test_hello_world_yaml(self):
         '''Make the most minimal plugin.'''
         contents = textwrap.dedent(
@@ -40,6 +46,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         self.assertNotEqual(context, None)
 
     def test_yaml_with_metadata(self):
+        '''Test loading a YAML file with some metadata.'''
         contents = textwrap.dedent(
             '''
             plugins:
@@ -61,6 +68,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         self.assertEqual(data, ['info1', 'info2', 3, 'bar'])
 
     def test_persistent_context(self):
+        '''Check to make sure that Context objects are Flyweights (persistent).'''
         contents = textwrap.dedent(
             '''
             plugins:
@@ -81,6 +89,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         context.data['some']['arbitrary'].append('bar2')
 
         def some_function():
+            '''A function in a different scope to test with.'''
             a_new_context = ways.api.get_context('some/context')
             data = ['info1', 'info2', 3, 'bar', 'bar2']
             self.assertEqual(data, a_new_context.data['some']['arbitrary'])
@@ -126,25 +135,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
 
         folders = ['/library', 'library/grades', 'comp', 'anim']
 
-        class SomeAction(ways.api.Action):
-
-            '''A subclass that will automatically be registered by Ways.
-
-            The name of the class (SomeAction) can be anything but the name
-            property must be correct. Also, get_hierarchy must match the Context
-            hierarchy that this action will apply to.
-
-            '''
-
-            name = 'create'
-
-            @classmethod
-            def get_hierarchy(cls):
-                return 'some/context'
-
-            def __call__(self):
-                '''Do something.'''
-                return folders
+        _build_action('create', folders)
 
         context = ways.api.get_context('some/context')
         output = context.actions.create()
@@ -164,6 +155,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         folders = ['/library', 'library/grades', 'comp', 'anim']
 
         def some_action():
+            '''return our folders.'''
             return folders
 
         context = ways.api.get_context('some/context')
@@ -189,20 +181,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         self._make_plugin_folder_with_plugin2(contents=contents)
 
         folders = ['/library', 'library/grades', 'comp', 'anim']
-
-        class SomeAction(ways.api.Action):
-
-            '''A subclass that will automatically be registered by Ways.'''
-
-            name = 'get_info'
-
-            @classmethod
-            def get_hierarchy(cls):
-                return 'some/context'
-
-            def __call__(self, shot=None):
-                '''Do something.'''
-                return folders
+        _build_action('get_info', folders)
 
         asset = ways.api.get_asset({'JOB': 'foo'}, context='some/context')
         asset_info = asset.actions.get_info()
@@ -754,31 +733,63 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
 
 class CustomPlugin(ways.api.Plugin):
 
+    '''A Plugin.'''
+
     data = {'data': True}
 
     @classmethod
     def get_hierarchy(cls):
+        '''('something', 'here').'''
         return ('something', 'here')
 
 
 class CustomDescriptor(object):
-    def __init__(self, *args, **kwagrs):
-        super(CustomDescriptor, self).__init__()
+
+    '''A Descriptor used for testing.'''
 
     def get_plugins(self):
+        '''A list of plutins that this Descriptor creates and returns.'''
         return [(CustomPlugin(), 'master')]
 
     def get_plugin_info(self):
+        '''Get some plugin info.'''
         return {'assignment': 'master', 'foo': 'bar'}
 
 
 class CustomDescriptor1(object):
-    def __init__(self, *args, **kwagrs):
-        super(CustomDescriptor1, self).__init__()
+
+    '''A Descriptor used for testing.'''
 
     def get_plugins(self):
+        '''A list of plutins that this Descriptor creates and returns.'''
         return [CustomPlugin()]
 
     def get_plugin_info(self):
+        '''Get some plugin info.'''
         return {'assignment': 'master', 'foo': 'bar'}
+
+
+def _build_action(action, folders):
+    '''Create an Action object and return it.'''
+    class SomeAction(ways.api.Action):  # pylint: disable=unused-variable
+
+        '''A subclass that will automatically be registered by Ways.
+
+        The name of the class (SomeAction) can be anything but the name
+        property must be correct. Also, get_hierarchy must match the Context
+        hierarchy that this action will apply to.
+
+        '''
+
+        name = action
+
+        @classmethod
+        def get_hierarchy(cls):
+            return 'some/context'
+
+        def __call__(self, shot=None):
+            '''Do something.'''
+            return folders
+
+    return SomeAction
 

@@ -118,7 +118,7 @@ class ContextAliasTestCase(common_test.ContextTestCase):
 class ContextCreateTestCase(common_test.ContextTestCase):
     def test_context_set_metadata(self):
         '''Set the metadata on a context and spread its settings to others.'''
-        data = { 'css': { 'background-color': 'red', } }
+        data = {'css': {'background-color': 'red'}}
         common_test.create_plugin(hierarchy=('some', 'context'), platforms='', data=data)
 
         context1 = ways.api.get_context('some/context')
@@ -130,7 +130,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
 
     def test_context_restore_default(self):
         '''Change a Context's data and then return it to its default.'''
-        data = { 'css': { 'background-color': 'blue', } }
+        data = {'css': {'background-color': 'blue'}}
         common_test.create_plugin(hierarchy=('some', 'context'), platforms='', data=data)
 
         context = ways.api.get_context('some/context')
@@ -141,7 +141,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
 
     def test_context_checkout_all(self):
         '''Change from one Context to another, after it is defined.'''
-        data = { 'css': { 'background-color': 'blue', } }
+        data = {'css': {'background-color': 'blue'}}
         assignment = 'job'
         common_test.create_plugin(hierarchy=('some', 'context'), platforms='', data=data)
         common_test.create_plugin(
@@ -408,7 +408,7 @@ class ContextInheritanceTestCase(common_test.ContextTestCase):
 
     def test_context_inherit(self):
         '''Create a Context that gets its values from various Plugin objects.'''
-        data = { 'css': { 'background-color': 'blue', } }
+        data = {'css': {'background-color': 'blue'}}
         common_test.create_plugin(hierarchy=('some', ), platforms='', data=data)
         common_test.create_plugin(hierarchy=('some', 'kind', 'of', 'context'), platforms='')
 
@@ -419,7 +419,7 @@ class ContextInheritanceTestCase(common_test.ContextTestCase):
 
 def get_generic_job_config():
     return textwrap.dedent(
-        '''
+        r'''
         globals: {}
         plugins:
             alpha_root:
