@@ -12,6 +12,7 @@ import os
 # IMPORT 'LOCAL' LIBRARIES
 from ways import finder
 from . import common_test
+import ways.api
 
 
 class PathConstructionTestCase(common_test.ContextTestCase):
@@ -32,18 +33,15 @@ class PathConstructionTestCase(common_test.ContextTestCase):
 
         contents = textwrap.dedent(
             '''
-            globals: {{}}
             plugins:
                 a_parse_plugin:
                     hierarchy: 31tt/whatever
-                    id: models
                     mapping: {root}/jobs/{{JOB}}/real_folder
                     mapping_details:
                         JOB:
                             mapping: '{{JOB_NAME}}_{{JOB_ID}}'
                             parse:
                                 glob: '*'
-                    uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             '''.format(root=temp_folder))
 
         self._make_plugin_folder_with_plugin2(contents=contents, folder=temp_folder)

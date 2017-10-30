@@ -20,6 +20,7 @@ PLUGIN_CACHE['all_plugins'] = []
 #        Find a better way to do this. Maybe store the instances here, too?
 #
 from . import situation as sit
+from . import resource
 
 
 def add_plugin(plugin, assignment='master'):
@@ -43,6 +44,7 @@ def clear():
     PLUGIN_CACHE['all_plugins'] = []
     sit.clear_aliases()
     sit.clear_contexts()
+    resource.reset_asset_classes()
 
 
 if __name__ == '__main__':

@@ -91,7 +91,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
 
         self._make_plugin_folder_with_plugin2(contents=contents)
 
-        some_path = '/jobs/some_job/some_other_kind/of/real_folders'
+        some_path = '/jobs/some_job/some_kind/of/real_folders'
         asset = ways.api.get_asset(some_path, context='some/other/context')
 
         self.assertNotEqual(asset, None)
@@ -433,7 +433,6 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         # Define our Contexts
         contents = textwrap.dedent(
             '''
-            globals: {}
             plugins:
                 a_parse_plugin:
                     hierarchy: job
@@ -579,7 +578,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
     def setUp(self):
         '''Reset the registered Asset classes after each test.'''
         super(AssetRegistrationTestCase, self).setUp()
-        ways.api.reset_asset_classes()
+        ways.clear()
 
     def test_register_and_create_a_custom_asset(self):
         '''Return back some class other than a default Asset class.'''
@@ -615,7 +614,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         # Register a new class type for our Context
         context = ways.api.get_context('some/thing/context')
-        ways.api.register_asset_class(SomeNewAssetClass, context)
+        ways.api.register_asset_info(SomeNewAssetClass, context)
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context')
@@ -661,7 +660,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         # Register a new class type for our Context
         context = ways.api.get_context('some/thing/context')
-        ways.api.register_asset_class(
+        ways.api.register_asset_info(
             SomeNewAssetClass, context, init=a_custom_init_function)
 
         # Get back our new class type
@@ -707,13 +706,12 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         self._make_plugin_folder_with_plugin2(contents=contents)
 
         # Create a default Asset
-        some_path = '/jobs/some_job/some_kind/of/real_folders'
+        some_path = '/jobs/some_job/some_kind/of/real_folders/inner'
         asset = ways.api.get_asset(some_path, context='some/thing/context/inner')
         asset_is_default_asset_type = isinstance(asset, ways.api.Asset)
 
         # Register a new class type for our Context
-        context = ways.api.get_context('some/thing/context')
-        ways.api.register_asset_class(SomeNewAssetClass, context, children=True)
+        ways.api.register_asset_info(SomeNewAssetClass, 'some/thing/context', children=True)
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context/inner')

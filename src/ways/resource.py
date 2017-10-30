@@ -83,7 +83,13 @@ class Asset(object):
             # context = sit.find_context_from_info(info, parse_type=self.parse_type)
             raise NotImplementedError('Havent implemented an auto-find Context function yet')
 
+        info_ = info
         info = expand_info(info, context)
+
+        if not info:
+            raise ValueError(
+                'Info: "{info}" could not be expanded using Context, '
+                '"{context}".'.format(info=info_, context=context))
 
         self.info = info
         self.context = context
@@ -356,14 +362,7 @@ class Asset(object):
                         The pieces of a string, broken into its various pieces.
 
                 '''
-                mapping = details[parent].get('mapping', '')
-                try:
-                    return common.expand_string(mapping, value)
-                except ValueError:
-                    # If the value or mapping is malformated, fail silently
-                    # so that the next option can be tried.
-                    #
-                    return ''
+                return common.expand_string(details[parent].get('mapping', ''), value)
 
             parents = []
             for name in six.iterkeys(details):
@@ -583,33 +582,44 @@ def get_asset(info, context=None, *args, **kwargs):
         raise NotImplementedError('Havent implemented an auto-find Context function yet')
 
     context = sit.get_context(context)
+
     info = expand_info(info, context=context)
-    context_hierarchy = context.get_hierarchy()
+    hierarchy = context.get_hierarchy()
 
-    class_type = Asset  # Asset is our fallback if no other type was defined.
-    init = functools.partial(make_default_init, class_type)
-
-    # Try to find a class type from one of our parent hierarchies
-    for index in reversed(range(len(context_hierarchy) + 1)):
-        # We use len - 1 because we already
-        hierarchy = tuple(context_hierarchy[:index])
-
-        hierarchy_info = ASSET_FACTORY.get(hierarchy, dict())
-
-        try:
-            class_type_ = ASSET_FACTORY[hierarchy]['class']
-            init_ = ASSET_FACTORY[hierarchy]['init']
-        except KeyError:
-            continue
-
-        if hierarchy == context_hierarchy or hierarchy_info.get('children', False):
-            class_type = class_type_
-            init = init_
+    _, init = get_asset_info(hierarchy)
 
     try:
         return init(info, context, *args, **kwargs)
     except Exception:
         return
+
+
+def get_asset_class(hierarchy):
+    return get_asset_info(hierarchy)[0]
+
+
+def get_asset_info(hierarchy):
+    class_type = Asset  # Asset is our fallback if no other type was defined.
+    init = functools.partial(make_default_init, class_type)
+
+    # Try to find a class type from one of our parent hierarchies
+    for index in reversed(range(len(hierarchy) + 1)):
+        hierarchy_piece = tuple(hierarchy[:index])
+
+        hierarchy_info = ASSET_FACTORY.get(hierarchy_piece, dict())
+
+        try:
+            class_type_ = ASSET_FACTORY[hierarchy_piece]['class']
+            init_ = ASSET_FACTORY[hierarchy_piece]['init']
+        except KeyError:
+            continue
+
+        if hierarchy_piece == hierarchy or hierarchy_info.get('children', False):
+            class_type = class_type_
+            init = init_
+            break
+
+    return (class_type, init)
 
 
 def expand_info(info, context=None):
@@ -666,7 +676,7 @@ def expand_info(info, context=None):
     try:
         return dict(info)
     except TypeError:
-        pass
+        return dict()
 
 
 def _get_expand_choices():
@@ -830,7 +840,7 @@ def _expand_using_parse_types(parse, text, choices=None, default=__DEFAULT_OBJEC
     return value
 
 
-def register_asset_class(class_type, context, init=None, children=False):
+def register_asset_info(class_type, context, init=None, children=False):
     '''Change get_asset to return a different class, instead of an Asset.
 
     The Asset class is useful but it may be too basic for some people's purposes.

@@ -5,7 +5,6 @@
 
 # IMPORT STANDARD LIBRARIES
 import collections
-import uuid
 
 # IMPORT LOCAL LIBRARIES
 from . import common
@@ -35,7 +34,7 @@ def trace_actions(obj, *args, **kwargs):
             The actions in the hierarchy.
 
     '''
-    hierarchy = _force_trace_hierachy(trace_hierarchy(obj))
+    hierarchy = trace_hierarchy(obj)
     return HISTORY.get_actions(hierarchy, *args, **kwargs)
 
 
@@ -55,7 +54,7 @@ def trace_action_names(obj, *args, **kwargs):
         list[str]: The names of all actions found for the Ways object.
 
     '''
-    hierarchy = _force_trace_hierachy(trace_hierarchy(obj))
+    hierarchy = trace_hierarchy(obj)
     return HISTORY.get_action_names(hierarchy, *args, **kwargs)
 
 
@@ -75,7 +74,7 @@ def trace_actions_table(obj, *args, **kwargs):
             The names and actions of an object.
 
     '''
-    hierarchy = _force_trace_hierachy(trace_hierarchy(obj))
+    hierarchy = trace_hierarchy(obj)
     return HISTORY.get_actions_info(hierarchy, *args, **kwargs)
 
 
@@ -132,7 +131,7 @@ def trace_context(obj):
     # TODO : Change asset to a public attribute
     # TODO : Also, this dir check is super ghetto. Make this better!
     #
-    if '_asset' in dir(obj):
+    if '_finder' in dir(obj):
         obj = obj._finder
 
     # Try to find the context - assuming obj was finder.Find or an action, etc.
@@ -153,12 +152,17 @@ def trace_context(obj):
 def trace_assignment(obj):
     '''str: Get the assignment for this object.'''
     try:
-        return obj.get_assignment()
+        obj = obj._finder
     except AttributeError:
         pass
 
     try:
-        return obj.assignment
+        obj = obj.context
+    except AttributeError:
+        pass
+
+    try:
+        return obj.get_assignment()
     except AttributeError:
         return common.DEFAULT_ASSIGNMENT
 
@@ -200,13 +204,6 @@ def trace_hierarchy(obj):
     if hierarchy:
         return common.split_hierarchy(hierarchy)
 
-    return hierarchy
-
-
-def _force_trace_hierachy(hierarchy):
-    '''tuple[str]: Forcibly make a hierarchy, even if has to be faked.'''
-    if not hierarchy:
-        hierarchy = (uuid.uuid4().hex, )
     return hierarchy
 
 

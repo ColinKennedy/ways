@@ -84,7 +84,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
 
                 # Register a new class type for our Context
                 context = ways.api.get_context('some/thing2/context')
-                ways.api.register_asset_class(
+                ways.api.register_asset_info(
                     SomeNewAssetClass, context, init=a_custom_init_function)
 
             """)
@@ -176,7 +176,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
 
                 # Register a new class type for our Context
                 context = ways.api.get_context('some/thing2/context')
-                ways.api.register_asset_class(
+                ways.api.register_asset_info(
                     SomeNewAssetClass, context, init=a_custom_init_function)
 
             """)

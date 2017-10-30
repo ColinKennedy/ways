@@ -18,6 +18,8 @@ from .common import PLATFORMS_ENV_VAR
 from .common import PLUGINS_ENV_VAR
 from .common import PRIORITY_ENV_VAR
 
+from .common import DEFAULT_ASSIGNMENT
+
 from .plugin import Plugin
 
 from .situation import Context
@@ -29,7 +31,9 @@ from .situation import clear_contexts
 
 from .resource import Asset
 from .resource import get_asset
-from .resource import register_asset_class
+from .resource import get_asset_info
+from .resource import get_asset_class
+from .resource import register_asset_info
 from .resource import reset_asset_classes
 
 from .commander import Action
@@ -41,6 +45,7 @@ from .trace import trace_all_plugin_results_info
 from .trace import trace_actions
 from .trace import trace_action_names
 from .trace import trace_actions_table
+from .trace import trace_assignment
 from .trace import trace_context
 from .trace import trace_hierarchy
 
@@ -76,6 +81,8 @@ __all__ = [
     'PLUGINS_ENV_VAR',
     'PRIORITY_ENV_VAR',
 
+    'DEFAULT_ASSIGNMENT',
+
     'Plugin',
 
     'Context',
@@ -88,7 +95,8 @@ __all__ = [
 
     'Asset',
     'get_asset',
-    'register_asset_class',
+    'get_asset_class',
+    'register_asset_info',
     'reset_asset_classes',
 
     'Action',
@@ -99,6 +107,7 @@ __all__ = [
     'trace_actions',
     'trace_action_names',
     'trace_actions_table',
+    'trace_assignment',
     'trace_context',
     'trace_hierarchy',
 

@@ -30,7 +30,7 @@ A bare-minimum relative plugin looks like this
             uses:
                 - fizz
 
-A relative plugin can also refer to anothr relative plugin recursively,
+A relative plugin can also refer to another relative plugin recursively,
 as long as the end of that chain of plugins is an absolute plugin.
 
 Calling a plugin "relative" is a bit of a inaccurate. Relative plugins are
@@ -42,7 +42,7 @@ under "uses", will create a separate Plugin object.
     not required. If no {root} is given, Ways will just append the
     relative plugin's mapping and hierarchy to its parent. If you do provide
     {root} though, you get to define different places for the parent's data
-    to be inserted, like this: "parent/{root}/library/hierarchy".
+    to be inserted, like this: "parent/{root}/library/{root}/hierarchy".
 
 "uses" has a few details that are important to know before starting.
 
