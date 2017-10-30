@@ -782,7 +782,3 @@ class CustomDescriptor1(object):
     def get_plugin_info(self):
         return {'assignment': 'master', 'foo': 'bar'}
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

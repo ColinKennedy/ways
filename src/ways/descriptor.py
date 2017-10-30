@@ -670,7 +670,3 @@ def conform_decode(info):
 
     return output
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

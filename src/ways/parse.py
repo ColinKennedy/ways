@@ -562,7 +562,3 @@ def expand_mapping(mapping, details):
             expand_mapping(mapping, details)
     return mapping
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

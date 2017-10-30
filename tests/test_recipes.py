@@ -10,7 +10,3 @@ class RecipeTestCase(unittest.TestCase):
     def test_job_creation(self):
         pass
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

@@ -324,7 +324,3 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         serialized_info = parse.urlencode(descriptor_info, doseq=True)
         self.assertEqual(self.cache.add_descriptor(serialized_info), None)
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

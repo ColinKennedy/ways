@@ -365,7 +365,3 @@ class FindCommanderTestCase(common_test.ContextTestCase):
     # def test_wrap_command_with_find_command_not_found_with_auto_default(self):
     #     pass
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

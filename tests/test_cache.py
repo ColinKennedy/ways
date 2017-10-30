@@ -414,7 +414,3 @@ def get_example_plugin_file(name='SomePlugin'):
                 return ''
         '''.format(class_name=name))
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

@@ -191,7 +191,3 @@ def create_plugin(hierarchy=('a', ), assignment=common.DEFAULT_ASSIGNMENT, platf
 
     return PluginObj
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

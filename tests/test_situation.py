@@ -512,9 +512,3 @@ def get_generic_job_config():
 
         ''')
 
-
-if __name__ == '__main__':
-    import unittest
-    unittest.main()
-    # print(__doc__)
-

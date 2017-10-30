@@ -128,7 +128,3 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
     return history.add_action(
         action=action, name=name, hierarchy=hierarchy, assignment=assignment)
 
-
-if __name__ == '__main__':
-    print(__doc__)
-

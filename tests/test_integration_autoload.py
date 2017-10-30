@@ -245,6 +245,3 @@ class AutoloadTestCase(common_test.ContextTestCase):
     #     context = ways.api.get_context('2tt/whatever')
     #     self.assertNotEqual(context, None)
 
-
-if __name__ == '__main__':
-    print(__doc__)
