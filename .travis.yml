@@ -34,6 +34,8 @@ before_install:
   - lsb_release -a
 install:
   - pip install tox
+  - pip install sphinx
+  - pip install sphinx_rtd_theme
   - virtualenv --version
   - easy_install --version
   - pip --version
