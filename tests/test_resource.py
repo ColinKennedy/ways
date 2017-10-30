@@ -342,8 +342,38 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
         self._make_plugin_folder_with_plugin2(contents=contents)
 
-        job = 'fooBar_1.342'
-        asset = ways.api.get_asset({'JOB': job}, context='a/context')
+        asset = ways.api.get_asset({'JOB': 'fooBar_1.342'}, context='a/context')
+        value = asset.get_value('JOB_SITE')
+        self.assertEqual(value, '1')
+
+    def test_get_value_from_parent_regex_parser(self):
+        '''Use regex to split a parent token and return some value.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                a_parse_plugin:
+                    hierarchy: a/context
+                    mapping: /jobs/{JOB}/scene/something/real_folders
+                    mapping_details:
+                        JOB:
+                            mapping: '{JOB_NAME}{JOB_ID}'
+                        JOB_ID:
+                            mapping: '{JOB_SITE}.{JOB_UUID}'
+                        JOB_NAME:
+                            parse:
+                                regex: '[a-zA-Z0-9]+'
+                        JOB_SITE:
+                            parse:
+                                regex: '[123456]'
+                        JOB_UUID:
+                            parse:
+                                regex: '[0-9]{3}'
+
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+
+        asset = ways.api.get_asset({'JOB': 'fooBar1.342'}, context='a/context')
         value = asset.get_value('JOB_SITE')
         self.assertEqual(value, '1')
 
@@ -511,64 +541,64 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         self.assertEqual(len(created_shots), 2)
         self.assertTrue(all((isinstance(shot, ways.api.Asset) for shot in created_shots)))
 
-#     def test_asset_get_value_of_subtoken_that_is_defined(self):
-#         '''Get the string of some subtoken in an Asset.
+    def test_asset_get_value_of_subtoken_that_is_defined(self):
+        '''Get the string of some subtoken in an Asset.
 
-#         This value has been defined in our Asset.
+        This value has been defined in our Asset.
 
-#         '''
-#         pass
+        '''
+        pass
 
-#     def test_asset_get_value_of_subtoken_that_is_not_defined(self):
-#         '''Get the string of some subtoken in an Asset.
+    def test_asset_get_value_of_subtoken_that_is_not_defined(self):
+        '''Get the string of some subtoken in an Asset.
 
-#         This subtoken's value is not defined in our Asset but the parent token's
-#         value is. We are going to forcibly parse the subtoken and return it,
-#         instead.
+        This subtoken's value is not defined in our Asset but the parent token's
+        value is. We are going to forcibly parse the subtoken and return it,
+        instead.
 
-#         '''
-#         pass
+        '''
+        pass
 
-#     def test_asset_get_parse_of_token(self):
-#         '''Get the parse information of some token.'''
-#         pass
+    def test_asset_get_parse_of_token(self):
+        '''Get the parse information of some token.'''
+        pass
 
-#     def test_asset_get_parse_of_subtoken(self):
-#         '''Get the parse information of some subtoken.'''
-#         pass
+    def test_asset_get_parse_of_subtoken(self):
+        '''Get the parse information of some subtoken.'''
+        pass
 
-#     def test_asset_get_str(self):
-#         '''Get the full, resolved path of the Asset.'''
-#         pass
+    def test_asset_get_str(self):
+        '''Get the full, resolved path of the Asset.'''
+        pass
 
-#     def test_asset_get_str_failed_with_missing_required_tokens(self):
-#         '''Try to get the full, resolved path of the Asset but fail.
+    def test_asset_get_str_failed_with_missing_required_tokens(self):
+        '''Try to get the full, resolved path of the Asset but fail.
 
-#         The method fails because there is at least one missing, required token.
+        The method fails because there is at least one missing, required token.
 
-#         '''
-#         pass
+        '''
+        pass
 
-#     def test_asset_context_substitution_with_context(self):
-#         '''Change an Asset object's Context with another Context.
+    def test_asset_context_substitution_with_context(self):
+        '''Change an Asset object's Context with another Context.
 
-#         This is particularly useful when we're dealing with asset management
-#         and we don't know the output path of the asset.
+        This is particularly useful when we're dealing with asset management
+        and we don't know the output path of the asset.
 
-#         Using this system, we can interchange an asset between its location on
-#         a database and where it exists, locally, without rebuilding the instance.
+        Using this system, we can interchange an asset between its location on
+        a database and where it exists, locally, without rebuilding the instance.
 
-#         '''
-#         pass
+        '''
+        pass
 
-#     def test_asset_context_substitution_with_context_fail(self):
-#         '''Fail to substitute a Context with another Context.
+    def test_asset_context_substitution_with_context_fail(self):
+        '''Fail to substitute a Context with another Context.
 
-#         If the substituted Context does not have all of the same required tokens,
-#         it cannot be substituted.
+        If the substituted Context does not have all of the same required tokens,
+        it cannot be substituted.
 
-#         '''
-#         pass
+        '''
+        pass
 
 
 class AssetRegistrationTestCase(common_test.ContextTestCase):
