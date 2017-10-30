@@ -24,6 +24,7 @@ import json
 import os
 
 # IMPORT THIRD-PARTY LIBRARIES
+# pylint: disable=import-error
 from six.moves.urllib import parse
 import yamlordereddictloader
 import six

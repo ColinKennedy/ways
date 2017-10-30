@@ -10,7 +10,6 @@ import sys
 import os
 
 # IMPORT THIRD-PARTY LIBRARIES
-from six.moves.urllib import parse
 import six.moves
 import ways
 import six
@@ -161,7 +160,7 @@ class HistoryCache(object):
             if not isinstance(description, six.string_types):
                 return None
 
-            description = parse.parse_qs(description)
+            description = six.moves.urllib.parse.parse_qs(description)
             if not description:
                 return None
 
@@ -171,7 +170,8 @@ class HistoryCache(object):
             #     'create_using': ['ways.api.GitLocalDescriptor']
             # }
             #
-            description['create_using'] = description.get('create_using', ['ways.api.FolderDescriptor'])[0]
+            description['create_using'] = \
+                description.get('create_using', ['ways.api.FolderDescriptor'])[0]
 
             return get_description_from_dict(description)
 
@@ -193,7 +193,7 @@ class HistoryCache(object):
 
             try:
                 return try_load(descriptor_class, actual_description)
-            except Exception as err:
+            except Exception:
                 # TODO : LOG the err
                 raise ValueError('Detected object, "{cls_}" could not be called. '
                                  'Please make sure it is on the PYTHONPATH and '
@@ -272,7 +272,8 @@ class HistoryCache(object):
             )
             self.descriptor_load_results.append(info)
             # TODO : logging?
-            print('Description: "{desc}" could not become a descriptor class.'.format(desc=description))
+            print('Description: "{desc}" could not become a descriptor class.'
+                  ''.format(desc=description))
             return
 
         try:
@@ -365,7 +366,8 @@ class HistoryCache(object):
         self.action_cache[hierarchy].setdefault(assignment, dict())
         self.action_cache[hierarchy][assignment][name] = action
 
-    def add_plugin(self, *args, **kwargs):
+    @classmethod
+    def add_plugin(cls, *args, **kwargs):
         '''Add a created plugin to this cache.
 
         Args:
@@ -821,6 +823,20 @@ def import_object(name):
 
 
 def add_descriptor(*args, **kwargs):
+    '''Add an object that describes the location of Plugin objects.
+
+    Args:
+        description (dict or str):
+            Some information to create a descriptor object from.
+            If the descriptor is a string and it is a directory on the path,
+            ways.api.FolderDescriptor is returned. If it is
+            an encoded URI, the string is parsed into a dict and processed.
+            If it's a dict, the dictionary is used, as-is.
+        update (:obj:`bool`, optional):
+            If True, immediately recalculate all of the Plugin objects
+            in this cache. Default is True.
+
+    '''
     history = HistoryCache()
     history.add_descriptor(*args, **kwargs)
 

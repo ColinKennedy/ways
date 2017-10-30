@@ -96,6 +96,7 @@ __all__ = [
     'Asset',
     'get_asset',
     'get_asset_class',
+    'get_asset_info',
     'register_asset_info',
     'reset_asset_classes',
 

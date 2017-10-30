@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''The main location where loaded plugin and action objects are managed.'''
+
 # IMPORT STANDARD LIBRARIES
 import collections
 
@@ -24,6 +26,15 @@ from . import resource
 
 
 def add_plugin(plugin, assignment='master'):
+    '''Add a plugin to Ways.
+
+    Args:
+        plugin (<ways.api.Plugin>):
+            The plugin to add.
+        assignment (:obj:`str`, optional):
+            The assignment of the plugin. Default: 'master'.
+
+    '''
     # Set defaults (if needed)
     hierarchy = plugin.get_hierarchy()
 
@@ -38,6 +49,7 @@ def add_plugin(plugin, assignment='master'):
 
 
 def clear():
+    '''Remove all Ways plugins and actions.'''
     ACTION_CACHE.clear()
     PLUGIN_CACHE.clear()
     PLUGIN_CACHE['hierarchy'] = collections.OrderedDict()

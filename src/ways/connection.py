@@ -121,7 +121,7 @@ def generic_iadd(obj, other):
     return value
 
 
-def get_compound_left_right_priority(plugins, method):
+def get_left_right_priority(plugins, method):
     '''Add all values of all plugins going from start to finish (left to right).
 
     Args:

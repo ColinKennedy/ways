@@ -370,7 +370,7 @@ class Context(object):
 
     def _init_data(self):
         '''dict[str]: The default data on a Context.'''
-        data = conn.get_compound_left_right_priority(
+        data = conn.get_left_right_priority(
             self.plugins, method=operator.attrgetter('data'))
 
         if not data:
@@ -809,7 +809,7 @@ def context_connection_info():
         'get_mapping': get_mapping,
 
         'get_mapping_details': functools.partial(
-            conn.get_compound_left_right_priority,
+            conn.get_left_right_priority,
             method=operator.methodcaller('get_mapping_details')),
 
         'get_max_folder': get_max_folder,

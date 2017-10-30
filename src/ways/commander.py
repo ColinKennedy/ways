@@ -64,10 +64,6 @@ class _Aktion(object):
 
     add_to_registry = True
 
-    def __init__(self):
-        '''Initialize the object and do nothing else.'''
-        super(_Aktion, self).__init__()
-
     @property
     def context(self):
         '''Get a reference to the Context that this instance is attached to.
@@ -96,6 +92,11 @@ class _Aktion(object):
     def get_assignment(cls):
         '''str: The group where the Context for this instance lives.'''
         return common.DEFAULT_ASSIGNMENT
+
+    @classmethod
+    def get_hierarchy(cls):
+        '''tuple[str]: The location of the Context/Asset this object affects.'''
+        return tuple()
 
 
 Action = _Aktion
