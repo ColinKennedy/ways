@@ -437,7 +437,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
         asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
         value = asset.get_token_parse('SHOT_NAME')
-        self.assertEqual('\w+', value)
+        self.assertEqual(r'\w+', value)
 
     def test_no_token_parse(self):
         '''Test for when there is not token mapping or parse type.'''
@@ -524,7 +524,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         where the scene Context.actions.get_shots did not return the right values.
 
         '''
-        class JobSceneShotPlugin(ways.api.Action):
+        class JobSceneShotPlugin(ways.api.Action):  # pylint: disable=unused-variable
 
             '''A generic Action that returns Asset objects.'''
 
@@ -571,7 +571,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
         # Define our Contexts
         contents = textwrap.dedent(
-            '''
+            r'''
             plugins:
                 a_parse_plugin:
                     hierarchy: job
@@ -755,7 +755,9 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         self.assertTrue(asset_is_not_default_asset_type)
 
     def test_register_and_create_a_custom_asset_with_init(self):
+        '''Create an Asset class that is created with a non-default init.'''
         asset_class = _get_asset_class()
+
         def a_custom_init_function(info, context, *args, **kwargs):
             '''Purposefully ignore the context that gets passed.'''
             return asset_class(info, *args, **kwargs)
@@ -795,6 +797,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         self.assertTrue(asset_is_not_default_asset_type)
 
     def test_register_and_create_a_custom_asset_with_parent_hierarchy(self):
+        '''Call a custom Asset class from a child hierarchy, using its parent.'''
         asset_class = _get_asset_class()
         contents = textwrap.dedent(
             '''
@@ -834,6 +837,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         self.assertTrue(asset_is_default_asset_type)
         self.assertTrue(asset_is_not_default_asset_type)
+
 
 def _get_asset_class():
     '''Just make a generic asset class.'''
