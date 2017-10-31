@@ -192,7 +192,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
     def test_parse_with_a_set_depth(self):
         '''Attempt to parse a plugin's value to a set depth value.'''
         contents = textwrap.dedent(
-            '''
+            r'''
             globals: {}
             plugins:
                 a_parse_plugin:
