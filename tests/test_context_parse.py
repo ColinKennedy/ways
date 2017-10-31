@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''Test all of the different ways that Context objects can be parsed.'''
+
 # IMPORT STANDARD LIBRARIES
 import textwrap
 import os
@@ -16,22 +18,19 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
 
     '''A collection of tests for different ways to parse a Context.'''
 
-    def test_plugin_with_parse_expression(self):
+    def test_plugin_parse(self):
+        '''Test that a basic parse expression works correctly.'''
         contents = textwrap.dedent(
             '''
             globals: {}
             plugins:
                 z_parse_plugin:
-                    hidden: false
                     hierarchy: 31tt/whatever
-                    id: models
                     mapping: /jobs/{JOB}/some_kind/of/real_folders
                     mapping_details:
                         JOB:
                             mapping: '{JOB_NAME}_{JOB_ID}'
                             parse: {}
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -90,7 +89,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
         # as long as this test passes
         #
         contents = textwrap.dedent(
-            '''
+            r'''
             globals: {}
             plugins:
                 a_parse_plugin:

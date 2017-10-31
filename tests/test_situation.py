@@ -178,6 +178,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
 
         self.assertEqual(assignment, context.assignment)
 
+    # pylint: disable=invalid-name
     def test_recursive_config_assignment(self):
         '''Get plugins (and assignment info) from a folder recursively.'''
         assignment = 'job'

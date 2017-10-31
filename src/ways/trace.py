@@ -7,9 +7,8 @@
 import collections
 
 # IMPORT LOCAL LIBRARIES
-from . import common
 from . import cache
-
+from . import common
 
 HISTORY = cache.HistoryCache()
 
@@ -252,4 +251,3 @@ def get_all_hierarchies():
 def get_all_assignments():
     '''set[str]: All of the assignments found in our environment.'''
     return set(trace_assignment(plug) for plug in HISTORY.plugin_cache.get('all_plugins', []))
-

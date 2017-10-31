@@ -7,12 +7,14 @@
 import uuid
 
 # IMPORT THIRD-PARTY LIBRARIES
-import ways
 import six
 
+# IMPORT WAYS LIBRARIES
+import ways
+
 # IMPORT LOCAL LIBRARIES
-from .core import check
 from . import common
+from .core import check
 
 
 class PluginRegistry(type):
@@ -237,4 +239,3 @@ def get_assignment(obj):
         return obj.get_assignment()
     except AttributeError:
         return common.DEFAULT_ASSIGNMENT
-

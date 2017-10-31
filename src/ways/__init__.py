@@ -6,7 +6,6 @@
 # IMPORT STANDARD LIBRARIES
 import collections
 
-
 __version__ = "0.1.0b1"
 
 
@@ -17,11 +16,11 @@ PLUGIN_CACHE['all_plugins'] = []
 
 
 # IMPORT LOCAL LIBRARIES
+from . import situation as sit
 # TODO : ugh this import is bad. FIXME
 #        It's only used so that we can clear our Context instances
 #        Find a better way to do this. Maybe store the instances here, too?
 #
-from . import situation as sit
 from . import resource
 
 
@@ -61,4 +60,3 @@ def clear():
 
 if __name__ == '__main__':
     print(__doc__)
-

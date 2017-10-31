@@ -4,15 +4,14 @@
 '''A module that holds ContextParser - A class fills in Context's mapping.'''
 
 # IMPORT STANDARD LIBRARIES
-import collections
-import itertools
 import os
 import re
+import itertools
+import collections
 
 # IMPORT LOCAL LIBRARIES
-from .core import check
 from . import engine
-
+from .core import check
 
 ENCLOSURE_TOKEN_REGEX = r'(\{[^\{\}]+\})'
 TOKEN_REGEX = r'\{([^\{\}]+)\}'
@@ -485,4 +484,3 @@ def expand_mapping(mapping, details):
         if inner_mapping != token:
             expand_mapping(mapping, details)
     return mapping
-

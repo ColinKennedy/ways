@@ -8,9 +8,9 @@ Honestly, this module won't be added to that much.
 '''
 
 # IMPORT STANDARD LIBRARIES
-import functools
-import string
 import os
+import string
+import functools
 
 # IMPORT LOCAL LIBRARIES
 from .core import check
@@ -180,4 +180,3 @@ def memoize(function):
         return value
 
     return wrapper
-

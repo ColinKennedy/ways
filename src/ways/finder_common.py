@@ -4,9 +4,9 @@
 '''Any function that needs to exist in more than one of the finder modules.'''
 
 # IMPORT STANDARD LIBRARIES
-import glob
 import os
 import re
+import glob
 
 # IMPORT LOCAL LIBRARIES
 from . import cache
@@ -142,4 +142,3 @@ def find_context(path, sort_with='', resolve_with=('glob', ), search=glob.glob):
 
 if __name__ == '__main__':
     print(__doc__)
-

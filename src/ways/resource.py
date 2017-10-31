@@ -24,22 +24,21 @@ Attibutes:
 '''
 
 # IMPORT STANDARD LIBRARIES
-import collections
-import functools
-import itertools
 import os
 import re
+import functools
+import itertools
+import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
 
 # IMPORT LOCAL LIBRARIES
-from . import situation as sit
 from . import finder as find
-from .core import compat
-from . import common
+from . import situation as sit
 from . import trace
-
+from . import common
+from .core import compat
 
 __DEFAULT_OBJECT = object()
 ASSET_FACTORY = dict()
@@ -1026,4 +1025,3 @@ def reset_asset_classes(hierarchies=tuple()):
 
         # Reset the key
         ASSET_FACTORY[key] = ASSET_FACTORY[key].__class__()
-

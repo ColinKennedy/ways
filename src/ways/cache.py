@@ -4,19 +4,21 @@
 '''Create a persistent cache that stores all the Plugin and Action objects.'''
 
 # IMPORT STANDARD LIBRARIES
-import collections
+import os
 import imp
 import sys
-import os
+import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
-import six.moves
-import ways
 import six
+import six.moves
+
+# IMPORT WAYS LIBRARIES
+import ways
 
 # IMPORT LOCAL LIBRARIES
-from .retro import single
 from . import common
+from .retro import single
 
 
 # TODO : Check to see if this class is even necessary. We may be able to get
@@ -840,4 +842,3 @@ def add_descriptor(*args, **kwargs):
     '''
     history = HistoryCache()
     history.add_descriptor(*args, **kwargs)
-

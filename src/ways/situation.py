@@ -21,26 +21,26 @@ elsewhere in the code (like metadata).
 '''
 
 # IMPORT STANDARD LIBRARIES
-import collections
-import functools
-import itertools
-import operator
-import platform
-import copy
 import os
 import re
+import copy
+import operator
+import platform
+import functools
+import itertools
+import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
-from six import moves
 import six
+from six import moves
 
 # IMPORT LOCAL LIBRARIES
 from . import connection as conn
-from .core import pathrip
-from . import common
 from . import cache
 from . import parse
 from . import trace
+from . import common
+from .core import pathrip
 
 
 class _AssignmentFactory(object):
@@ -979,4 +979,3 @@ def clear_contexts():
 
     '''
     __FACTORY.clear()
-

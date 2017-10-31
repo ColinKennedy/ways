@@ -13,8 +13,8 @@ import six
 
 # IMPORT LOCAL LIBRARIES
 from . import situation as sit
-from . import common
 from . import cache
+from . import common
 
 
 class ActionRegistry(type):
@@ -128,4 +128,3 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
     history = cache.HistoryCache()
     return history.add_action(
         action=action, name=name, hierarchy=hierarchy, assignment=assignment)
-

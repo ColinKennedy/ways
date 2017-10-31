@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''Test the creation, registration, and methods of Ways Descriptors.'''
+
 # IMPORT STANDARD LIBRARIES
 import tempfile
 import textwrap

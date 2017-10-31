@@ -15,26 +15,25 @@ GitRemoteDescriptor - Get plugin files from an online git repository
 '''
 
 # IMPORT STANDARD LIBRARIES
-import collections
-import functools
-import itertools
-import tempfile
+import os
 import copy
 import glob
 import json
-import os
+import tempfile
+import functools
+import itertools
+import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
-import yamlordereddictloader
 import six
+import yamlordereddictloader
 
 # IMPORT LOCAL LIBRARIES
-from . import situation as sit
 from . import plugin as plug
+from . import situation as sit
+from . import common
 from . import dict_classes
 from .core import check
-from . import common
-
 
 GLOBALS_KEY = 'globals'
 PLUGIN_INFO_FILE_NAME = '.waypoint_plugin_info'
@@ -760,4 +759,3 @@ def conform_decode(info):
             output['create_using'] = value[0]
 
     return output
-

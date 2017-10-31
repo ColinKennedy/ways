@@ -4,16 +4,15 @@
 '''The main class/functions used to find actions for Context/Asset objects.'''
 
 # IMPORT STANDARD LIBRARIES
-import collections
 import functools
 import itertools
+import collections
 
 # IMPORT LOCAL LIBRARIES
+from . import trace
+from . import common
 from . import finder_common
 from .core import compat
-from . import common
-from . import trace
-
 
 # TODO : In general, I regret the name of this module. FIXME
 
@@ -133,4 +132,3 @@ class Find(compat.DirMixIn, object):
 # TODO : Possibly remove this, now that we use this in ways.api
 # pylint: disable=invalid-name
 find_context = finder_common.find_context
-

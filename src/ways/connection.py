@@ -20,8 +20,8 @@ Note:
 '''
 
 # IMPORT STANDARD LIBRARIES
-import functools
 import copy
+import functools
 
 # IMPORT LOCAL LIBRARIES
 from .core import grouping
@@ -169,4 +169,3 @@ def get_intersection_priority(plugins, method):
     for group in groups[1:]:
         intersection = grouping.get_ordered_intersection(intersection, group)
     return intersection
-
