@@ -9,6 +9,7 @@ include .cookiecutterrc
 include .editorconfig
 include .pylintrc
 include .isort.cfg
+include .pydocstylerc
 
 include AUTHORS.rst
 include CHANGELOG.rst
