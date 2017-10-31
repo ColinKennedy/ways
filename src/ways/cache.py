@@ -52,77 +52,18 @@ class HistoryCache(object):
 
     '''
 
-    def __init__(self, priority=''):
-        '''Create the cache and a default priority.
-
-        Args:
-            priority (:obj:`tuple[str] or str`, optional):
-                The order that assignments will be checked for plugins
-                and actions. This variable is only used when no assignment
-                is given, basically as a fallback.
-
-                If no priority is given, it defaults to ('master', ), and only
-                auto-searches for master plugins and actions.
-
-        '''
+    def __init__(self):
+        '''Create the cache and a default priority.'''
         super(HistoryCache, self).__init__()
-        priority = common.split_by_comma(priority)
-        self._priority = priority
-
         self.descriptors = []
         self.plugin_cache = ways.PLUGIN_CACHE
         self.action_cache = ways.ACTION_CACHE
         self.plugin_cache.setdefault('hierarchy', collections.OrderedDict())
         self.plugin_cache.setdefault('all_plugins', [])
-        self.plugin_load_results = []
+        self.plugin_load_results = ways.PLUGIN_LOAD_RESULTS
         self.descriptor_load_results = []
 
         self.init_plugins()
-
-    @property
-    def priority(self):
-        '''The default list of assignments to search through for objects.
-
-        This list is controlled by the WAYS_PRIORITY variable.
-
-        For example, os.environ['WAYS_PRIORITY'] = 'master:job'
-        will have very different runtime behavior than
-        os.environ['WAYS_PRIORITY'] = 'job:master'.
-
-        Todo:
-            Give a recommendation (in docs) for where to read more about this.
-
-        Returns:
-            tuple[str]: The assignments to search through.
-
-        '''
-        if self._priority:
-            priority = self.priority
-        else:
-            priority = os.getenv(common.PRIORITY_ENV_VAR, common.DEFAULT_ASSIGNMENT)
-        return priority.split(os.pathsep)
-
-    @classmethod
-    def _get_from_assignment(cls, obj_cache, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
-        '''A simple helper method to get hierarchy/assignment details.
-
-        Args:
-            obj_cache (dict[str, dict[str]]):
-                Some mapping object that contains details that
-                hierarchy and assignment will try to access.
-            hierarchy (tuple[str]):
-                The specific description to get plugin/action objects from.
-            assignment (:obj:`str`, optional):
-                The group to get items from. Default: 'master'.
-
-        Returns:
-            The output of the assignment, if any. Ideally, a dict.
-
-        '''
-        try:
-            return obj_cache[hierarchy][assignment]
-        except KeyError:
-            return dict()
 
     @classmethod
     def _resolve_descriptor(cls, description):
@@ -182,7 +123,6 @@ class HistoryCache(object):
             def try_load(obj, description):
                 '''Load the object, as-is.'''
                 return obj(**description)
-
 
             descriptor_class = description.get(
                 'create_using', descriptor.FolderDescriptor)
@@ -400,265 +340,10 @@ class HistoryCache(object):
         '''
         self.add_descriptor(path, update=update)
 
-    def get_action(self, name, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
-        '''Find an action based on its name, hierarchy, and assignment.
-
-        The first action that is found for the hierarchy is returned.
-
-        Args:
-            name (str): The name of the action to get. This name is assigned to
-                        the action when it is defined.
-            hierarchy (tuple[str]): The location of where this Action object is.
-            assignment (:obj:`str`, optional): The group that the Action was
-                                               assigned to. Default: 'master'.
-
-        Returns:
-            <pathfinder.commander.Action> or NoneType: The found Action object
-                                                       or nothing.
-
-        '''
-        for actions in self._get_actions_iter(hierarchy, assignment=assignment):
-            try:
-                return actions[name]
-            except (TypeError, KeyError):  # TypeError in case action is None
-                pass
-
-    def get_action_names(self, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
-        '''Get the names of all actions available for some plugin hierarchy.
-
-        Args:
-            hierarchy (tuple[str]):
-                The specific description to get plugin/action objects from.
-            assignment (:obj:`str`, optional):
-                The group to get items from. Default: 'master'.
-
-        Returns:
-            list[str]: The names of all actions found for the Ways object.
-
-
-        '''
-        action_names_index = 0
-        actions = self._get_actions(
-            hierarchy=hierarchy,
-            assignment=assignment,
-            duplicates=False)
-
-        names = []
-        for name in actions[action_names_index]:
-            # Maintain definition order but also make sure they are all unique
-            if name not in names:
-                names.append(name)
-
-        return names
-
-    def get_actions(self, hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=False):
-        '''Get back all of the action objects for a plugin hierarchy.
-
-        Args:
-            hierarchy (tuple[str]):
-                The specific description to get plugin/action objects from.
-            assignment (:obj:`str`, optional):
-                The group to get items from. Default: 'master'.
-            duplicates (:obj:`bool`, optional):
-                If True, The first Action that is found will be returned.
-                If False, all actions (including parent actions with the same
-                name) are all returned. Default is False.
-
-        Returns:
-            list[<ways.api.Action> or callable]:
-                The actions in the hierarchy.
-
-        '''
-        action_objects_index = 1
-
-        actions = self._get_actions(
-            hierarchy=hierarchy,
-            assignment=assignment,
-            duplicates=duplicates)
-        return actions[action_objects_index]
-
-    def get_actions_info(self, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
-        '''Get the names and objects for all Action objects in a hierarchy.
-
-        Args:
-            hierarchy (tuple[str]):
-                The specific description to get plugin/action objects from.
-            assignment (:obj:`str`, optional):
-                The group to get items from. Default: 'master'.
-
-        Returns:
-            dict[str: <ways.api.Action> or callable]:
-                The name of the action and its associated object.
-
-        '''
-        actions = collections.OrderedDict()
-
-        for name, obj in six.moves.zip(*self._get_actions(hierarchy, assignment, duplicates=False)):
-            actions[name] = obj
-
-        return actions
-
-    def _get_actions(self, hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=False):
-        '''Get the actions defined for a plugin hierarchy.
-
-        Args:
-            hierarchy (tuple[str]):
-                The specific description to get plugin/action objects from.
-            assignment (:obj:`str`, optional):
-                The group to get items from. Default: 'master'.
-            duplicates (:obj:`bool`, optional):
-                If True, The first Action that is found will be returned.
-                If False, all actions (including parent actions with the same
-                name) are all returned. Default is False.
-
-        Returns:
-            list[list[str], list[<ways.api.Action> or callable]]:
-                0: All of the names of each action that was found.
-                1: The object that was created for a specific action.
-
-        '''
-        action_names = []
-        objects = []
-
-        for actions in self._get_actions_iter(hierarchy, assignment=assignment):
-            for name, obj in six.iteritems(actions):
-                is_a_new_action = name not in action_names
-
-                if is_a_new_action or duplicates:
-                    action_names.append(name)
-                    objects.append(obj)
-        return action_names, objects
-
-    def _get_actions_iter(self, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
-        '''Get the actions at a particular hierarchy.
-
-        Args:
-            hierarchy (tuple[str]):
-                The location of where this Plugin object is.
-            assignment (:obj:`str`, optional):
-                The group that the PLugin was assigned to. Default: 'master'.
-                If assignment='', all plugins from every assignment is queried.
-
-        Yields:
-            dict[str: <ways.api.Action>]:
-                The actions for some hierarchy.
-
-        '''
-        def _search_for_item(hierarchy):
-            '''Find the first action in our cache that we can find.'''
-            priority = self.priority
-
-            if not priority:
-                # As a fallback if self.priority gives us nothing, just use the
-                # actions in the order that they were added
-                #
-                priority = self.action_cache[hierarchy].keys()
-
-            for assignment in priority:
-                try:
-                    return self.action_cache[hierarchy][assignment]
-                except KeyError:
-                    continue
-
-        # The use of 'not assignment' is very intentional. Do not change
-        #
-        # Excluding an assignment is a very explicit decision, because the
-        # default assignment value is 'master'. Sending assignment='' means that
-        # the user wants to consider all assignments, not one specifically.
-        #
-        if not assignment:
-            assignment_method = _search_for_item
-        else:
-            def assignment_method(hierarchy):
-                '''Create a simple partial method that only takes hierarchy.'''
-                return self._get_from_assignment(
-                    obj_cache=self.action_cache,
-                    hierarchy=hierarchy,
-                    assignment=assignment)
-
-        # This iterates over a hierarchy from bottom to top and returns the
-        # first action it finds. It's a very different behavior than get_plugins
-        #
-        hierarchy_len = len(hierarchy)
-        for index in six.moves.range(hierarchy_len):
-            try:
-                yield assignment_method(hierarchy[:hierarchy_len - index])
-            except KeyError:
-                continue
-
     def get_assignments(self, hierarchy):
         '''list[str]: Get the assignments for a hierarchy key in plugins.'''
         hierarchy = common.split_hierarchy(hierarchy)
         return self.plugin_cache['hierarchy'][hierarchy].keys()
-
-    def get_plugins(self, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
-        '''Find an plugin based on its name, hierarchy, and assignment.
-
-        Every plugin found at every level of the given hierarchy is collected
-        and returned.
-
-        Args:
-            name (str):
-                The name of the plugin to get. This name needs to be assigned
-                to the plugin when it is defined.
-            hierarchy (tuple[str]):
-                The location of where this Plugin object is.
-            assignment (:obj:`str`, optional):
-                The group that the PLugin was assigned to. Default: 'master'.
-                If assignment='', all plugins from every assignment is queried.
-
-        Returns:
-            list[<pathfinder.plugin.Plugin>]:
-                The found plugins, if any.
-
-        '''
-        # TODO : Remove this relative import
-        from . import situation as sit
-
-        def _search_for_plugin(hierarchy):
-            '''Find all plugins in some hierarchy for every assignment.'''
-            items = []
-            for assignment in self.priority:
-                try:
-                    items.extend(self.plugin_cache['hierarchy'][hierarchy][assignment])
-                except KeyError:
-                    continue
-
-            return items
-
-        # The use of 'not assignment' is very intentional. Do not change
-        #
-        # Excluding an assignment is a very explicit decision, because the
-        # default assignment value is 'master'. Sending assignment='' means that
-        # the user wants to consider all assignments, not one specifically.
-        #
-        if not assignment:
-            assignment_method = _search_for_plugin
-        else:
-            def assignment_method(hierarchy):
-                '''Create a scoped function that only need hierarchy as input.'''
-                return self._get_from_assignment(
-                    obj_cache=self.plugin_cache['hierarchy'],
-                    hierarchy=hierarchy,
-                    assignment=assignment)
-
-        plugins = []
-        hierarchy = sit.resolve_alias(hierarchy)
-
-        # This iterates over a hierarchy from top to bottom and gets every
-        # plugin at each level of the hierarchy that it finds.
-        #
-        # So, for example
-        # ('some', 'hierarchy', 'here')
-        #
-        # Will get the plugins for ('some', ),
-        # then the plugins for ('some', 'hierarchy'),
-        # and finally plugins for ('some', 'hierarchy', 'here')
-        #
-        for index in six.moves.range(len(hierarchy)):
-            plugins.extend(assignment_method(hierarchy[:index + 1]))
-
-        return plugins
 
     def get_all_plugins(self):
         '''list[<pathfinder.plugin.Plugin>]: Every registered plugin.'''
@@ -674,10 +359,10 @@ class HistoryCache(object):
             be retrieved from the flyweight cache.
 
         Returns:
-            list[<sit.Context>]: The Context objects defined in this system.
+            list[<ways.api.Context>]: The Context objects defined in this system.
 
         '''
-        from . import situation as sit
+        from . import situation
         contexts = []
         used_hierarchy_assignment_pairs = []
         for hierarchy, info in six.iteritems(self.plugin_cache['hierarchy']):
@@ -685,7 +370,7 @@ class HistoryCache(object):
                 pair = (hierarchy, assignment)
                 if pair not in used_hierarchy_assignment_pairs:
                     used_hierarchy_assignment_pairs.append(pair)
-                    contexts.append(sit.get_context(
+                    contexts.append(situation.get_context(
                         hierarchy=hierarchy, assignment=assignment))
         return contexts
 
@@ -720,6 +405,12 @@ class HistoryCache(object):
             # A plugin file isn't required to have a main function
             # so we can just return, here
             #
+            info.update(
+                {
+                    'status': common.SUCCESS_KEY,
+                    'details': 'no_main_function',
+                }
+            )
             return
 
         try:
@@ -756,7 +447,6 @@ class HistoryCache(object):
 
     def clear(self):
         '''Remove all Plugin and Action objects from this cache.'''
-        self.plugin_load_results = self.plugin_load_results.__class__()
         self.descriptor_load_results = self.descriptor_load_results.__class__()
         self.descriptors = self.descriptors.__class__()
 

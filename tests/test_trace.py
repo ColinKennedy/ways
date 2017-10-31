@@ -16,8 +16,9 @@ import tempfile
 import textwrap
 
 # IMPORT WAYS LIBRARIES
-import ways.api
 from ways import common
+import ways.api
+import ways
 
 # IMPORT LOCAL LIBRARIES
 from . import common_test
@@ -298,7 +299,7 @@ class FailureTestCase(common_test.ContextTestCase):
         self.cache.load_plugin(temp_file)
 
         # Because the module failed to import, the action won't be visible
-        action = self.cache.get_action(name, hierarchy=hierarchy)
+        action = ways.get_action(name, hierarchy=hierarchy)
         self.assertEqual(action, None)
 
         # We should at least see some information about this PluginSheet
@@ -348,7 +349,7 @@ class FailureTestCase(common_test.ContextTestCase):
         self.cache.load_plugin(temp_file)
 
         # The module is importable so we can find out action
-        action = self.cache.get_action(name, hierarchy=hierarchy)
+        action = ways.get_action(name, hierarchy=hierarchy)
         self.assertNotEqual(action, None)
 
         # But main() fails, so the plugin is a registered failure
