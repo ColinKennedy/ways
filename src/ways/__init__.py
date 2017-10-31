@@ -32,8 +32,6 @@ PLUGIN_CACHE['all_plugins'] = []
 PLUGIN_LOAD_RESULTS = []
 
 
-
-
 def _get_actions(hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=False):
     '''Get the actions defined for a plugin hierarchy.
 

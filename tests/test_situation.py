@@ -417,7 +417,6 @@ class ContextMethodTestCase(common_test.ContextTestCase):
             context.validate_plugin('asfdas')
 
 
-
 class ContextInheritanceTestCase(common_test.ContextTestCase):
 
     '''Test the ways the a Context is meant to inherit from Context objects.

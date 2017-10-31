@@ -16,14 +16,8 @@ loaded into Ways, by default.
 
 Example:
 
-TODO : Right now these docs are incorrect. A Python file needs to be added to
-WAYS_PLUGINS. Not WAYS_DESCRIPTORS. In retrospect, I don't see the
-need for both env vars because it caused even me some confusion earlier.
-Maybe this should be made into one env var. OR NOT
-
-TODOID : 5152
-
 ::
+
     export WAYS_DESCRIPTORS=/tmp/to/plugins/folder:/tmp/to/plugin.yml:/tmp/to/plugin.json:/tmp/to/plugin.py
 
 The above example is 4 different ways to load a Plugin Sheet or file.

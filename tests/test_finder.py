@@ -12,7 +12,6 @@ import textwrap
 from ways import cache
 
 # IMPORT LOCAL LIBRARIES
-# IMPORT 'LOCAL' LIBRARIES
 from . import common_test
 
 
