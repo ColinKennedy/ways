@@ -1,21 +1,28 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import print_function
 
+# pylint: disable=duplicate-code
+'''The main setup function that is used by pypi.'''
+
+from __future__ import print_function
+from __future__ import absolute_import
+
+# IMPORT STANDARD LIBRARIES
 import io
 import re
 from glob import glob
-from os.path import basename
-from os.path import dirname
 from os.path import join
+from os.path import dirname
+from os.path import basename
 from os.path import splitext
 
-from setuptools import find_packages
+# IMPORT THIRD-PARTY LIBRARIES
 from setuptools import setup
+from setuptools import find_packages
 
 
 def read(*names, **kwargs):
+    '''Read files in this file's directory.'''
     return io.open(
         join(dirname(__file__), *names),
         encoding=kwargs.get('encoding', 'utf8')

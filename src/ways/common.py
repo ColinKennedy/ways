@@ -8,9 +8,9 @@ Honestly, this module won't be added to that much.
 '''
 
 # IMPORT STANDARD LIBRARIES
-import functools
-import string
 import os
+import string
+import functools
 
 # IMPORT LOCAL LIBRARIES
 from .core import check
@@ -123,9 +123,11 @@ def split_into_parts(obj, split, as_type=tuple):
     return as_type(part for part in obj if part)
 
 
+# pylint: disable=invalid-name
 split_hierarchy = functools.partial(split_into_parts, split=HIERARCHY_SEP)
 
 
+# pylint: disable=invalid-name
 split_by_comma = functools.partial(split_into_parts, split=',')
 
 
@@ -171,11 +173,10 @@ def memoize(function):
         '''Run the original function and store its output, given some args.'''
         if args in memo:
             return memo[args]
-        else:
-            rv = function(*args)
-            memo[args] = rv
 
-            return rv
+        value = function(*args)
+        memo[args] = value
+
+        return value
 
     return wrapper
-

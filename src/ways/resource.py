@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# pylint: disable=too-many-lines
 '''Asset objects are objects that store per-instance data for Context objects.
 
 They are necessary because Context objects are flyweights and, because of that,
@@ -24,22 +25,21 @@ Attibutes:
 '''
 
 # IMPORT STANDARD LIBRARIES
-import collections
-import functools
-import itertools
 import os
 import re
+import functools
+import itertools
+import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
 
 # IMPORT LOCAL LIBRARIES
-from . import situation as sit
-from . import finder as find
-from .core import compat
-from . import common
 from . import trace
-
+from . import common
+from . import finder as find
+from . import situation as sit
+from .core import compat
 
 __DEFAULT_OBJECT = object()
 ASSET_FACTORY = dict()
@@ -146,22 +146,14 @@ class Asset(object):
 
         return missing_tokens
 
-    def get_str(self, required=True, force=False, *args, **kwargs):
+    def get_str(self, required=True, *args, **kwargs):
         '''Get the full path to the asset, if any.
 
         Args:
             required (:obj:`bool`, optional):
                 If True and there are tokens that are required that still
-                are not, raise an error to keep this instance from returning.
-                If False, return it even if not all required pieces were met.
-
-                This variable is very useful if we want to make sure that this
-                instance has all of the necessary pieces before calling this
-                function. Default is True.
-            force (:obj:`bool`, optional):
-                If False, values are checked against their tokens
-                before being set. If True, values are set for each token, even
-                if they are not valid input for that token. Default is False.
+                are not filled, raise an error.  If False, return the
+                incomplete string.  Default is True.
             *args (list): Positional args to send to ContextParser.get_str.
             **kwargs (list): Keywords args to send to ContextParser.get_str.
 
@@ -328,7 +320,7 @@ class Asset(object):
                 str: The found value. Returns nothing if no value was found.
 
             '''
-            def get_value_from_parent_regex_parser(parent):
+            def get_value_from_parent_regex(parent):
                 '''Use regex to get a value, using known parent tokens.
 
                 Args:
@@ -343,7 +335,8 @@ class Asset(object):
                 '''
                 details = parser.get_all_mapping_details()
                 try:
-                    mapping = details[parent]['mapping']
+                    # We must have a mapping to proceed
+                    details[parent]['mapping']
                 except KeyError:
                     return dict()
 
@@ -408,8 +401,6 @@ class Asset(object):
             except KeyError:
                 pass
 
-            details = parser.get_all_mapping_details()
-
             parents = _get_recursive_parents(token, parser)
 
             if not parents:
@@ -417,9 +408,29 @@ class Asset(object):
 
             # TODO : Move this function later
             def build_value_from_parents(token, parents):
+                '''Get the value by checking every parent of a token recursively.
+
+                Warning:
+                    This function will modify any parser that is passed into it.
+                    The parser is changed intentionally so that the value
+                    can be referenced during recursion (It's treated as
+                    persistent data that gets reused).
+
+                Args:
+                    token (str):
+                        The token to get the value of by looking at its parents.
+                    parents (list[str]):
+                        The parents of token and any parents of those parents.
+                        This list should always start with the immediate parent
+                        of token, followed by other parents-of-parents.
+
+                Returns:
+                    str: The output value.
+
+                '''
                 options = [
                     get_value_from_parent_format,
-                    get_value_from_parent_regex_parser,
+                    get_value_from_parent_regex,
                 ]
 
                 for parent in parents:
@@ -429,7 +440,6 @@ class Asset(object):
                     except KeyError:
                         pass
 
-                    parent_split_info = ''
                     for option in options:
                         try:
                             info = option(parent)
@@ -543,6 +553,7 @@ class Asset(object):
 # TODO : Could I possibly do this without a class?
 # TODO : The name of this class doesn't match find.Find. FIXME
 #
+# pylint: disable=too-few-public-methods
 class AssetFinder(compat.DirMixIn, object):
 
     '''A class that wraps a Find class with the current asset.
@@ -578,7 +589,7 @@ class AssetFinder(compat.DirMixIn, object):
 
         '''
         super(AssetFinder, self).__init__()
-        self._finder = finder
+        self.finder = finder
         self._asset = asset
 
     def __getattr__(self, name):
@@ -605,7 +616,7 @@ class AssetFinder(compat.DirMixIn, object):
 
             return function
 
-        function = self._finder.__getattr__(name)
+        function = self.finder.__getattr__(name)
 
         return add_asset_info_to_function(func=function, asset=self._asset)
 
@@ -614,8 +625,206 @@ class AssetFinder(compat.DirMixIn, object):
         return sorted(
             set(itertools.chain(
                 self.__dict__.keys(),
-                trace.trace_action_names(self._finder.context),
+                trace.trace_action_names(self.finder.context),
                 super(AssetFinder, self).__dir__())))
+
+
+def _expand_using_context(context, text, choices=None, default=__DEFAULT_OBJECT):
+    '''Expand some text into a dictionary of information, using a Context.
+
+    Args:
+        context (<ways.api.Context>):
+            The Context to get parse text for and then use.
+        text (str):
+            The text to expand.
+        choices (:obj:`dict[str: callable]`, optional):
+            The parse type and associated function for that parse type that
+            should be used to convert a Context into a pattern which we can
+            apply to our text. If no choices are given, some default choices
+            are given for you.
+        default:
+            The object to return if nothing is found.
+
+    Returns:
+        dict or default:
+            The expanded items, if any option in order was successful.
+            If no function was successful,
+            it returns whatever the default value was.
+
+    '''
+    order = _get_expand_order()
+
+    if choices is None:
+        choices = _get_expand_choices()
+
+    if default == __DEFAULT_OBJECT:
+        default = dict()
+
+    # TODO : register these keys/values as plugins or something?
+    pattern_getter = collections.OrderedDict()
+    pattern_getter['default'] = functools.partial(context.get_str, display_tokens=True)
+    pattern_getter['regex'] = functools.partial(
+        context.get_str, resolve_with=('regex', ), display_tokens=True)
+
+    for key in order:
+        getter = pattern_getter.get(key, lambda: None)
+        pattern = getter()
+        if pattern:
+            value = _expand_using_parse_types(
+                parse=pattern, text=text, choices=choices, default=default)
+
+            if value:
+                return value
+
+    return default
+
+
+def _expand_using_parse_types(parse, text, choices=None, default=__DEFAULT_OBJECT):
+    '''Expand some text, using a parse string of some kind.
+
+    We say "some kind" because the parse string could be a Python format string
+    or a regex pattern, for example.
+
+    Args:
+        context (<ways.api.Context>):
+            The Context to get parse text for and then use.
+        text (str):
+            The text to expand.
+        choices (:obj:`dict[str: callable]`, optional):
+            The parse type and associated function for that parse type that
+            should be used to convert text into a string. If no choices
+            are given, some default choices are given for you.
+        default:
+            The object to return if nothing is found.
+
+    Returns:
+        dict or default:
+            The expanded items, if any option in order was successful.
+            If no function was successful,
+            it returns whatever the default value was.
+
+    '''
+    order = _get_expand_order()
+
+    if choices is None:
+        choices = _get_expand_choices()
+
+    if default == __DEFAULT_OBJECT:
+        default = dict()
+
+    for choice in order:
+        value = choices[choice](parse, text)
+
+        if value:
+            break
+
+    if not value:
+        value = default
+
+    return value
+
+
+def _get_expand_choices():
+    '''Get a description of each registered parse type and how it creates a dict.
+
+    An example implmentation for regex would be
+    {'regex': lambda pat, text: re.match(pat, text).groupdict()}.
+
+    As long as the parse type can return a dict, given some text, it's valid.
+
+    Returns:
+        <collections.OrderedDict[str: callable]:
+            The parse type and expansion function.
+
+    '''
+    # TODO : Make an abstract registry for "expansion" parse_types ?
+    choices = collections.OrderedDict()
+
+    def regex_groupdict(pattern, text):
+        '''Get a dictionary of named keys for each text match, in pattern.'''
+        match = re.match(pattern, text)
+
+        try:
+            return match.groupdict()
+        except AttributeError:
+            return dict()
+
+    choices['default'] = common.expand_string
+    choices['regex'] = regex_groupdict
+
+    return choices
+
+
+def _get_expand_order(order=None):
+    '''Get the parse-order that Ways will use to expand a str into a dict.
+
+    This order is defined by the WAYS_EXPAND_CHOICE_ORDER
+    environment variable or, if that variable doesn't contain anything,
+    the order that parsers were registered will be used, instead.
+
+    Args:
+        order (:obj:`list[str]`, optional):
+            If this argument has a value, then it is simply returned.
+            If it doesn't have a value, we try to get the value from
+            the current environment settings. If we can't, we use
+            the order of parse-type registration.
+
+    Returns:
+        list[str]:
+            The order for Ways to use to expand strings.
+
+    '''
+    # TODO : It's a bit presumptuous to assume that we know what order people
+    #        would like to parse a string. Maybe make a better system than
+    #        just forcing the user to use the keys from _get_expand_choices ...
+    #
+    if order is not None:
+        return order
+
+    environment = os.getenv('WAYS_EXPAND_CHOICE_ORDER', '')
+
+    if environment:
+        order = environment.split(os.pathsep)
+    else:
+        order = _get_expand_choices().keys()
+
+    return order
+
+
+def _get_recursive_parents(token, parser):
+    '''Get every known parent token for some token and those parent's parents.
+
+    Args:
+        token (str): The token to start retrieving parent tokens from.
+        parser (ways.api.ContextParser): The parser to use to get parent tokens.
+
+    Returns:
+        list[str]: The found parent tokens.
+
+    '''
+    def _yield_parent_details(token, parser, details):
+        '''Yield parent tokens for a given token, by looking at a token's details.
+
+        This function exists just so that we don't have to call
+        parser.get_all_mapping_details() for each iteration. This makes the
+        call slightly more efficient.
+
+        '''
+        for parent in six.iterkeys(details):
+            if parent == token:
+                # A token shouldn't ever be a child of itself so we can skip it
+                continue
+
+            children = parser.get_child_tokens(parent)
+
+            if token in children:
+                yield parent
+
+                for parent_ in _yield_parent_details(parent, parser, details):
+                    yield parent_
+
+    details = parser.get_all_mapping_details()
+    return list(_yield_parent_details(token, parser, details))
 
 
 def get_asset(info, context=None, *args, **kwargs):
@@ -757,203 +966,6 @@ def expand_info(info, context=None):
         return dict()
 
 
-def _get_expand_choices():
-    '''Get a description of each registered parse type and how it creates a dict.
-
-    An example implmentation for regex would be
-    {'regex': lambda pat, text: re.match(pat, text).groupdict()}.
-
-    As long as the parse type can return a dict, given some text, it's valid.
-
-    Returns:
-        <collections.OrderedDict[str: callable]:
-            The parse type and expansion function.
-
-    '''
-    # TODO : Make an abstract registry for "expansion" parse_types ?
-    choices = collections.OrderedDict()
-
-    def regex_groupdict(pattern, text):
-        '''Get a dictionary of named keys for each text match, in pattern.'''
-        match = re.match(pattern, text)
-
-        try:
-            return match.groupdict()
-        except AttributeError:
-            return dict()
-
-    choices['default'] = common.expand_string
-    choices['regex'] = regex_groupdict
-
-    return choices
-
-
-def _get_expand_order(order=None):
-    '''Get the parse-order that Ways will use to expand a str into a dict.
-
-    This order is defined by the WAYS_EXPAND_CHOICE_ORDER
-    environment variable or, if that variable doesn't contain anything,
-    the order that parsers were registered will be used, instead.
-
-    Args:
-        order (:obj:`list[str]`, optional):
-            If this argument has a value, then it is simply returned.
-            If it doesn't have a value, we try to get the value from
-            the current environment settings. If we can't, we use
-            the order of parse-type registration.
-
-    Returns:
-        list[str]:
-            The order for Ways to use to expand strings.
-
-    '''
-    # TODO : It's a bit presumptuous to assume that we know what order people
-    #        would like to parse a string. Maybe make a better system than
-    #        just forcing the user to use the keys from _get_expand_choices ...
-    #
-    if order is not None:
-        return order
-
-    environment = os.getenv('WAYS_EXPAND_CHOICE_ORDER', '')
-
-    if environment:
-        order = environment.split(os.pathsep)
-    else:
-        order = _get_expand_choices().keys()
-
-    return order
-
-
-def _expand_using_context(context, text, choices=None, default=__DEFAULT_OBJECT):
-    '''Expand some text into a dictionary of information, using a Context.
-
-    Args:
-        context (<ways.api.Context>):
-            The Context to get parse text for and then use.
-        text (str):
-            The text to expand.
-        choices (:obj:`dict[str: callable]`, optional):
-            The parse type and associated function for that parse type that
-            should be used to convert a Context into a pattern which we can
-            apply to our text. If no choices are given, some default choices
-            are given for you.
-        default:
-            The object to return if nothing is found.
-
-    Returns:
-        dict or default:
-            The expanded items, if any option in order was successful.
-            If no function was successful,
-            it returns whatever the default value was.
-
-    '''
-    order = _get_expand_order()
-
-    if choices is None:
-        choices = _get_expand_choices()
-
-    if default == __DEFAULT_OBJECT:
-        default = dict()
-
-    # TODO : register these keys/values as plugins or something?
-    pattern_getter = collections.OrderedDict()
-    pattern_getter['default'] = functools.partial(context.get_str, display_tokens=True)
-    pattern_getter['regex'] = functools.partial(context.get_str, resolve_with=('regex', ), display_tokens=True)
-
-    for key in order:
-        getter = pattern_getter.get(key, lambda: None)
-        pattern = getter()
-        if pattern:
-            value = _expand_using_parse_types(
-                parse=pattern, text=text, choices=choices, default=default)
-
-            if value:
-                return value
-
-    return default
-
-
-def _expand_using_parse_types(parse, text, choices=None, default=__DEFAULT_OBJECT):
-    '''Expand some text, using a parse string of some kind.
-
-    We say "some kind" because the parse string could be a Python format string
-    or a regex pattern, for example.
-
-    Args:
-        context (<ways.api.Context>):
-            The Context to get parse text for and then use.
-        text (str):
-            The text to expand.
-        choices (:obj:`dict[str: callable]`, optional):
-            The parse type and associated function for that parse type that
-            should be used to convert text into a string. If no choices
-            are given, some default choices are given for you.
-        default:
-            The object to return if nothing is found.
-
-    Returns:
-        dict or default:
-            The expanded items, if any option in order was successful.
-            If no function was successful,
-            it returns whatever the default value was.
-
-    '''
-    order = _get_expand_order()
-
-    if choices is None:
-        choices = _get_expand_choices()
-
-    if default == __DEFAULT_OBJECT:
-        default = dict()
-
-    for choice in order:
-        value = choices[choice](parse, text)
-
-        if value:
-            break
-
-    if not value:
-        value = default
-
-    return value
-
-
-def _get_recursive_parents(token, parser):
-    '''Get every known parent token for some token and those parent's parents.
-
-    Args:
-        token (str): The token to start retrieving parent tokens from.
-        parser (ways.api.ContextParser): The parser to use to get parent tokens.
-
-    Returns:
-        list[str]: The found parent tokens.
-
-    '''
-    def _yield_parent_details(token, parser, details):
-        '''A generator helper function for _get_recursive_parents.
-
-        This function exists just so that we don't have to call
-        parser.get_all_mapping_details() for each iteration. This makes the
-        call slightly more efficient.
-
-        '''
-        for parent in six.iterkeys(details):
-            if parent == token:
-                # A token shouldn't ever be a child of itself so we can skip it
-                continue
-
-            children = parser.get_child_tokens(parent)
-
-            if token in children:
-                yield parent
-
-                for parent_ in _yield_parent_details(parent, parser, details):
-                    yield parent_
-
-    details = parser.get_all_mapping_details()
-    return list(_yield_parent_details(token, parser, details))
-
-
 def register_asset_info(class_type, context, init=None, children=False):
     '''Change get_asset to return a different class, instead of an Asset.
 
@@ -1011,4 +1023,3 @@ def reset_asset_classes(hierarchies=tuple()):
 
         # Reset the key
         ASSET_FACTORY[key] = ASSET_FACTORY[key].__class__()
-

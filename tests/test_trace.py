@@ -11,17 +11,17 @@ whatever other purpose). Or some other reportive info that we want to know.
 '''
 
 # IMPORT STANDARD LIBRARIES
+import os
 import tempfile
 import textwrap
-import random
-import string
-import os
 
-# IMPORT 'LOCAL' LIBRARIES
-from ways import common
-from . import common_test
+# IMPORT WAYS LIBRARIES
+import ways
 import ways.api
+from ways import common
 
+# IMPORT LOCAL LIBRARIES
+from . import common_test
 
 # TODO : The types of plugin-trace tests that we need to make sure works
 #
@@ -42,6 +42,7 @@ import ways.api
 # TODO : Possibly make a set parse order function
 
 
+# pylint: disable=too-few-public-methods
 class Common(common_test.ContextTestCase):
 
     '''Just a class that has a couple setup methods that subclasses need.'''
@@ -104,11 +105,7 @@ class TraceTestCase(Common):
 
         for obj in self._get_object_interfaces(context):
             obj = ways.api.trace_assignment(obj)
-            try:
-                self.assertNotEqual(obj, ways.api.DEFAULT_ASSIGNMENT)
-            except AssertionError:
-                raise ValueError(obj)
-
+            self.assertNotEqual(obj, ways.api.DEFAULT_ASSIGNMENT)
 
         self.assertEqual(ways.api.trace_assignment('invalid_input'),
                          ways.api.DEFAULT_ASSIGNMENT)
@@ -266,7 +263,7 @@ class FailureTestCase(common_test.ContextTestCase):
 
     '''Test the different ways that Plugins and Descriptors can fail to load.'''
 
-    def test_trace_bad_plugin_module_import_failure(self):
+    def test_module_import_failure(self):
         '''Capture a failed plugin that couldn't be imported by Python.'''
         name = 'something_foo'
         hierarchy = ('foo', 'bar')
@@ -299,7 +296,7 @@ class FailureTestCase(common_test.ContextTestCase):
         self.cache.load_plugin(temp_file)
 
         # Because the module failed to import, the action won't be visible
-        action = self.cache.get_action(name, hierarchy=hierarchy)
+        action = ways.get_action(name, hierarchy=hierarchy)
         self.assertEqual(action, None)
 
         # We should at least see some information about this PluginSheet
@@ -309,7 +306,7 @@ class FailureTestCase(common_test.ContextTestCase):
         self.assertEqual(info.get('status'), common.FAILURE_KEY)
         self.assertEqual(info.get('reason'), common.IMPORT_FAILURE_KEY)
 
-    def test_trace_bad_plugin_module_load_failure(self):
+    def test_module_load_failure(self):
         '''Capture a failed plugin that couldn't be loaded by Python.
 
         This happens when the file that this plugin was defined in could be
@@ -349,7 +346,7 @@ class FailureTestCase(common_test.ContextTestCase):
         self.cache.load_plugin(temp_file)
 
         # The module is importable so we can find out action
-        action = self.cache.get_action(name, hierarchy=hierarchy)
+        action = ways.get_action(name, hierarchy=hierarchy)
         self.assertNotEqual(action, None)
 
         # But main() fails, so the plugin is a registered failure
@@ -364,4 +361,3 @@ def _init_actions():
     '''Create a couple random classes and register them to Ways.'''
     common_test.create_action('another_action_here')
     common_test.create_action('action_here')
-

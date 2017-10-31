@@ -1,36 +1,36 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# IMPORT STANDARD LIBRARIES
-import unittest
-import textwrap
-import os
+'''Test all of the different ways that Context objects can be parsed.'''
 
-# IMPORT 'LOCAL' LIBRARIES
-from . import common_test
+# IMPORT STANDARD LIBRARIES
+import os
+import textwrap
+
+# IMPORT WAYS LIBRARIES
 import ways.api
+
+# IMPORT LOCAL LIBRARIES
+from . import common_test
 
 
 class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
 
     '''A collection of tests for different ways to parse a Context.'''
 
-    def test_plugin_with_parse_expression(self):
+    def test_plugin_parse(self):
+        '''Test that a basic parse expression works correctly.'''
         contents = textwrap.dedent(
             '''
             globals: {}
             plugins:
                 z_parse_plugin:
-                    hidden: false
                     hierarchy: 31tt/whatever
-                    id: models
                     mapping: /jobs/{JOB}/some_kind/of/real_folders
                     mapping_details:
                         JOB:
                             mapping: '{JOB_NAME}_{JOB_ID}'
                             parse: {}
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -41,9 +41,11 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
         expected_regex = r'/jobs/{JOB_NAME}_{JOB_ID}/some_kind/of/real_folders'
         self.assertEqual(parse_regex, expected_regex)
 
+    # pylint: disable=invalid-name
     def test_plugin_with_inner_parse_expression(self):
+        '''Test that plugins with recursive parse tokens get values correctly.'''
         contents = textwrap.dedent(
-            '''
+            r'''
             globals: {}
             plugins:
                 a_parse_plugin:
@@ -67,8 +69,6 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                             parse:
                                 glob: '*'
                                 regex: \w+
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -80,14 +80,16 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
         self.assertEqual(parse_regex,
                          r'/jobs/\w+_\d{4}/some_kind/of/real_folders')
 
+    # pylint: disable=invalid-name
     def test_plugins_with_inner_parse_expression(self):
+        '''Test that two absolute plugins append to a relative plugin.'''
         # This plugin does nothing to build the final parse_regex.
         # It just exists to give us a couple opportunities for KeyErrors
         # for us to catch and fix. Basically, ignore b_parse_plugin
         # as long as this test passes
         #
         contents = textwrap.dedent(
-            '''
+            r'''
             globals: {}
             plugins:
                 a_parse_plugin:
@@ -159,7 +161,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
     def test_parse_env_vars(self):
         '''Resolve a Context object's mapping using environment variables.'''
         contents = textwrap.dedent(
-            '''
+            r'''
             globals: {}
             plugins:
                 a_parse_plugin:
@@ -188,8 +190,9 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
         self.assertEqual(parse_regex, expected_regex)
 
     def test_parse_with_a_set_depth(self):
+        '''Attempt to parse a plugin's value to a set depth value.'''
         contents = textwrap.dedent(
-            '''
+            r'''
             globals: {}
             plugins:
                 a_parse_plugin:
@@ -227,6 +230,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
         self.assertEqual(parse_regex, expected_regex)
 
     def test_set_groups_with_dict(self):
+        '''Test that varying input to get_str works as expected.'''
         contents = textwrap.dedent(
             '''
             globals: {}
@@ -253,6 +257,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
         self.assertEqual(parse_regex, expected_regex)
 
     def test_set_groups_with_tuple(self):
+        '''Test that varying input to get_str works as expected.'''
         contents = textwrap.dedent(
             '''
             globals: {}
@@ -280,21 +285,22 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
         self.assertEqual(parse_regex, expected_regex)
 
     def test_parse_with_invalid_input(self):
+        '''Test that invalid input is caught early.
+
+        No tokens that exist in holdout can exist as keys in 'groups'.
+
+        '''
         contents = textwrap.dedent(
             '''
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 31tt/whatever
-                    id: models
                     mapping: /jobs/{JOB}/some_kind/of/real_folders
                     mapping_details:
                     JOB:
                         mapping: '{JOB_NAME}_{JOB_ID}'
                         parse: {}
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -303,9 +309,8 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('31tt/whatever')
 
         with self.assertRaises(ValueError):
-            parse_regex = context.get_str(resolve_with='regex',
-                                        groups=(('JOB_ID', 8), ),
-                                        holdout='JOB_ID')
+            context.get_str(
+                resolve_with='regex', groups=(('JOB_ID', 8), ), holdout='JOB_ID')
 
 
 class ContextParserMethodTestCase(common_test.ContextTestCase):
@@ -340,4 +345,3 @@ class ContextParserMethodTestCase(common_test.ContextTestCase):
         parser = context.get_parser()
 
         self.assertEqual(set(parser.get_tokens()), {'THING', 'JOB'})
-

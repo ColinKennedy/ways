@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''test the classes and methods for finder.py.'''
+'''Test the classes and methods for finder.py.'''
 
 # IMPORT STANDARD LIBRARIES
-import unittest
+import os
 import tempfile
 import textwrap
-import os
 
-# IMPORT 'LOCAL' LIBRARIES
-from ways import finder
+# IMPORT WAYS LIBRARIES
+from ways import cache
+
+# IMPORT LOCAL LIBRARIES
 from . import common_test
-import ways.api
 
 
 class PathConstructionTestCase(common_test.ContextTestCase):
@@ -53,10 +53,10 @@ class PathConstructionTestCase(common_test.ContextTestCase):
         if not os.path.isdir(the_path):
             os.makedirs(the_path)
 
-        context = finder.find_context(path=the_path, resolve_with=('env', 'glob'))
+        context = cache.find_context(path=the_path, resolve_with=('env', 'glob'))
         self.assertNotEqual(context, None)
 
-    def test_find_context_with_absolute_path(self):
+    def test_find_absolute_path(self):
         '''Define a Context with an absolute path and find it.'''
         temp_folder = tempfile.mkdtemp()
         self.temp_paths.append(temp_folder)
@@ -84,7 +84,7 @@ class PathConstructionTestCase(common_test.ContextTestCase):
 
         open(some_file, 'w').close()
 
-        context = finder.find_context(path=some_file, resolve_with=('env', 'glob'))
+        context = cache.find_context(path=some_file, resolve_with=('env', 'glob'))
 
         self.assertEqual(context.get_hierarchy(), ('some', 'file', 'whatever'))
 
@@ -139,4 +139,3 @@ class PathConstructionTestCase(common_test.ContextTestCase):
 
 #     def test_get_piece_max_depth_failed(self):
 #         pass
-

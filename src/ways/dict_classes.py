@@ -25,6 +25,8 @@ class ReadOnlyDict(collections.Mapping):
                 it is set to read-only. Default is False.
 
         '''
+        super(ReadOnlyDict, self).__init__()  # pylint: disable=no-member
+
         self._data = data
         self.settable = settable
 
@@ -82,5 +84,5 @@ class ReadOnlyDict(collections.Mapping):
 
 
 def recursive_default_dict():
+    '''Create a recursive collection.defaultdict(dict).'''
     return collections.defaultdict(recursive_default_dict)
-

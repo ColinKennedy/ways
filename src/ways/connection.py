@@ -20,8 +20,8 @@ Note:
 '''
 
 # IMPORT STANDARD LIBRARIES
-import functools
 import copy
+import functools
 
 # IMPORT LOCAL LIBRARIES
 from .core import grouping
@@ -83,7 +83,7 @@ def try_and_return(methods):
 
 
 def generic_iadd(obj, other):
-    '''A method to deal with the ways that iadd is written for Python objects.
+    '''Conform the different ways that built-in Python objects implement iadd.
 
     It's important to note that this method is very generic and also unfinished.
     Add other implementations, as needed. As long as they return a non-None
@@ -121,7 +121,7 @@ def generic_iadd(obj, other):
     return value
 
 
-def get_compound_left_right_priority(plugins, method):
+def get_left_right_priority(plugins, method):
     '''Add all values of all plugins going from start to finish (left to right).
 
     Args:
@@ -169,27 +169,3 @@ def get_intersection_priority(plugins, method):
     for group in groups[1:]:
         intersection = grouping.get_ordered_intersection(intersection, group)
     return intersection
-
-
-def resolve_max_folder(renditions):
-    '''Determine the max parent folder the given renditions can move to, if any.
-
-    The way this function works is that, if two rendition objects are combined,
-    depending on the way they are positioned and mapped, the max folder will
-    be modified.
-
-    Args:
-        renditions (RenditionAbstractInterface): The renditions to get the
-            max navigation folder option of.
-
-    Returns:
-        int: The combined max folder.
-
-    '''
-    pass
-
-
-def pass_through_function(value):
-    '''A function that does nothing but returns value.'''
-    return value
-

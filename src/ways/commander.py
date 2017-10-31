@@ -12,9 +12,9 @@ extra behavior that would otherwise be impossible.
 import six
 
 # IMPORT LOCAL LIBRARIES
-from . import situation as sit
-from . import common
 from . import cache
+from . import common
+from . import situation as sit
 
 
 class ActionRegistry(type):
@@ -64,10 +64,6 @@ class _Aktion(object):
 
     add_to_registry = True
 
-    def __init__(self):
-        '''Initialize the object and do nothing else.'''
-        super(_Aktion, self).__init__()
-
     @property
     def context(self):
         '''Get a reference to the Context that this instance is attached to.
@@ -96,6 +92,11 @@ class _Aktion(object):
     def get_assignment(cls):
         '''str: The group where the Context for this instance lives.'''
         return common.DEFAULT_ASSIGNMENT
+
+    @classmethod
+    def get_hierarchy(cls):
+        '''tuple[str]: The location of the Context/Asset this object affects.'''
+        return tuple()
 
 
 Action = _Aktion
@@ -127,4 +128,3 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
     history = cache.HistoryCache()
     return history.add_action(
         action=action, name=name, hierarchy=hierarchy, assignment=assignment)
-

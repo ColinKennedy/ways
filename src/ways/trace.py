@@ -6,13 +6,11 @@
 # IMPORT STANDARD LIBRARIES
 import collections
 
+# IMPORT WAYS LIBRARIES
+import ways
+
 # IMPORT LOCAL LIBRARIES
 from . import common
-from . import cache
-
-
-HISTORY = cache.HistoryCache()
-
 
 # TODO : Maybe move this to find.py and then move the path class out
 
@@ -22,12 +20,12 @@ def trace_actions(obj, *args, **kwargs):
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.situation.Context> or <ways.finder.Find>):
+             <ways.api.Context> or <ways.finder.Find>):
             The object to get the actions of.
         *args (list):
-            Positional args to pass to cache.HistoryCache.get_actions.
+            Positional args to pass to ways.get_actions.
         **kwargs (dict[str]):
-            Keyword args to pass to cache.HistoryCache.get_actions.
+            Keyword args to pass to ways.get_actions.
 
     Returns:
         list[<ways.resource.Action> or callable]:
@@ -35,7 +33,7 @@ def trace_actions(obj, *args, **kwargs):
 
     '''
     hierarchy = trace_hierarchy(obj)
-    return HISTORY.get_actions(hierarchy, *args, **kwargs)
+    return ways.get_actions(hierarchy, *args, **kwargs)
 
 
 def trace_action_names(obj, *args, **kwargs):
@@ -43,31 +41,31 @@ def trace_action_names(obj, *args, **kwargs):
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.situation.Context> or <ways.finder.Find>):
+             <ways.api.Context> or <ways.finder.Find>):
             The object to get the actions of.
         *args (list):
-            Positional args to pass to cache.HistoryCache.get_action_names.
+            Positional args to pass to ways.get_action_names.
         **kwargs (dict[str]):
-            Keyword args to pass to cache.HistoryCache.get_action_names.
+            Keyword args to pass to ways.get_action_names.
 
     Returns:
         list[str]: The names of all actions found for the Ways object.
 
     '''
     hierarchy = trace_hierarchy(obj)
-    return HISTORY.get_action_names(hierarchy, *args, **kwargs)
+    return ways.get_action_names(hierarchy, *args, **kwargs)
 
 
 def trace_actions_table(obj, *args, **kwargs):
-    '''The names/objects of every action found for some Ways object.
+    '''Find the names and objects of every action registered to Ways.
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.situation.Context> or <ways.finder.Find>):
+             <ways.api.Context> or <ways.finder.Find>):
         *args (list):
-            Positional args to pass to cache.HistoryCache.get_action_names.
+            Positional args to pass to ways.get_actions_info..
         **kwargs (dict[str]):
-            Keyword args to pass to cache.HistoryCache.get_action_names.
+            Keyword args to pass to ways.get_action_info.
 
     Returns:
         dict[str: <ways.resource.Action> or callable]:
@@ -75,12 +73,12 @@ def trace_actions_table(obj, *args, **kwargs):
 
     '''
     hierarchy = trace_hierarchy(obj)
-    return HISTORY.get_actions_info(hierarchy, *args, **kwargs)
+    return ways.get_actions_info(hierarchy, *args, **kwargs)
 
 
 def trace_all_plugin_results():
-    '''list[dict[str]]: The results of each plugin in the history cache.'''
-    return HISTORY.plugin_load_results
+    '''list[dict[str]]: The results of each plugin's load results.'''
+    return ways.PLUGIN_LOAD_RESULTS
 
 
 def trace_all_plugin_results_info():
@@ -101,7 +99,7 @@ def trace_all_plugin_results_info():
 
     '''
     info = collections.OrderedDict()
-    for result in HISTORY.plugin_load_results:
+    for result in ways.PLUGIN_LOAD_RESULTS:
         info[result['item']] = result
 
     return info
@@ -117,7 +115,7 @@ def trace_context(obj):
         obj: Some Ways object instance.
 
     Returns:
-        <ways.situation.Context> or NoneType: The found Context.
+        <ways.api.Context> or NoneType: The found Context.
 
     '''
     # TODO : Remove this inner import
@@ -128,11 +126,10 @@ def trace_context(obj):
         return obj
 
     # Is it a AssetFinder?
-    # TODO : Change asset to a public attribute
-    # TODO : Also, this dir check is super ghetto. Make this better!
+    # TODO : This dir check is super ghetto. Make this better!
     #
-    if '_finder' in dir(obj):
-        obj = obj._finder
+    if 'finder' in dir(obj):
+        obj = obj.finder
 
     # Try to find the context - assuming obj was finder.Find or an action, etc.
     try:
@@ -152,7 +149,7 @@ def trace_context(obj):
 def trace_assignment(obj):
     '''str: Get the assignment for this object.'''
     try:
-        obj = obj._finder
+        obj = obj.finder
     except AttributeError:
         pass
 
@@ -172,7 +169,7 @@ def trace_hierarchy(obj):
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.situation.Context> or <ways.finder.Find>):
+             <ways.api.Context> or <ways.finder.Find>):
             The object to get the actions of.
 
     Returns:
@@ -246,10 +243,9 @@ def trace_hierarchy(obj):
 
 def get_all_hierarchies():
     '''set[tuple[str]]: The Contexts that have plugins in our environment.'''
-    return set(trace_hierarchy(plug) for plug in HISTORY.plugin_cache.get('all_plugins', []))
+    return set(trace_hierarchy(plug) for plug in ways.PLUGIN_CACHE.get('all_plugins', []))
 
 
 def get_all_assignments():
     '''set[str]: All of the assignments found in our environment.'''
-    return set(trace_assignment(plug) for plug in HISTORY.plugin_cache.get('all_plugins', []))
-
+    return set(trace_assignment(plug) for plug in ways.PLUGIN_CACHE.get('all_plugins', []))

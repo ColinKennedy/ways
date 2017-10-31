@@ -4,13 +4,16 @@
 '''Test Action and Find-related methods and helper functions.'''
 
 # IMPORT STANDARD LIBRARIES
-import textwrap
-import glob
 import os
+import glob
+import textwrap
 
+# IMPORT WAYS LIBRARIES
+import ways.api
+
+# IMPORT LOCAL LIBRARIES
 # IMPORT 'LOCAL' LIBRARIES
 from . import common_test
-import ways.api
 
 
 class CommanderTestCase(common_test.ContextTestCase):
@@ -69,7 +72,6 @@ class CommanderTestCase(common_test.ContextTestCase):
             ''')
 
         self._make_plugin_folder_with_plugin2(contents=contents)
-        context = ways.api.get_context(hierarchy)
 
         info = {
             'JOB': 'asdfds',
@@ -79,7 +81,7 @@ class CommanderTestCase(common_test.ContextTestCase):
         asset = ways.api.get_asset(info, context=hierarchy)
         self.assertTrue(asset.actions.get_foo())
 
-    def test_use_action_from_parent_context(self):
+    def test_use_parent_action(self):
         '''Allow parent Context actions used by child Contexts.'''
         hierarchy = '27ztt/whatever'
         common_test.create_action('get_foo', hierarchy)
@@ -100,7 +102,6 @@ class CommanderTestCase(common_test.ContextTestCase):
             ''')
 
         self._make_plugin_folder_with_plugin2(contents=contents)
-        context = ways.api.get_context(hierarchy)
 
         info = {
             'JOB': 'asdfds',
@@ -110,7 +111,7 @@ class CommanderTestCase(common_test.ContextTestCase):
         asset = ways.api.get_asset(info, context=hierarchy)
         self.assertTrue(asset.actions.get_foo())
 
-    def test_add_command_to_context(self):
+    def test_add_action(self):
         '''Add an Action object to an existing Context.'''
         class SomeAction(ways.api.Action):
 
@@ -175,7 +176,7 @@ class CommanderTestCase(common_test.ContextTestCase):
         self.assertNotEqual(action, None)
         self.assertEqual(action(), expected_asset_files)
 
-    def test_add_command_function_to_context(self):
+    def test_add_function_to_context(self):
         '''Create a fake-action using just a simple function.'''
         hierarchy = '27ztt/whatever'
 
@@ -244,7 +245,7 @@ class FindCommanderTestCase(common_test.ContextTestCase):
 
     def test_wrap_command_with_find(self):
         '''Call Action objects using a basic Find class.'''
-        class SomeAssetAction(ways.api.Action):
+        class SomeAssetAction(ways.api.Action):  # pylint: disable=unused-variable
 
             '''Some example asset action.'''
 
@@ -268,16 +269,10 @@ class FindCommanderTestCase(common_test.ContextTestCase):
         # Build our context file and an action to go with it
         contents = textwrap.dedent(
             '''
-            globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
-                    uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
 
@@ -309,7 +304,7 @@ class FindCommanderTestCase(common_test.ContextTestCase):
         find = ways.api.Find(context)
         self.assertEqual(find.get_assets(), expected_asset_files)
 
-    def test_wrap_command_with_find_command_not_found(self):
+    def test_action_not_found(self):
         '''Test to make sure that Actions that are not found return None.'''
         contents = textwrap.dedent(
             '''
@@ -334,7 +329,7 @@ class FindCommanderTestCase(common_test.ContextTestCase):
         with self.assertRaises(AttributeError):
             find.get_people_in(place='zimbabwe')
 
-    def test_wrap_command_with_find_command_not_found_with_default(self):
+    def test_find_action_default(self):
         '''Return default values for Action methods that Find knows about.'''
         # Build our context file and an action to go with it
         contents = textwrap.dedent(
@@ -361,7 +356,3 @@ class FindCommanderTestCase(common_test.ContextTestCase):
 
         with self.assertRaises(AttributeError):
             find.get_assets()
-
-    # def test_wrap_command_with_find_command_not_found_with_auto_default(self):
-    #     pass
-

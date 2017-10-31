@@ -4,19 +4,14 @@
 '''A module that holds ContextParser - A class fills in Context's mapping.'''
 
 # IMPORT STANDARD LIBRARIES
-import collections
-import functools
-import itertools
 import os
 import re
-
-# IMPORT THIRD-PARTY LIBRARIES
-import six
+import itertools
+import collections
 
 # IMPORT LOCAL LIBRARIES
-from .core import check
 from . import engine
-
+from .core import check
 
 ENCLOSURE_TOKEN_REGEX = r'(\{[^\{\}]+\})'
 TOKEN_REGEX = r'\{([^\{\}]+)\}'
@@ -48,13 +43,30 @@ class ContextParser(object):
         self.context = context
         self._data = dict()
 
-    def is_valid(self, key, value, resolve_with='regex'):
+    def is_valid(self, token, value, resolve_with='regex'):
+        '''Check if a given value will work for some Ways token.
+
+        Args:
+            token (str):
+                The token to use to check against the given value.
+            value:
+                The object to check for validity.
+            resolve_with (:obj:`str`, optional):
+                The parse type to use to check if value is valid for token.
+                Currently, only 'regex' is supported. Default: 'regex'.
+
+        Returns:
+            bool:
+                If the given value was valid.
+
+        '''
+        # TODO : factor out using engine.py
         if resolve_with != 'regex':
             raise NotImplementedError('This is not supported yet')
 
         mapping_details = self.get_all_mapping_details()
         try:
-            info = mapping_details[key]
+            info = mapping_details[token]
         except KeyError:
             return False
 
@@ -65,6 +77,7 @@ class ContextParser(object):
 
         return re.match(expression, value) is not None
 
+    # pylint: disable=too-many-arguments
     @classmethod
     def resolve_with_tokens(cls, mapping, tokens, details, options, groups, display_tokens):
         '''Substitute tokens in our mapping for anything that we can find.
@@ -87,6 +100,9 @@ class ContextParser(object):
             str: The resolved mapping.
 
         '''
+        # TODO : Factor out display_tokens once this module is completely
+        #        refactored to not require/expect regex input
+        #
         def make_value(token, value):
             '''Wrap the output value with a regex token group, if needed.'''
             if display_tokens:
@@ -256,7 +272,7 @@ class ContextParser(object):
             pass
 
         try:
-            mapping = details[name]['mapping']
+            details[name]['mapping']
         except KeyError:
             # If we don't have a mapping for this token, there's nothing
             # more that we can do
@@ -265,6 +281,7 @@ class ContextParser(object):
 
         return engine.get_token_parse(name, self, parse_type)
 
+    # pylint: disable=too-many-arguments
     def get_str(self, resolve_with='',
                 depth=-1, holdout=None, groups=None, display_tokens=False):
         r'''Create a string representation of the Context's mapping.
@@ -448,6 +465,7 @@ def expand_mapping(mapping, details):
         mapping (str): The mapping to expand.
         details (dict[str]): The information about the mapping that will be used
                              to expand it.
+
     Returns:
         str: The expanded mapping.
 
@@ -469,4 +487,3 @@ def expand_mapping(mapping, details):
         if inner_mapping != token:
             expand_mapping(mapping, details)
     return mapping
-

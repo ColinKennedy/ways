@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# IMPORT STANDARD LIBRARIES
-import textwrap
-import os
+'''Test the different ways that Context and Plugin objects merge together.'''
 
-# IMPORT 'LOCAL' LIBRARIES
-from . import common_test
+# IMPORT STANDARD LIBRARIES
+import os
+import textwrap
+
+# IMPORT WAYS LIBRARIES
 import ways.api
+
+# IMPORT LOCAL LIBRARIES
+from . import common_test
 
 
 class ContextMergeTestCase(common_test.ContextTestCase):
@@ -37,7 +41,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('some/hierarchy')
         self.assertEqual(context, None)
 
-    def test_merge_context_to_another_context(self):
+    def test_merge_contexts(self):
         '''Add a Context object into another Context object.
 
         This test is actually testing a lot at once and probably could be
@@ -172,12 +176,12 @@ class ContextMergeTestCase(common_test.ContextTestCase):
             },
             'JOB_NAME': {
                 'parse': {
-                    'regex': '\w+',
+                    'regex': r'\w+',
                 },
             },
             'JOB_ID': {
                 'parse': {
-                    'regex': '\d+',
+                    'regex': r'\d+',
                 },
             },
         }
@@ -190,7 +194,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         self.assertEqual(expected_animation_max_folder,
                          animation_context.get_max_folder())
 
-    def test_001_merge_context_to_another_context_fail_bad_maps(self):
+    def test_001_merge_fail_bad_maps(self):
         '''Two Context objects that have conflicting maps should not merge.'''
         contents = textwrap.dedent(
             r'''
@@ -243,6 +247,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         mocap_context = ways.api.get_context('maya_project/mocap/something')
         self.assertEqual(mocap_context, None)
 
+    # pylint: disable=invalid-name
     def test_merge_context_self_referring_context_fail(self):
         '''Keep a plugin from registering if it 'uses' itself.
 
@@ -272,6 +277,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         mocap_context = ways.api.get_context('mocap')
         self.assertEqual(mocap_context, None)
 
+    # pylint: disable=invalid-name
     def test_merge_context_into_merged_context(self):
         '''Make sure that a Context can merge with another merged Context.'''
         contents = textwrap.dedent(
@@ -339,12 +345,12 @@ class ContextMergeTestCase(common_test.ContextTestCase):
             },
             'JOB_NAME': {
                 'parse': {
-                    'regex': '\w+',
+                    'regex': r'\w+',
                 },
             },
             'JOB_ID': {
                 'parse': {
-                    'regex': '\d+',
+                    'regex': r'\d+',
                 },
             },
         }
@@ -431,6 +437,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('foo/bar')
         self.assertEqual(context.data[key], value)
 
+    # pylint: disable=invalid-name
     def test_relative_plugin_append_from_assignment(self):
         '''Append/Replace a relative plugin even when assignments differ.'''
         key = 'something'
@@ -454,6 +461,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('foo/bar')
         self.assertEqual(context.data[key], value)
 
+    # pylint: disable=invalid-name
     def test_relative_plugin_append_from_assignment2(self):
         '''Same as the previous test, but more thorough.'''
         key = 'something'
@@ -483,10 +491,9 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         mapping = '/some/thing/else'
         self.assertEqual(mapping, context.get_mapping())
 
+    # pylint: disable=invalid-name
     def test_relative_plugin_append_from_assignment3(self):
         '''Same as the previous tests, but more thorough.'''
-        key = 'something'
-        value = 'here'
         contents = textwrap.dedent(
             '''
             plugins:
@@ -524,4 +531,3 @@ class ContextMergeTestCase(common_test.ContextTestCase):
 
     #     '''
     #     pass
-

@@ -15,26 +15,27 @@ GitRemoteDescriptor - Get plugin files from an online git repository
 '''
 
 # IMPORT STANDARD LIBRARIES
-import collections
-import functools
-import itertools
+import os
 import copy
 import glob
 import json
-import os
+import tempfile
+import functools
+import itertools
+import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
-from six.moves.urllib import parse
-import yamlordereddictloader
 import six
+import yamlordereddictloader
+# pylint: disable=import-error,ungrouped-imports
+from six.moves.urllib import parse
 
 # IMPORT LOCAL LIBRARIES
-from . import situation as sit
+from . import common
 from . import plugin as plug
+from . import situation as sit
 from . import dict_classes
 from .core import check
-from . import common
-
 
 GLOBALS_KEY = 'globals'
 PLUGIN_INFO_FILE_NAME = '.waypoint_plugin_info'
@@ -87,7 +88,10 @@ class FileDescriptor(object):
 
     def _get_files(self, items):
         '''list[str]: Get all supported Plugin files.'''
-        return list(self.filter_plugin_files(self.items))
+        if not items:
+            items = self.items
+
+        return list(self.filter_plugin_files(items))
 
     @classmethod
     def get_supported_extensions(cls):
@@ -131,9 +135,6 @@ class FileDescriptor(object):
 
         plugins = []
 
-        duplicate_uses_message = 'Plugin: "{plug}" has duplicate hierarchies ' \
-                                 'in uses, "{uses}". Remove all duplicates.'
-
         # Turn files into gold - Plugin gold!
         for file_ in files:
             data = try_load(file_)
@@ -155,7 +156,7 @@ class FileDescriptor(object):
             plugin_assignment_ = data.get('globals', dict()).get('assignment', assignment)
 
             # Iterate over the plugins found in the Plugin Sheet
-            for plugin, info in data['plugins'].items():
+            for plugin, info in six.iteritems(data['plugins']):
                 self._conform_plugin_info(info)
 
                 # If the plugin has a specific assignment given, use that,
@@ -167,48 +168,86 @@ class FileDescriptor(object):
                 else:
                     plugin_assignment = plugin_assignment_
 
-                # There are two types of Context-Plugins, absolute and relative
-                # If a plugin has 'uses' defined, that plugin is relative
-                # because it needs another plugin/Context to function.
-                #
-                # We use all Context hierarchies defined in 'uses' to create
-                # absolute plugins from each relative plugin
-                #
-                uses_hierarchies = info.get('uses', [])
+                plugins.extend(self._build_plugins(file_, plugin, info, plugin_assignment))
 
-                # TODO : has_duplicate_hierarchies stops bugs from occurring
-                #        if a user wrote a plugin that has duplicate items in
-                #        'uses'. This could even just be a copy/paste error
-                #        and basically should never be intentional
-                #
-                #        That said, just raising an error is really bad. We
-                #        should just "continue" and log the failure so that
-                #        a user can look it up, later
-                #
-                # TODOID: 751 (search for related sections with this ID)
-                #
-                if uses_hierarchies:
-                    duplicates = _get_duplicates(uses_hierarchies)
-                    if duplicates:
-                        raise ValueError(duplicate_uses_message.format(
-                            plug=plugin, uses=duplicates))
+        return plugins
 
-                    for hierarchy in uses_hierarchies:
-                        if is_valid_plugin(hierarchy, info):
-                            continue
+    @classmethod
+    def _build_plugins(cls, source, plugin, info, assignment):
+        '''Create a Plugin or multiple Plugin objects.
 
-                        context = sit.get_context(
-                            hierarchy, assignment=plugin_assignment, force=True)
-                        info_ = self._make_relative_context_absolute(info, parent=context)
-                        plugin_data = dict_classes.ReadOnlyDict(info_)
-                        plugin = plug.DataPlugin(
-                            sources=(file_, ), info=plugin_data, assignment=plugin_assignment)
-                        plugins.append((plugin, plugin_assignment))
-                else:
-                    plugin_data = dict_classes.ReadOnlyDict(info)
-                    plugin = plug.DataPlugin(
-                        sources=(file_, ), info=plugin_data, assignment=plugin_assignment)
-                    plugins.append((plugin, plugin_assignment))
+        This method is a companion to get_plugins and basically just exists
+        to make it get_plugins more readable.
+
+        Args:
+            source (str):
+                The location to a file on disk that defined plugin.
+            plugin (str):
+                The key that was used in the Plugin Sheet file where the plugin
+                was defined.
+            info (dict[str]):
+                Any data about the plugin to include when the Plugin initializes.
+                In particular, "uses" is retrieved to figure out if plugin is
+                an absolute or relative plugin.
+            assignment (str):
+                The placement that this Plugin will go into.
+
+        Returns:
+            list[<ways.api.DataPlugin>]:
+                Generated plugins. One Plugin object
+                if info.get('uses', []) is empty or several, depending on the
+                length of the list of values that 'uses' returns.
+
+        '''
+        duplicate_uses_message = 'Plugin: "{plug}" has duplicate hierarchies ' \
+                                 'in uses, "{uses}". Remove all duplicates.'
+
+        plugins = []
+        # There are two types of Context-Plugins, absolute and relative
+        # If a plugin has 'uses' defined, that plugin is relative
+        # because it needs another plugin/Context to function.
+        #
+        # We use all Context hierarchies defined in 'uses' to create
+        # absolute plugins from each relative plugin
+        #
+        uses = info.get('uses', [])
+        if uses:
+            duplicates = _get_duplicates(uses)
+
+            # TODO : "if duplicates:" stops bugs from occurring
+            #        if a user wrote a plugin that has duplicate items in
+            #        'uses'. This could even just be a copy/paste error
+            #        and basically should never be intentional
+            #
+            #        That said, just raising an error is really bad. We
+            #        should just "continue" and log the failure so that
+            #        a user can look it up, later
+            #
+            # TODOID: 751 (search for related sections with this ID)
+            #
+            if duplicates:
+                raise ValueError(duplicate_uses_message.format(
+                    plug=plugin, uses=duplicates))
+
+            for hierarchy in uses:
+                if is_valid_plugin(hierarchy, info):
+                    continue
+
+                context = sit.get_context(
+                    hierarchy, assignment=assignment, force=True)
+                info_ = cls._make_relative_context_absolute(info, parent=context)
+
+                plugin = plug.DataPlugin(
+                    sources=(source, ),
+                    info=dict_classes.ReadOnlyDict(info_),
+                    assignment=assignment)
+                plugins.append((plugin, assignment))
+        else:
+            plugin = plug.DataPlugin(
+                sources=(source, ),
+                info=dict_classes.ReadOnlyDict(info),
+                assignment=assignment)
+            plugins.append((plugin, assignment))
 
         return plugins
 
@@ -303,6 +342,7 @@ class FileDescriptor(object):
         return data
 
     def __eq__(self, other):
+        '''Check if every path in this object exists in another Descriptor.'''
         return self.items == other.items
 
 
@@ -408,7 +448,29 @@ class GitLocalDescriptor(FolderDescriptor):
 
 
 class GitRemoteDescriptor(GitLocalDescriptor):
+
+    '''A Descriptor that clones an online Git repository.'''
+
     def __init__(self, url, items, path='', branch='master'):
+        '''Clone the repository locally and read its contents for plugins.
+
+        Args:
+            url (str):
+                The absolute URL to some git repository local/remote repo.
+            items (list[str]):
+                The paths to search for plugin files. These items can be
+                absolute paths or paths that are relative to the cloned repo.
+            path (:obj:`str`, optional):
+                The location to clone this repository into.
+                If the directory exists, it's assumed that this repository
+                was already cloned to the location and its contents are read
+                directly. If it does not exist, the repo is cloned there.
+                If no path is given, a temporary directory is used.
+            branch (:obj:`str`, optional):
+                The branch in this repository to checkout and use.
+                Default: 'master'.
+
+        '''
         # We do an inner import here for Python 3.3 - Because it looks like
         # GitPython isn't supported for that Python version
         # (pip install GitPython failed when I tried it)
@@ -491,6 +553,17 @@ def get_loaders():
         dict[str]: The installed loaders.
 
     '''
+    def load_hook(info):
+        '''Modify some loaded data after information has been loaded.
+
+        This function is used specifically for use_yaml and use_json,
+        to make sure that certain loaded keys come in as certain object types.
+
+        '''
+        if 'groups' in info:
+            info['groups'] = tuple(info['groups'])
+        return info
+
     def use_yaml():
         '''Try to load a description for YAML.'''
         extensions = ('.yml', '.yaml')
@@ -505,6 +578,19 @@ def get_loaders():
             return dict()
 
         def load_wrap(file_path, func, after):
+            '''Load a file using func and then run another function after load.
+
+            Args:
+                file_path (str): The absolute path to a file to load.
+                func (callable[str]): The loader function to run
+                                      (yaml.safe_load/json.load/etc)
+                after (callable[str]): The function to load after file_path
+                                       has been deserialized.
+
+            Returns:
+                The loaded information from func.
+
+            '''
             value = func(file_path)
             after(value)
             return value
@@ -560,7 +646,7 @@ def get_loaders():
     return output_dict
 
 
-def try_load(path, default=None, safe=False):
+def try_load(path, default=None):
     '''Try our best to load the given file, using a number of different methods.
 
     The path is assumed to be a file that is serialized, like JSON or YAML.
@@ -571,17 +657,17 @@ def try_load(path, default=None, safe=False):
         default (:obj:`dict`, optional):
             The information to return back if no data could be found.
             Default is an empty dict.
-        safe (:obj:`bool`, optional):
-            Some functions can be potentially unsafe. Set this option to True
-            if you want to make sure that no arbitrary code can be executed
-            when a file is loaded. Default is False.
 
     Returns:
         dict: The information stored on this object.
 
     '''
-    def not_found_raise_error(*args, **kwargs):
-        '''Just a generic function that will return an error.'''
+    def not_found_raise_error(*args, **kwargs):  # pylint: disable=unused-argument
+        '''Just a generic function that will raise an error.
+
+        This function is never run unless no loader was found for the given path.
+
+        '''
         raise ValueError('This exception is just a placeholder')
 
     if default is None:
@@ -612,7 +698,7 @@ def try_load(path, default=None, safe=False):
         try:
             with open(path, 'r') as file_:
                 return loader_option(file_)
-        except known_loader_exceptions:
+        except known_loader_exceptions:  # pylint: disable=catching-non-exception
             pass
 
     return default
@@ -655,16 +741,19 @@ def serialize(obj):
         str: The output encoding.
 
     '''
-    return parse.urlencode(obj, doseq=True)
-
-
-def load_hook(info):
-    if 'groups' in info:
-        info['groups'] = tuple(info['groups'])
-    return info
+    # pylint: disable=redundant-keyword-arg
+    return parse.urlencode(obj, True)
 
 
 def conform_decode(info):
+    '''Make sure that 'create_using' returns a single string.
+
+    This function is a hacky solution because I don't understand why,
+    for some reason, decoding will decode a string as a list.
+
+    TODO: Remove this awful function.
+
+    '''
     output = dict(info)
     try:
         value = output['create_using']
@@ -675,4 +764,3 @@ def conform_decode(info):
             output['create_using'] = value[0]
 
     return output
-
