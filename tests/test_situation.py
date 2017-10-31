@@ -1,63 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''Test Context-related methods and bugs.
+
+Many other modules have tests that relate to or heavily-rely on Context objects
+but this module is here to test to make sure that Context objects will
+behave properly in other test modules.
+
+'''
+
 # IMPORT STANDARD LIBRARIES
 import tempfile
 import textwrap
-import unittest
 import os
 
-# IMPORT LOCAL LIBRARIES
-from ways import common
-from . import common_test
+# IMPORT THIRD-PARTY LIBRARIES
 import ways.api
 
-
-class ContextAttributeTestCase(common_test.ContextTestCase):
-    def test_get_plugins_in_platform(self):
-        '''Only get back plugin objects that are OK for the current platform.'''
-        common_test.create_plugin(hierarchy=('maya', 'exports'), platforms='linux')
-        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='linux')
-        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='*')
-        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='windows')
-
-        context = ways.api.get_context('maya/exports/thing')
-
-        expected_number_of_plugins = len(
-            self.cache.plugin_cache['hierarchy'][('maya', 'exports', 'thing')]['master'])
-        expected_number_of_plugins += len(
-            self.cache.plugin_cache['hierarchy'][('maya', 'exports')]['master'])
-
-        self.assertEqual(expected_number_of_plugins, 4)
-        # This context should be missing at least one plugin
-        self.assertTrue(len(context.plugins) != expected_number_of_plugins)
-
-    def test_get_plugins_in_defined_platform(self):
-        common_test.create_plugin(hierarchy=('maya', 'exports'), platforms='linux')
-        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='linux')
-        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='windows')
-        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='windows')
-
-        context = ways.api.get_context('maya/exports/thing')
-
-        expected_number_of_plugins = len(
-            self.cache.plugin_cache['hierarchy'][('maya', 'exports', 'thing')]['master'])
-        expected_number_of_plugins += len(
-            self.cache.plugin_cache['hierarchy'][('maya', 'exports')]['master'])
-
-        self.assertEqual(expected_number_of_plugins, 4)
-        # This context should be missing at least one plugin
-        self.assertEqual(len(context.plugins), 2)
-
-    def test_bad_platform(self):
-        '''Simulate when a user gives a bad value to PLATFORM_ENV_VAR.'''
-        common_test.create_plugin(hierarchy=('maya', 'exports'), platforms='*')
-        os.environ[ways.api.PLATFORM_ENV_VAR] = '<bad_platform_name_here>'
-
-        context = ways.api.get_context('maya/exports')
-
-        with self.assertRaises(OSError):
-            context.validate_plugin('asfdas')
+# IMPORT LOCAL LIBRARIES
+from . import common_test
 
 
 class ContextAliasTestCase(common_test.ContextTestCase):
@@ -116,6 +77,9 @@ class ContextAliasTestCase(common_test.ContextTestCase):
 
 
 class ContextCreateTestCase(common_test.ContextTestCase):
+
+    '''Make sure that Context objects are created properly.'''
+
     def test_context_set_metadata(self):
         '''Set the metadata on a context and spread its settings to others.'''
         data = {'css': {'background-color': 'red'}}
@@ -153,12 +117,12 @@ class ContextCreateTestCase(common_test.ContextTestCase):
 
         self.assertNotEqual(context.data['css']['background-color'], 'white')
 
-    def test_context_fails_because_of_bad_hierarchy(self):
+    def test_fails_from_bad_hierarchy(self):
         '''Fail to create a Context because bad characters were given.'''
         common_test.create_plugin(hierarchy=('s^ome', 'context'))
 
         with self.assertRaises(ValueError):
-            context1 = ways.api.get_context('s^ome/context')
+            ways.api.get_context('s^ome/context')
 
 #     def test_context_checkout_override_all2(self):
 #         context = ways.api.Context('/some/context')
@@ -180,7 +144,8 @@ class ContextCreateTestCase(common_test.ContextTestCase):
 #         self.assertNotEqual(context.data['metadata']['background-color'], 'white')
 #         self.assertEqual(context.data['metadata']['background-color'], 'white')
 
-    def test_assignment_from_config_file(self):
+    def test_assignment_from_config(self):
+        '''Add assignment to Plugin Sheets using a Ways-supported config file.'''
         assignment = 'job'
         config = textwrap.dedent(
             '''
@@ -213,7 +178,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
 
         self.assertEqual(assignment, context.assignment)
 
-    def test_assignment_from_config_file_recursive(self):
+    def test_recursive_config_assignment(self):
         '''Get plugins (and assignment info) from a folder recursively.'''
         assignment = 'job'
         config = textwrap.dedent(
@@ -251,6 +216,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
         self.assertEqual(assignment, context.assignment)
 
     def test_assignment_from_file(self):
+        '''Add an assignment to all plugins in a Plugin Sheet, using globals.'''
         assignment = 'job'
         contents = textwrap.dedent(
             '''
@@ -269,6 +235,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
         self.assertEqual(assignment, context.assignment)
 
     def test_assignment_from_plugin(self):
+        '''Add an assignment to an individual plugin, inside a Plugin Sheet.'''
         assignment = 'job'
         contents = textwrap.dedent(
             '''
@@ -396,6 +363,59 @@ class ContextMethodTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('foo')
         self.assertEqual(('*', ), context.get_platforms())
 
+    def test_get_plugins_in_platform(self):
+        '''Only get back plugin objects that are OK for the current platform.'''
+        common_test.create_plugin(hierarchy=('maya', 'exports'), platforms='linux')
+        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='linux')
+        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='*')
+        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='windows')
+
+        context = ways.api.get_context('maya/exports/thing')
+
+        expected_number_of_plugins = len(
+            self.cache.plugin_cache['hierarchy'][('maya', 'exports', 'thing')]['master'])
+        expected_number_of_plugins += len(
+            self.cache.plugin_cache['hierarchy'][('maya', 'exports')]['master'])
+
+        self.assertEqual(expected_number_of_plugins, 4)
+        # This context should be missing at least one plugin
+        self.assertTrue(len(context.plugins) != expected_number_of_plugins)
+
+    def test_get_plugins_with_platform(self):
+        '''Test a number of plugins that use incompatible platforms with this OS.
+
+        The idea is there are two plugins for Windows and two plugins for Linux.
+        Not matter which OS this test is run in, the result should always be
+        two plugins back.
+
+        '''
+        common_test.create_plugin(hierarchy=('maya', 'exports'), platforms='linux')
+        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='linux')
+        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='windows')
+        common_test.create_plugin(hierarchy=('maya', 'exports', 'thing'), platforms='windows')
+
+        context = ways.api.get_context('maya/exports/thing')
+
+        expected_number_of_plugins = len(
+            self.cache.plugin_cache['hierarchy'][('maya', 'exports', 'thing')]['master'])
+        expected_number_of_plugins += len(
+            self.cache.plugin_cache['hierarchy'][('maya', 'exports')]['master'])
+
+        self.assertEqual(expected_number_of_plugins, 4)
+        # This context should be missing at least one plugin
+        self.assertEqual(len(context.plugins), 2)
+
+    def test_bad_platform(self):
+        '''Simulate when a user gives a bad value to PLATFORM_ENV_VAR.'''
+        common_test.create_plugin(hierarchy=('maya', 'exports'), platforms='*')
+        os.environ[ways.api.PLATFORM_ENV_VAR] = '<bad_platform_name_here>'
+
+        context = ways.api.get_context('maya/exports')
+
+        with self.assertRaises(OSError):
+            context.validate_plugin('asfdas')
+
+
 
 class ContextInheritanceTestCase(common_test.ContextTestCase):
 
@@ -418,6 +438,7 @@ class ContextInheritanceTestCase(common_test.ContextTestCase):
 
 
 def get_generic_job_config():
+    '''str: Make a job YAML config file to use for tests in this module.'''
     return textwrap.dedent(
         r'''
         globals: {}

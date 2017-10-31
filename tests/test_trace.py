@@ -13,14 +13,14 @@ whatever other purpose). Or some other reportive info that we want to know.
 # IMPORT STANDARD LIBRARIES
 import tempfile
 import textwrap
-import random
-import string
 import os
+
+# IMPORT THIRD-PARTY LIBRARIES
+import ways.api
 
 # IMPORT 'LOCAL' LIBRARIES
 from ways import common
 from . import common_test
-import ways.api
 
 
 # TODO : The types of plugin-trace tests that we need to make sure works
@@ -266,7 +266,7 @@ class FailureTestCase(common_test.ContextTestCase):
 
     '''Test the different ways that Plugins and Descriptors can fail to load.'''
 
-    def test_trace_bad_plugin_module_import_failure(self):
+    def test_module_import_failure(self):
         '''Capture a failed plugin that couldn't be imported by Python.'''
         name = 'something_foo'
         hierarchy = ('foo', 'bar')
@@ -309,7 +309,7 @@ class FailureTestCase(common_test.ContextTestCase):
         self.assertEqual(info.get('status'), common.FAILURE_KEY)
         self.assertEqual(info.get('reason'), common.IMPORT_FAILURE_KEY)
 
-    def test_trace_bad_plugin_module_load_failure(self):
+    def test_module_load_failure(self):
         '''Capture a failed plugin that couldn't be loaded by Python.
 
         This happens when the file that this plugin was defined in could be

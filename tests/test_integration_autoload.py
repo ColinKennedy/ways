@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''Ways uses a few techniques to automatically load its objects.
+
+Plugin Sheets, Desctiptors, and Python plugin files all have different ways
+of being added to the Ways cache so we'll test these methods, in this module.
+
+'''
+
 # IMPORT STANDARD LIBRARIES
 import tempfile
 import textwrap
@@ -216,12 +223,10 @@ class AutoloadTestCase(common_test.ContextTestCase):
     #                 uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
     #         ''')
 
-
-    #     # plugin_file = common_test.make_plugin_folder_with_plugin(
+    #     # plugin_file = common_test.make_folder_plugin(
     #     #     'AnotherClass', contents=contents)
     #     plugin_file = self._make_plugin_folder_with_plugin2(
     #         contents=contents, ending='.json')
-
 
     #     # Add the path to our env var
     #     plugin_env_var = 'WAYS_DESCRIPTORS'

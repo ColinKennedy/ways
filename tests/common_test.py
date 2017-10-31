@@ -1,26 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''Generic classes and functions to reuse for the Ways test suite.'''
+
 # IMPORT STANDARD LIBRARIES
 import unittest
 import tempfile
-import random
 import shutil
-import string
 import json
-import yaml
 import sys
 import os
-
-# IMPORT THIRD-PARTY LIBRARIES
-import six
 
 # IMPORT 'LOCAL' LIBRARIES
 from ways import situation as sit
 from ways import common
 from ways import cache
 import ways.api
-
 
 
 _SYS_PATH = list(sys.path)
@@ -48,10 +43,13 @@ class ContextTestCase(unittest.TestCase):
             ending='.yml',
             folder='',
             register=True):
+        '''Create a Plugin Sheet using some folder and register it to Ways.'''
+        import yaml
+
         if contents is not None:
             contents = yaml.load(contents)
 
-        plugin_file = make_plugin_folder_with_plugin(
+        plugin_file = make_folder_plugin(
             contents=contents, ending=ending, folder=folder)
         self.temp_paths.append(os.path.dirname(plugin_file))
 
@@ -65,11 +63,18 @@ class ContextTestCase(unittest.TestCase):
             contents=None,
             ending='.yml',
             folder=''):
-        plugin_file = make_plugin_folder_with_plugin(contents=contents, ending=ending, folder=folder)
+        '''Create a Plugin Sheet using some folder and register it to Ways.
+
+        Note:
+            DEPRECATED.
+
+        '''
+        plugin_file = make_folder_plugin(contents=contents, ending=ending, folder=folder)
         self.temp_paths.append(os.path.dirname(plugin_file))
         return plugin_file
 
     def tearDown(self):
+        '''Reset any changes made to our environment during test runs.'''
         del sys.path[:]
         sys.path.extend(_SYS_PATH)
 
@@ -120,28 +125,28 @@ def make_plugin_folder_with_plugin_load(
     return plugin_file
 
 
-def make_plugin_folder_with_plugin_yaml(contents=None, folder=''):
+def make_folder_plugin_yaml(contents=None, folder=''):
     '''str: Make a folder and put a plugin inside of it.'''
     # We import yaml in this function so that, just in case the user doesn't
     # have pyyaml installed, we can minimize the number of unittests effected
     #
     import yaml
-    return make_plugin_folder_with_plugin_load(func=yaml.dump, ending='.yml', contents=contents, folder=folder)
+    return make_plugin_folder_with_plugin_load(
+        func=yaml.dump, ending='.yml', contents=contents, folder=folder)
 
 
-def make_plugin_folder_with_plugin_json(contents=None, folder=''):
+def make_folder_plugin_json(contents=None, folder=''):
     '''str: Make a folder and put a plugin inside of it.'''
-    return make_plugin_folder_with_plugin_load(func=json.dump, ending='.json', contents=contents, folder=folder)
+    return make_plugin_folder_with_plugin_load(
+        func=json.dump, ending='.json', contents=contents, folder=folder)
 
 
-def make_plugin_folder_with_plugin(ending='.yml', contents=None, folder=''):
+def make_folder_plugin(ending='.yml', contents=None, folder=''):
     '''str: Make a folder and put a plugin inside of it.'''
     if ending in ['.yml', '.yaml']:
-        return make_plugin_folder_with_plugin_yaml(
-            contents=contents, folder=folder)
+        return make_folder_plugin_yaml(contents=contents, folder=folder)
     elif ending == '.json':
-        return make_plugin_folder_with_plugin_json(
-            contents=contents, folder=folder)
+        return make_folder_plugin_json(contents=contents, folder=folder)
 
 
 def create_action(text, hierarchy=('a', )):
@@ -174,6 +179,8 @@ def create_plugin(hierarchy=('a', ), assignment=common.DEFAULT_ASSIGNMENT, platf
     # pylint: disable=W0612
     class PluginObj(ways.api.Plugin):
 
+        '''A generic Plugin.'''
+
         _data = data
 
         @classmethod
@@ -186,7 +193,9 @@ def create_plugin(hierarchy=('a', ), assignment=common.DEFAULT_ASSIGNMENT, platf
             '''tuple[str]: The hierarchies.'''
             return hierarchy
 
-        def get_platforms(self):
+        @classmethod
+        def get_platforms(cls):
+            '''The platforms.'''
             return platforms
 
     return PluginObj

@@ -170,26 +170,3 @@ def get_intersection_priority(plugins, method):
         intersection = grouping.get_ordered_intersection(intersection, group)
     return intersection
 
-
-def resolve_max_folder(renditions):
-    '''Determine the max parent folder the given renditions can move to, if any.
-
-    The way this function works is that, if two rendition objects are combined,
-    depending on the way they are positioned and mapped, the max folder will
-    be modified.
-
-    Args:
-        renditions (RenditionAbstractInterface): The renditions to get the
-            max navigation folder option of.
-
-    Returns:
-        int: The combined max folder.
-
-    '''
-    pass
-
-
-def pass_through_function(value):
-    '''A function that does nothing but returns value.'''
-    return value
-

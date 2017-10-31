@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# pylint: disable=invalid-name
 '''Test the basic methods of the Asset class, in a variety of Contexts.'''
 
 # IMPORT STANDARD LIBRARIES
@@ -105,6 +106,9 @@ class AssetCreateTestCase(common_test.ContextTestCase):
 
 
 class AssetMethodTestCase(common_test.ContextTestCase):
+
+    '''Test the methods on a ways.api.Asset object.'''
+
     def test_asset_get_missing_required_tokens(self):
         '''Find the tokens that are needed by a Asset/Context.'''
         contents = {
@@ -310,7 +314,8 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
         shot_id = '010'
         shot_prefix = 'SHOT'
-        asset = ways.api.get_asset({'SHOT_PREFIX': shot_prefix, 'SHOT_ID': shot_id}, context='a/context')
+        asset = ways.api.get_asset(
+            {'SHOT_PREFIX': shot_prefix, 'SHOT_ID': shot_id}, context='a/context')
         value = asset.get_value('SHOT_NAME')
         self.assertEqual(value, shot_prefix + '_' + shot_id)
 
@@ -406,14 +411,15 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
         shot_id = '010'
         shot_prefix = 'SHOT.t'
-        asset = ways.api.get_asset({'SHOT_PREFIX': shot_prefix, 'SHOT_ID': shot_id}, context='a/context')
+        asset = ways.api.get_asset(
+            {'SHOT_PREFIX': shot_prefix, 'SHOT_ID': shot_id}, context='a/context')
         value = asset.get_value('SHOT_NAME')
         self.assertEqual(value, shot_prefix + '_' + shot_id)
 
     def test_find_token_parse(self):
         '''Test for when a token has no parse type but has a mapping which does.'''
         contents = textwrap.dedent(
-            '''
+            r'''
             globals: {}
             plugins:
                 a_parse_plugin:
@@ -519,6 +525,8 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
         '''
         class JobSceneShotPlugin(ways.api.Action):
+
+            '''A generic Action that returns Asset objects.'''
 
             name = 'get_shots'
 
@@ -713,15 +721,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
     def test_register_and_create_a_custom_asset(self):
         '''Return back some class other than a default Asset class.'''
-        class SomeNewAssetClass(object):
-
-            '''Some class that will take the place of our Asset.'''
-
-            def __init__(self, info, context):
-                '''Create the object.'''
-                super(SomeNewAssetClass, self).__init__()
-                self.context = context
-
+        asset_class = _get_asset_class()
         contents = textwrap.dedent(
             '''
             globals: {}
@@ -745,7 +745,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         # Register a new class type for our Context
         context = ways.api.get_context('some/thing/context')
-        ways.api.register_asset_info(SomeNewAssetClass, context)
+        ways.api.register_asset_info(asset_class, context)
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context')
@@ -755,18 +755,10 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         self.assertTrue(asset_is_not_default_asset_type)
 
     def test_register_and_create_a_custom_asset_with_init(self):
-        class SomeNewAssetClass(object):
-
-            '''Some class that will take the place of our Asset.'''
-
-            def __init__(self, info):
-                '''Create the object.'''
-                super(SomeNewAssetClass, self).__init__()
-                self.context = context
-
+        asset_class = _get_asset_class()
         def a_custom_init_function(info, context, *args, **kwargs):
             '''Purposefully ignore the context that gets passed.'''
-            return SomeNewAssetClass(info, *args, **kwargs)
+            return asset_class(info, *args, **kwargs)
 
         contents = textwrap.dedent(
             '''
@@ -792,7 +784,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         # Register a new class type for our Context
         context = ways.api.get_context('some/thing/context')
         ways.api.register_asset_info(
-            SomeNewAssetClass, context, init=a_custom_init_function)
+            asset_class, context, init=a_custom_init_function)
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context')
@@ -803,15 +795,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         self.assertTrue(asset_is_not_default_asset_type)
 
     def test_register_and_create_a_custom_asset_with_parent_hierarchy(self):
-        class SomeNewAssetClass(object):
-
-            '''Some class that will take the place of our Asset.'''
-
-            def __init__(self, info, context):
-                '''Create the object.'''
-                super(SomeNewAssetClass, self).__init__()
-                self.context = context
-
+        asset_class = _get_asset_class()
         contents = textwrap.dedent(
             '''
             globals: {}
@@ -842,7 +826,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         asset_is_default_asset_type = isinstance(asset, ways.api.Asset)
 
         # Register a new class type for our Context
-        ways.api.register_asset_info(SomeNewAssetClass, 'some/thing/context', children=True)
+        ways.api.register_asset_info(asset_class, 'some/thing/context', children=True)
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context/inner')
@@ -850,4 +834,17 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         self.assertTrue(asset_is_default_asset_type)
         self.assertTrue(asset_is_not_default_asset_type)
+
+def _get_asset_class():
+    '''Just make a generic asset class.'''
+    class SomeNewAssetClass(object):
+
+        '''Some class that will take the place of our Asset.'''
+
+        def __init__(self, context):
+            '''Create the object.'''
+            super(SomeNewAssetClass, self).__init__()
+            self.context = context
+
+    return SomeNewAssetClass
 

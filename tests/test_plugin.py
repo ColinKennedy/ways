@@ -4,13 +4,14 @@
 '''Build tests for Plugin objects - like how they are made and their methods.'''
 
 # IMPORT STANDARD LIBRARIES
-import tempfile
 import textwrap
 import os
 
-# IMPORT 'LOCAL' LIBRARIES
-from . import common_test
+# IMPORT THIRD-PARTY LIBRARIES
 import ways.api
+
+# IMPORT LOCAL LIBRARIES
+from . import common_test
 
 
 class PluginCreationTestCase(common_test.ContextTestCase):
@@ -69,7 +70,7 @@ class PluginCreationTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('27ztt/whatever')
         self.assertEqual(context.get_hierarchy(), ('27ztt', 'whatever'))
 
-    def test_failed_plugin_duplicate_uses(self):
+    def test_failure_duplicate_uses(self):
         '''When a user has two exact same hierarchies in uses, raise Exception.'''
         contents = textwrap.dedent(
             '''

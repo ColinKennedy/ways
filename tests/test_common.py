@@ -11,7 +11,11 @@ from ways import common
 
 
 class ParseTestCase(unittest.TestCase):
+
+    '''Test generic parsing-related functions.'''
+
     def test_working_0001(self):
+        '''Test that correct input for expand_string works as expected.'''
         pattern = '/jobs/{JOB}/some_kind/{THING}/real_folders'
         text = '/jobs/some_job_here/some_kind/of/real_folders'
 
@@ -19,11 +23,12 @@ class ParseTestCase(unittest.TestCase):
         self.assertEqual(expected_output, common.expand_string(pattern, text))
 
     def test_working_0002(self):
+        '''Test that correct input for expand_string works as expected.'''
         shot = 'NAME_010'
         format_string = '{SHOT}_{ID}'
         expected_output = {'SHOT': 'NAME', 'ID': '010'}
 
-        self.assertEqual(expected_output,  common.expand_string(format_string, shot))
+        self.assertEqual(expected_output, common.expand_string(format_string, shot))
 
     # TODO : collapse these tests, using nose?
     def test_expand_string_failure_0001(self):

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# pylint: disable=protected-access,invalid-name
+
 '''A collection of tests for Ways's documentation.
 
 We make a TestCase per-page and test to make sure that pseudo-code we write
@@ -13,7 +15,6 @@ Also, it lets us copy/paste these files and provide as user-demos
 # IMPORT STANDARD LIBRARIES
 import tempfile
 import textwrap
-import shutil
 import sys
 import os
 
@@ -197,6 +198,13 @@ class GettingStartedTestCase(common_test.ContextTestCase):
 
 
 class DescriptorsTestCase(common_test.ContextTestCase):
+
+    '''A mixed set of Descriptor-related tests.
+
+    This class has no real organization - it's just meant for test coverage.
+
+    '''
+
     def test_descriptor_function_return(self):
         '''Check that our example string creates a proper GitLocalDescriptor.'''
         root = tempfile.mkdtemp()
@@ -206,7 +214,8 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         os.makedirs(resolved_path)
         self.temp_paths.append(resolved_path)
 
-        descriptor = 'path={root}&create_using=ways.api.GitLocalDescriptor&items=plugins'.format(root=root)
+        descriptor = 'path={root}&create_using=ways.api.GitLocalDescriptor&items=plugins' \
+                     ''.format(root=root)
 
         obj = self.cache._resolve_descriptor(descriptor)
         self.assertTrue(isinstance(obj, ways.api.GitLocalDescriptor))
@@ -292,7 +301,8 @@ class DescriptorsTestCase(common_test.ContextTestCase):
             file_.write(contents)
             self.temp_paths.append(path)
 
-        info = 'path={path}&create_using=some_module.some_function&items=plugins'.format(path=path.replace(os.sep, '%2F'))
+        info = 'path={path}&create_using=some_module.some_function&items=plugins' \
+               ''.format(path=path.replace(os.sep, '%2F'))
         os.environ['WAYS_DESCRIPTORS'] = info
         self.cache.init_plugins()
         descriptor = self.cache._resolve_descriptor(info)
@@ -303,7 +313,7 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
 
     '''All tests for the Advanced Context section of Ways's documentation.'''
 
-    def test_absolute_and_relative_plugin(self):
+    def test_plugin_setups(self):
         '''Make sure that a "Hello World" absolute plugin matches relative.
 
         This method relies on Context.as_dict() to work.
@@ -337,7 +347,8 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
 
         self.assertEqual(absolute_info, relative_info)
 
-    def test_recursive_hierarchy_invalid(self):
+    def test_invalid_hierarchy(self):
+        '''A relative plugin cannot refer to its own hierarchy.'''
         contents = textwrap.dedent(
             '''
             plugins:
@@ -474,6 +485,7 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
         self.assertEqual(absolute_info, relative_info)
 
     def test_absolute_and_relative_os_plugins(self):
+        '''An absolute and relative setup that also have specific platforms.'''
         contents = textwrap.dedent(
             r'''
             plugins:
@@ -504,7 +516,7 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
         self.cache.clear()
 
         contents = textwrap.dedent(
-            '''
+            r'''
             plugins:
                 job_root_linux:
                     hierarchy: job
@@ -747,11 +759,13 @@ class CustomDescriptor(object):
 
     '''A Descriptor used for testing.'''
 
-    def get_plugins(self):
+    @classmethod
+    def get_plugins(cls):
         '''A list of plutins that this Descriptor creates and returns.'''
         return [(CustomPlugin(), 'master')]
 
-    def get_plugin_info(self):
+    @classmethod
+    def get_plugin_info(cls):
         '''Get some plugin info.'''
         return {'assignment': 'master', 'foo': 'bar'}
 
@@ -760,11 +774,13 @@ class CustomDescriptor1(object):
 
     '''A Descriptor used for testing.'''
 
-    def get_plugins(self):
+    @classmethod
+    def get_plugins(cls):
         '''A list of plutins that this Descriptor creates and returns.'''
         return [CustomPlugin()]
 
-    def get_plugin_info(self):
+    @classmethod
+    def get_plugin_info(cls):
         '''Get some plugin info.'''
         return {'assignment': 'master', 'foo': 'bar'}
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
+
+'''The main setup function that is used by pypi.'''
+
 from __future__ import absolute_import
 from __future__ import print_function
 
@@ -16,6 +19,7 @@ from setuptools import setup
 
 
 def read(*names, **kwargs):
+    '''Read files in this file's directory.'''
     return io.open(
         join(dirname(__file__), *names),
         encoding=kwargs.get('encoding', 'utf8')

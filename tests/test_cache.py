@@ -1,20 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''Test all things related to the cache.py file.'''
+
 # IMPORT STANDARD LIBRARIES
-import unittest
-import tempfile
 import textwrap
-import shutil
 import json
 import os
 
-# IMPORT 'LOCAL' LIBRARIES
-from . import common_test
+# IMPORT THIRD-PARTY LIBRARIES
 import ways.api
+
+# IMPORT LOCAL LIBRARIES
+from . import common_test
 
 
 class CacheFindPluginTestCase(common_test.ContextTestCase):
+
+    '''Test the different methods that Ways searches for and creates plugins.'''
+
     def test_find_plugin_in_path(self):
         '''Add a plugin file and then read its contents.'''
         plugin_file = self._make_plugin_folder_with_plugin()
@@ -48,6 +52,7 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
     #     self.assertEqual(info['assignment'], assignment)
 
     def test_get_recursive_plugin_true(self):
+        '''Test that Plugin Sheets are found/created recursively.'''
         plugin_file = self._make_plugin_folder_with_plugin()
         plugin_folder = os.path.dirname(plugin_file)
 
@@ -103,6 +108,7 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
     #     pass
 
     def test_cache_clear(self):
+        '''Test that clearing the cache works properly.'''
         common_test.create_plugin(hierarchy=('foo', 'bar'))
 
         had_plugins = bool(self.cache.get_all_plugins())
@@ -111,7 +117,11 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
 
 
 class CacheCreatePlugin(common_test.ContextTestCase):
+
+    '''Test the different ways that the cache creates Plugin objects.'''
+
     def test_add_plugin_to_cache(self):
+        '''Add a generic plugin to the cache.'''
         plugin = common_test.create_plugin(hierarchy=('foo', 'bar'))
 
         found_classes = \
@@ -121,6 +131,7 @@ class CacheCreatePlugin(common_test.ContextTestCase):
         self.assertEqual(found_classes, [plugin])
 
     def test_add_override_plugin(self):
+        '''Add multiple plugins to the same hierarchy in the cache.'''
         plugin1 = common_test.create_plugin(hierarchy=('foo', 'bar'))
         plugin2 = common_test.create_plugin(hierarchy=('foo', 'bar'))
 
@@ -131,6 +142,7 @@ class CacheCreatePlugin(common_test.ContextTestCase):
         self.assertEqual(found_classes, [plugin1, plugin2])
 
     def test_add_non_default_plugin(self):
+        '''Add multiple plugins with different assignments to the cache.'''
         assignment = 'job123'
         plugin = common_test.create_plugin(
             hierarchy=('foo', 'bar'), assignment=assignment)
@@ -384,6 +396,7 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 
 
 def get_example_plugin_file(name='SomePlugin'):
+    '''str: Get the contents for a Plugin object to use for testing.'''
     return textwrap.dedent(
         '''\
         from ways import situation as sit

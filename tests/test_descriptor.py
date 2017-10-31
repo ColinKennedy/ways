@@ -15,14 +15,17 @@ from six.moves.urllib import parse
 import six
 six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
 from six.moves import mock
+import ways.api
 import git
 
-# IMPORT 'LOCAL' LIBRARIES
+# IMPORT LOCAL LIBRARIES
 from . import common_test
-import ways.api
 
 
 class DescriptorContextTestCase(common_test.ContextTestCase):
+
+    '''Test the different ways that Descriptor objects are created and loaded.'''
+
     def _local_git_repository_test(self, delete):
         '''A typing-saver for a few tests in this class.'''
         contents = textwrap.dedent(
@@ -37,11 +40,13 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         git_repository = git.Repo.init(git_repo_location)
 
         # Make a plugin and put it in smoe inner folder
-        plugin_file_path = self._make_plugin_folder_with_plugin2(contents=contents, folder=git_repo_location)
+        plugin_file_path = self._make_plugin_folder_with_plugin2(
+            contents=contents, folder=git_repo_location)
         inner_folder = os.path.join(os.path.dirname(plugin_file_path), 'plugins')
         os.makedirs(inner_folder)
         new_plugin_path = os.path.join(inner_folder, os.path.basename(plugin_file_path))
-        os.rename(plugin_file_path, os.path.join(inner_folder, os.path.basename(plugin_file_path)))
+        os.rename(plugin_file_path,
+                  os.path.join(inner_folder, os.path.basename(plugin_file_path)))
 
         git_repository.index.add([new_plugin_path])
         git_repository.index.commit('Added a plugin file')
@@ -96,12 +101,12 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('ztt/whatever')
         self.assertNotEqual(context, None)
 
-    def test_absolute_items_that_exist(self):
+    def test_exists_absolute_item(self):
         '''Create a local Git repo to absolute folders that exists.'''
         context = self._local_git_repository_test(delete=False)
         self.assertNotEqual(context, None)
 
-    def test_absolute_items_that_does_not_exist(self):
+    def test_not_exists_absolute_items(self):
         '''Create a local Git repo to absolute folders that do not exist.'''
         context = self._local_git_repository_test(delete=True)
         self.assertNotEqual(context, None)
@@ -110,7 +115,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
     #     '''Gather plugins from a local git repository on a non-master branch.'''
 
     @mock.patch('git.Repo.clone_from')
-    def test_add_remote_git_branch_descriptor(self, clone_from_mock):
+    def test_add_remote_git(self, clone_from_mock):
         '''Check that we can pull git plugins from an online repository.'''
         clone_from_mock.return_value = None
 
@@ -161,7 +166,8 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('ztt/whatever')
         self.assertNotEqual(context, None)
 
-    def test_add_descriptor_without_an_explicit_class(self):
+    def test_no_explicit_class(self):
+        '''Adding a Descriptor without specifying 'create_using' should fail.'''
         contents = textwrap.dedent(
             '''
             plugins:
@@ -182,14 +188,14 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('ztt/whatever')
         self.assertNotEqual(context, None)
 
-    def test_add_descriptor_with_an_explicit_class(self):
-        # '''
+    def test_with_explicit_class(self):
+        '''A generic Descriptor with 'create_using' defined should succeed.
 
-        # Note:
-        #     {'create_using': 'ways.api.FolderDescriptor'} is the default
-        #     class so you don't need to actually include it.
+        Note:
+            {'create_using': 'ways.api.FolderDescriptor'} is the default
+            class so you don't need to actually include it.
 
-        # '''
+        '''
         contents = textwrap.dedent(
             '''
             plugins:
@@ -214,7 +220,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
     # def test_add_remote_git_descriptor(self):
     #     '''Gather plugins from a remote (web) git repository.'''
 
-    # def test_add_remote_git_branch_descriptor(self):
+    # def test_add_remote_git(self):
     #     '''Gather plugins from a remote (web) git branch repository.'''
 
     def test_add_search_path_folder(self):
@@ -251,7 +257,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
     # def test_add_remote_git_descriptor(self):
     #     '''Gather plugins from a remote (web) git repository.'''
 
-    # def test_add_remote_git_branch_descriptor(self):
+    # def test_add_remote_git(self):
     #     '''Gather plugins from a remote (web) git branch repository.'''
 
     def test_callable_descriptor(self):
@@ -360,7 +366,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
 
     '''Test to make sure that invalid Descriptors raise errors properly.'''
 
-    def test_descriptor_has_no_supported_callable_method(self):
+    def test_no_callable_method(self):
         '''Descriptor has no get_plugin or __call__ method.'''
         contents = textwrap.dedent(
             '''
@@ -400,7 +406,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         serialized_info = parse.urlencode(descriptor_info, doseq=True)
         self.assertEqual(self.cache.add_descriptor(serialized_info), None)
 
-    def test_descriptor_get_plugins_is_not_callable(self):
+    def test_not_callable_failure(self):
         '''A Descriptor whose get_plugins name is not a valid method.'''
         contents = textwrap.dedent(
             '''
@@ -443,7 +449,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         serialized_info = parse.urlencode(descriptor_info, doseq=True)
         self.assertEqual(self.cache.add_descriptor(serialized_info), None)
 
-    def test_descriptor_could_not_be_resolved(self):
+    def test_bad_resolution(self):
         '''Create a descriptor that isn't able to be created, for some reason.'''
         descriptor_info = {
             'create_using': 'foo.bar.doesnt.exist.and.will.fail',

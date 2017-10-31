@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''test the classes and methods for finder.py.'''
+'''Test the classes and methods for finder.py.'''
 
 # IMPORT STANDARD LIBRARIES
 import tempfile
@@ -56,7 +56,7 @@ class PathConstructionTestCase(common_test.ContextTestCase):
         context = finder.find_context(path=the_path, resolve_with=('env', 'glob'))
         self.assertNotEqual(context, None)
 
-    def test_find_context_with_absolute_path(self):
+    def test_find_absolute_path(self):
         '''Define a Context with an absolute path and find it.'''
         temp_folder = tempfile.mkdtemp()
         self.temp_paths.append(temp_folder)
