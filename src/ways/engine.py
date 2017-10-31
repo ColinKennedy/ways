@@ -29,6 +29,7 @@ def _make_regex_pattern_groups(info):
 
     '''
     def make_regex_group(group, expression):
+        '''Return the value in the form (?P<{foo}>).'''
         return '(?P<{name}>{expression})'.format(name=group, expression=expression)
 
     output = dict()
@@ -162,6 +163,28 @@ def get_value_from_parent_regex(name, parent, parser):
 
 
 def _recursive_child_token_parse_regex(name, parser):
+    '''The function that does most of the work for getting parse child tokens.
+
+    The goal of this function is to
+    1. Get a mapping to describe the current token
+    2. Provide values that can be filled into that mapping - so we can get back
+       an exact parse regular expression for our token.
+
+    Args:
+        name (str):
+            The token to get the parse expression for. Most often, this token
+            doesn't have parse expressions defined for regex but its child
+            tokens do. This function will search through its child tokens.
+        parser (<ways.api.ContextParser>):
+            The parser which presumably contains any information needed to
+            retrieve a token parse value using the token's children.
+
+    Returns:
+        tuple[str, dict[str:str]]:
+            The mapping of the token (in the Python-style format like '{something}')
+            and a dictionary needed to fill in every token in the mapping.
+
+    '''
     # details = to_dict(parser.get_all_mapping_details())
     # from pprint import pprint; pprint(details, indent=4)
     try:
@@ -171,7 +194,6 @@ def _recursive_child_token_parse_regex(name, parser):
         # so it must have some regex value. Return it!
         #
         return (parser.get_all_mapping_details()[name]['parse']['regex'], dict())
-
 
     info = dict()
     for child in parser.get_child_tokens(name):

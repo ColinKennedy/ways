@@ -93,7 +93,7 @@ class ContextTestCase(unittest.TestCase):
                 del os.environ[key]
 
 
-def make_plugin_folder_with_plugin_load(
+def make_plugin_folder(
         func,
         ending,
         contents=None,
@@ -131,13 +131,13 @@ def make_folder_plugin_yaml(contents=None, folder=''):
     # have pyyaml installed, we can minimize the number of unittests effected
     #
     import yaml
-    return make_plugin_folder_with_plugin_load(
+    return make_plugin_folder(
         func=yaml.dump, ending='.yml', contents=contents, folder=folder)
 
 
 def make_folder_plugin_json(contents=None, folder=''):
     '''str: Make a folder and put a plugin inside of it.'''
-    return make_plugin_folder_with_plugin_load(
+    return make_plugin_folder(
         func=json.dump, ending='.json', contents=contents, folder=folder)
 
 
@@ -166,7 +166,10 @@ def create_action(text, hierarchy=('a', )):
             return True
 
 
-def create_plugin(hierarchy=('a', ), assignment=common.DEFAULT_ASSIGNMENT, platforms=('*', ), data=None):
+def create_plugin(hierarchy=('a', ),
+                  assignment=common.DEFAULT_ASSIGNMENT,
+                  platforms=('*', ),
+                  data=None):
     '''Create some Plugin with a name and hierarchy.
 
     This is a convenience method just to make unittests shorter. This should

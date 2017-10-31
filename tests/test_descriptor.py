@@ -7,7 +7,6 @@
 import os
 import sys
 import shutil
-import urllib
 import tempfile
 import textwrap
 
@@ -15,7 +14,7 @@ import textwrap
 import git
 from six.moves import mock
 # pylint: disable=import-error,unused-import
-from six.moves import urllib
+from six.moves.urllib import parse
 
 # IMPORT WAYS LIBRARIES
 import ways.api
@@ -64,7 +63,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.cache.add_descriptor(serialized_info)
         return ways.api.get_context('ztt/whatever')
 
@@ -101,7 +100,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.cache.add_descriptor(serialized_info)
         context = ways.api.get_context('ztt/whatever')
         self.assertNotEqual(context, None)
@@ -137,11 +136,16 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         git_repository = git.Repo.init(git_repo_location)
 
         # Make a plugin and put it in smoe inner folder
-        plugin_file_path = self._make_plugin_folder_with_plugin2(contents=contents, folder=git_repo_location)
+        plugin_file_path = self._make_plugin_folder_with_plugin2(
+            contents=contents, folder=git_repo_location)
         inner_folder = os.path.join(os.path.dirname(plugin_file_path), 'plugins')
+
         os.makedirs(inner_folder)
+
         new_plugin_path = os.path.join(inner_folder, os.path.basename(plugin_file_path))
-        os.rename(plugin_file_path, os.path.join(inner_folder, os.path.basename(plugin_file_path)))
+
+        inner = os.path.join(inner_folder, os.path.basename(plugin_file_path))
+        os.rename(plugin_file_path, inner)
 
         git_repository.index.add([new_plugin_path])
         git_repository.index.commit('Added a plugin file')
@@ -154,7 +158,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.cache.add_descriptor(serialized_info)
 
         # Make a GitRemoteDescriptor class without specifying a path
@@ -165,7 +169,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.cache.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
@@ -187,7 +191,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.cache.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
@@ -216,7 +220,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.cache.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
@@ -304,13 +308,13 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.cache.add_descriptor(serialized_info)
 
         context = ways.api.get_context('foo/bar')
         self.assertNotEqual(None, context)
 
-    def test_descriptor_with_mixed_assignment(self):
+    def test_with_mixed_assignment(self):
         '''Make it so that a Descriptor can return a weird mixture of Plugins.
 
         It's usually best to stick to a single convention (return just a list
@@ -360,7 +364,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.cache.add_descriptor(serialized_info)
 
         context = ways.api.get_context('foo/bar', assignment='job')
@@ -408,7 +412,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.assertEqual(self.cache.add_descriptor(serialized_info), None)
 
     def test_not_callable_failure(self):
@@ -451,7 +455,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.assertEqual(self.cache.add_descriptor(serialized_info), None)
 
     def test_bad_resolution(self):
@@ -461,5 +465,5 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = urllib.parse.urlencode(descriptor_info, True)
+        serialized_info = parse.urlencode(descriptor_info, True)
         self.assertEqual(self.cache.add_descriptor(serialized_info), None)

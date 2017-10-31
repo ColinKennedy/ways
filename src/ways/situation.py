@@ -38,6 +38,7 @@ from six import moves
 from . import connection as conn
 from . import cache
 from . import parse
+from . import finder as find
 from . import trace
 from . import common
 from .core import pathrip
@@ -319,8 +320,6 @@ class Context(object):
                 (characters that are not alpha-numeric or [-| |_|/]).
 
         '''
-        from . import finder as find
-
         super(Context, self).__init__()
 
         hierarchy = common.split_hierarchy(hierarchy)

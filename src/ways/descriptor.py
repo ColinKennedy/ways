@@ -25,6 +25,8 @@ import itertools
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
+# pylint: disable=import-error
+from six.moves.urllib import parse
 import six
 import yamlordereddictloader
 
@@ -152,7 +154,7 @@ class FileDescriptor(object):
             plugin_assignment_ = data.get('globals', dict()).get('assignment', assignment)
 
             # Iterate over the plugins found in the Plugin Sheet
-            for plugin, info in data['plugins'].items():
+            for plugin, info in six.iteritems(data['plugins']):
                 self._conform_plugin_info(info)
 
                 # If the plugin has a specific assignment given, use that,
@@ -737,7 +739,7 @@ def serialize(obj):
 
     '''
     # pylint: disable=redundant-keyword-arg
-    return six.moves.urllib.parse.urlencode(obj, True)
+    return parse.urlencode(obj, True)
 
 
 def conform_decode(info):

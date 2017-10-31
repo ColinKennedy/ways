@@ -161,7 +161,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
     def test_parse_env_vars(self):
         '''Resolve a Context object's mapping using environment variables.'''
         contents = textwrap.dedent(
-            '''
+            r'''
             globals: {}
             plugins:
                 a_parse_plugin:

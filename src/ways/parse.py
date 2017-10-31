@@ -77,6 +77,7 @@ class ContextParser(object):
 
         return re.match(expression, value) is not None
 
+    # pylint: disable=too-many-arguments
     @classmethod
     def resolve_with_tokens(cls, mapping, tokens, details, options, groups, display_tokens):
         '''Substitute tokens in our mapping for anything that we can find.
@@ -280,6 +281,7 @@ class ContextParser(object):
 
         return engine.get_token_parse(name, self, parse_type)
 
+    # pylint: disable=too-many-arguments
     def get_str(self, resolve_with='',
                 depth=-1, holdout=None, groups=None, display_tokens=False):
         r'''Create a string representation of the Context's mapping.

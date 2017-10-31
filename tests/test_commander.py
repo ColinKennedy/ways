@@ -176,7 +176,7 @@ class CommanderTestCase(common_test.ContextTestCase):
         self.assertNotEqual(action, None)
         self.assertEqual(action(), expected_asset_files)
 
-    def test_add_command_function_to_context(self):
+    def test_add_function_to_context(self):
         '''Create a fake-action using just a simple function.'''
         hierarchy = '27ztt/whatever'
 

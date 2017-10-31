@@ -107,6 +107,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
 #         pass
 
 
+# pylint: disable=too-many-public-methods
 class AssetMethodTestCase(common_test.ContextTestCase):
 
     '''Test the methods on a ways.api.Asset object.'''
@@ -760,6 +761,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         '''Create an Asset class that is created with a non-default init.'''
         asset_class = _get_asset_class()
 
+        # pylint: disable=unused-argument
         def a_custom_init_function(info, context, *args, **kwargs):
             '''Purposefully ignore the context that gets passed.'''
             return asset_class(info, *args, **kwargs)
@@ -843,7 +845,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
 def _get_asset_class():
     '''Just make a generic asset class.'''
-    class SomeNewAssetClass(object):
+    class SomeNewAssetClass(object):  # pylint: disable=too-few-public-methods
 
         '''Some class that will take the place of our Asset.'''
 
