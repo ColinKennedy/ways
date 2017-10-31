@@ -51,7 +51,7 @@ class Context(object):
     '''A collection of plugins that are read in order to resolve its methods.'''
 
     def __init__(self, hierarchy, assignment='', connection=None):
-        '''The object that will be used to describe a location on disk.
+        '''Create the instance and store its location in the Ways hierarchy.
 
         Attributes:
             data (dict[str]):
@@ -150,7 +150,7 @@ class Context(object):
 
     @property
     def plugins(self):
-        '''The found plugins for this instance.
+        '''Find all of the "valid" plugins for this instance.
 
         What determines if a Plugin is "found" depends on a number of factors.
         First, the plugin needs to be somewhere in the hierarchy of the Context,
@@ -210,11 +210,13 @@ class Context(object):
         return parse.ContextParser(self).get_str(*args, **kwargs)
 
     def get_mapping_details(self):
-        '''The information on this Context that describes its mapping.
+        '''Get the information that describes a Context instance's mapping.
 
-        This information is critical to how a Context's parser builds into
-        a file path. Without it, you cannot get a proper filepath out of a
-        Context.
+        This function is literally the same as "mapping_details" key that
+        you'd see in a Plugin Sheet file and is critical to how a Context's
+        parser builds into a file path.
+
+        Without it, you cannot get a proper filepath out of a Context.
 
         Returns:
             dict[str]: The information.
@@ -374,7 +376,7 @@ __FACTORY = factory.AliasAssignmentFactory(Context)
 
 @common.memoize
 def context_connection_info():
-    '''A cached set of connection functions for our Context object.
+    '''Get a default description of how attributes combine in a Context object.
 
     Returns:
         dict[str, callable[<ways.api.Plugin>]]:
@@ -712,6 +714,7 @@ def resolve_alias(hierarchy):
 
     Args:
         hierarchy (iter[str] or str): The alias hierarchy to convert.
+
     Returns:
         tuple[str]: The real hierarchy.
 

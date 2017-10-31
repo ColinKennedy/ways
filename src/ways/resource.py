@@ -803,7 +803,7 @@ def _get_recursive_parents(token, parser):
 
     '''
     def _yield_parent_details(token, parser, details):
-        '''A generator helper function for _get_recursive_parents.
+        '''Yield parent tokens for a given token, by looking at a token's details.
 
         This function exists just so that we don't have to call
         parser.get_all_mapping_details() for each iteration. This makes the

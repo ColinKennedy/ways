@@ -198,7 +198,7 @@ def create_plugin(hierarchy=('a', ),
 
         @classmethod
         def get_platforms(cls):
-            '''The platforms.'''
+            '''Get the platforms.'''
             return platforms
 
     return PluginObj

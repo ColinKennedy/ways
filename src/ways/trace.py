@@ -57,7 +57,7 @@ def trace_action_names(obj, *args, **kwargs):
 
 
 def trace_actions_table(obj, *args, **kwargs):
-    '''The names/objects of every action found for some Ways object.
+    '''Find the names and objects of every action registered to Ways.
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or

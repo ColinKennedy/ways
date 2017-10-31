@@ -163,7 +163,7 @@ def get_value_from_parent_regex(name, parent, parser):
 
 
 def _recursive_child_token_parse_regex(name, parser):
-    '''The function that does most of the work for getting parse child tokens.
+    '''Get the token parse regex pattern, using a given token's children.
 
     The goal of this function is to
     1. Get a mapping to describe the current token

@@ -67,7 +67,7 @@ def _get_actions(hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=Fal
 
 
 def _get_from_assignment(obj_cache, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
-    '''A simple helper method to get hierarchy/assignment details.
+    '''Get a plugin from some hierarchy and assignment, if it exists.
 
     Args:
         obj_cache (dict[str, dict[str]]):
@@ -313,7 +313,7 @@ def get_plugins(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
 
 
 def get_priority():
-    '''The default list of assignments to search through for objects.
+    '''Determine the order that assignments are searched through for plugins.
 
     This list is controlled by the WAYS_PRIORITY variable.
 

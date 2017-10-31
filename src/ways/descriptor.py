@@ -27,7 +27,7 @@ import collections
 # IMPORT THIRD-PARTY LIBRARIES
 import six
 import yamlordereddictloader
-# pylint: disable=import-error
+# pylint: disable=import-error,ungrouped-imports
 from six.moves.urllib import parse
 
 # IMPORT LOCAL LIBRARIES
@@ -342,6 +342,7 @@ class FileDescriptor(object):
         return data
 
     def __eq__(self, other):
+        '''Check if every path in this object exists in another Descriptor.'''
         return self.items == other.items
 
 
@@ -553,7 +554,7 @@ def get_loaders():
 
     '''
     def load_hook(info):
-        '''A function to modify some loaded data.
+        '''Modify some loaded data after information has been loaded.
 
         This function is used specifically for use_yaml and use_json,
         to make sure that certain loaded keys come in as certain object types.

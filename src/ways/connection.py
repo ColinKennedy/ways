@@ -83,7 +83,7 @@ def try_and_return(methods):
 
 
 def generic_iadd(obj, other):
-    '''A method to deal with the ways that iadd is written for Python objects.
+    '''Conform the different ways that built-in Python objects implement iadd.
 
     It's important to note that this method is very generic and also unfinished.
     Add other implementations, as needed. As long as they return a non-None

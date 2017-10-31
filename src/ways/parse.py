@@ -465,6 +465,7 @@ def expand_mapping(mapping, details):
         mapping (str): The mapping to expand.
         details (dict[str]): The information about the mapping that will be used
                              to expand it.
+
     Returns:
         str: The expanded mapping.
 

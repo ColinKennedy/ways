@@ -84,7 +84,7 @@ class _AssignmentFactory(object):
 
         '''
         def make_and_store_instance(hierarchy, assignment):
-            '''A syntax-sugar method that makes the instance and caches it.'''
+            '''Create some instance cache it for later, if needed.'''
             instance = self._class_type(hierarchy, assignment=assignment)
             self._instances[hierarchy][assignment] = instance
             return instance

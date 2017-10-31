@@ -162,7 +162,7 @@ class DataPlugin(Plugin):
         return self.assignment
 
     def get_groups(self):
-        '''The groups that this Plugin evaluates onto.
+        '''Get the groups that this Plugin evaluates onto.
 
         Note:
             The term 'groups' is not the same as the assignment of a Plugin.
