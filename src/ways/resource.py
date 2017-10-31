@@ -589,7 +589,7 @@ class AssetFinder(compat.DirMixIn, object):
 
         '''
         super(AssetFinder, self).__init__()
-        self._finder = finder
+        self.finder = finder
         self._asset = asset
 
     def __getattr__(self, name):
@@ -616,7 +616,7 @@ class AssetFinder(compat.DirMixIn, object):
 
             return function
 
-        function = self._finder.__getattr__(name)
+        function = self.finder.__getattr__(name)
 
         return add_asset_info_to_function(func=function, asset=self._asset)
 
@@ -625,7 +625,7 @@ class AssetFinder(compat.DirMixIn, object):
         return sorted(
             set(itertools.chain(
                 self.__dict__.keys(),
-                trace.trace_action_names(self._finder.context),
+                trace.trace_action_names(self.finder.context),
                 super(AssetFinder, self).__dir__())))
 
 

@@ -8,10 +8,11 @@ import functools
 import itertools
 import collections
 
+# IMPORT WAYS LIBRARIES
+import ways
+
 # IMPORT LOCAL LIBRARIES
-from . import trace
 from . import common
-from . import finder_common
 from .core import compat
 
 # TODO : In general, I regret the name of this module. FIXME
@@ -124,11 +125,7 @@ class Find(compat.DirMixIn, object):
     def __dir__(self):
         '''list[str]: Add Action names to the list of return items.'''
         return sorted(
-            set(itertools.chain(super(Find, self).__dir__(),
-                                self.__dict__.keys(),
-                                trace.trace_action_names(self.context))))
-
-
-# TODO : Possibly remove this, now that we use this in ways.api
-# pylint: disable=invalid-name
-find_context = finder_common.find_context
+            set(itertools.chain(
+                super(Find, self).__dir__(),
+                self.__dict__.keys(),
+                ways.get_action_names(self.context.get_hierarchy()))))

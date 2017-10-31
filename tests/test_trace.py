@@ -105,10 +105,7 @@ class TraceTestCase(Common):
 
         for obj in self._get_object_interfaces(context):
             obj = ways.api.trace_assignment(obj)
-            try:
-                self.assertNotEqual(obj, ways.api.DEFAULT_ASSIGNMENT)
-            except AssertionError:
-                raise ValueError(obj)
+            self.assertNotEqual(obj, ways.api.DEFAULT_ASSIGNMENT)
 
         self.assertEqual(ways.api.trace_assignment('invalid_input'),
                          ways.api.DEFAULT_ASSIGNMENT)

@@ -21,7 +21,7 @@ def trace_actions(obj, *args, **kwargs):
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.situation.Context> or <ways.finder.Find>):
+             <ways.api.Context> or <ways.finder.Find>):
             The object to get the actions of.
         *args (list):
             Positional args to pass to ways.get_actions.
@@ -42,7 +42,7 @@ def trace_action_names(obj, *args, **kwargs):
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.situation.Context> or <ways.finder.Find>):
+             <ways.api.Context> or <ways.finder.Find>):
             The object to get the actions of.
         *args (list):
             Positional args to pass to ways.get_action_names.
@@ -62,7 +62,7 @@ def trace_actions_table(obj, *args, **kwargs):
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.situation.Context> or <ways.finder.Find>):
+             <ways.api.Context> or <ways.finder.Find>):
         *args (list):
             Positional args to pass to ways.get_actions_info..
         **kwargs (dict[str]):
@@ -116,7 +116,7 @@ def trace_context(obj):
         obj: Some Ways object instance.
 
     Returns:
-        <ways.situation.Context> or NoneType: The found Context.
+        <ways.api.Context> or NoneType: The found Context.
 
     '''
     # TODO : Remove this inner import
@@ -127,11 +127,10 @@ def trace_context(obj):
         return obj
 
     # Is it a AssetFinder?
-    # TODO : Change asset to a public attribute
-    # TODO : Also, this dir check is super ghetto. Make this better!
+    # TODO : This dir check is super ghetto. Make this better!
     #
-    if '_finder' in dir(obj):
-        obj = obj._finder
+    if 'finder' in dir(obj):
+        obj = obj.finder
 
     # Try to find the context - assuming obj was finder.Find or an action, etc.
     try:
@@ -143,7 +142,7 @@ def trace_context(obj):
 
     try:
         # Maybe this is a hierarchy. In which case, use it to create a Context
-        return ways.get_context(obj)
+        return sit.get_context(obj)
     except Exception:
         return
 
@@ -151,7 +150,7 @@ def trace_context(obj):
 def trace_assignment(obj):
     '''str: Get the assignment for this object.'''
     try:
-        obj = obj._finder
+        obj = obj.finder
     except AttributeError:
         pass
 
@@ -171,7 +170,7 @@ def trace_hierarchy(obj):
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.situation.Context> or <ways.finder.Find>):
+             <ways.api.Context> or <ways.finder.Find>):
             The object to get the actions of.
 
     Returns:

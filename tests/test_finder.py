@@ -9,7 +9,7 @@ import tempfile
 import textwrap
 
 # IMPORT WAYS LIBRARIES
-from ways import finder
+from ways import cache
 
 # IMPORT LOCAL LIBRARIES
 # IMPORT 'LOCAL' LIBRARIES
@@ -54,7 +54,7 @@ class PathConstructionTestCase(common_test.ContextTestCase):
         if not os.path.isdir(the_path):
             os.makedirs(the_path)
 
-        context = finder.find_context(path=the_path, resolve_with=('env', 'glob'))
+        context = cache.find_context(path=the_path, resolve_with=('env', 'glob'))
         self.assertNotEqual(context, None)
 
     def test_find_absolute_path(self):
@@ -85,7 +85,7 @@ class PathConstructionTestCase(common_test.ContextTestCase):
 
         open(some_file, 'w').close()
 
-        context = finder.find_context(path=some_file, resolve_with=('env', 'glob'))
+        context = cache.find_context(path=some_file, resolve_with=('env', 'glob'))
 
         self.assertEqual(context.get_hierarchy(), ('some', 'file', 'whatever'))
 

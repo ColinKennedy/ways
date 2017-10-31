@@ -12,6 +12,7 @@ It's recommended to always import and use modules, here.
 
 # IMPORT LOCAL LIBRARIES
 from .cache import add_descriptor
+from .cache import find_context
 from .parse import ContextParser
 # Lower-level debug functions
 from .trace import trace_actions
@@ -58,7 +59,6 @@ from .descriptor import FolderDescriptor
 from .descriptor import GitLocalDescriptor
 from .descriptor import GitRemoteDescriptor
 from .descriptor import serialize
-from .finder_common import find_context
 
 __all__ = [
     'DESCRIPTORS_ENV_VAR',

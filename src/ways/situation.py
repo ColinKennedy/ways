@@ -42,7 +42,6 @@ from . import connection as conn
 from . import parse
 from . import factory
 from . import finder as find
-from . import trace
 from . import common
 from .core import pathrip
 
@@ -358,7 +357,7 @@ class Context(object):
         '''
         data = {
             'assignment': self.assignment,
-            'actions': copy.deepcopy(trace.trace_actions_table(self)),
+            'actions': copy.deepcopy(ways.get_actions_info(self.get_hierarchy())),
             'connection': self.connection,
             'hierarchy': self.hierarchy,
         }
