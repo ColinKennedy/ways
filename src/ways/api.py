@@ -11,8 +11,8 @@ It's recommended to always import and use modules, here.
 '''
 
 # IMPORT LOCAL LIBRARIES
-from .cache import add_descriptor
 from .cache import find_context
+from .cache import add_descriptor
 from .parse import ContextParser
 # Lower-level debug functions
 from .trace import trace_actions

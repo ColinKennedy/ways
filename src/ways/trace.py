@@ -12,7 +12,6 @@ import ways
 # IMPORT LOCAL LIBRARIES
 from . import common
 
-
 # TODO : Maybe move this to find.py and then move the path class out
 
 

@@ -23,8 +23,8 @@ import textwrap
 from six.moves.urllib import parse
 
 # IMPORT WAYS LIBRARIES
-import ways.descriptor
 import ways.api
+import ways.descriptor
 
 # IMPORT LOCAL LIBRARIES
 from . import common_test

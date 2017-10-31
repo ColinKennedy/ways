@@ -30,19 +30,19 @@ import functools
 import itertools
 import collections
 
-# IMPORT WAYS LIBRARIES
-import ways
-
 # IMPORT THIRD-PARTY LIBRARIES
 import six
 from six import moves
 
+# IMPORT WAYS LIBRARIES
+import ways
+
 # IMPORT LOCAL LIBRARIES
-from . import connection as conn
 from . import parse
-from . import factory
-from . import finder as find
 from . import common
+from . import finder as find
+from . import factory
+from . import connection as conn
 from .core import pathrip
 
 

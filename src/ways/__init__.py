@@ -4,16 +4,21 @@
 '''The main location where loaded plugin and action objects are managed.'''
 
 # IMPORT STANDARD LIBRARIES
-import collections
 import os
+import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
 
 # IMPORT LOCAL LIBRARIES
-from . import resource
+# TODO : ugh this import is bad. FIXME
+#        It's only used so that we can clear our Context instances
+#        Find a better way to do this. Maybe store the instances here, too?
+#
+# pylint: disable=wrong-import-position
 from . import common
-
+from . import resource
+from . import situation as sit
 
 six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
 
@@ -27,13 +32,6 @@ PLUGIN_CACHE['all_plugins'] = []
 PLUGIN_LOAD_RESULTS = []
 
 
-# IMPORT LOCAL LIBRARIES
-# TODO : ugh this import is bad. FIXME
-#        It's only used so that we can clear our Context instances
-#        Find a better way to do this. Maybe store the instances here, too?
-#
-# pylint: disable=wrong-import-position
-from . import situation as sit
 
 
 def _get_actions(hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=False):

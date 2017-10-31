@@ -25,15 +25,15 @@ import itertools
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
-# pylint: disable=import-error
-from six.moves.urllib import parse
 import six
 import yamlordereddictloader
+# pylint: disable=import-error
+from six.moves.urllib import parse
 
 # IMPORT LOCAL LIBRARIES
+from . import common
 from . import plugin as plug
 from . import situation as sit
-from . import common
 from . import dict_classes
 from .core import check
 

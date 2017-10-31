@@ -86,4 +86,3 @@ class ReadOnlyDict(collections.Mapping):
 def recursive_default_dict():
     '''Create a recursive collection.defaultdict(dict).'''
     return collections.defaultdict(recursive_default_dict)
-

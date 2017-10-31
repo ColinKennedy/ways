@@ -35,10 +35,10 @@ import collections
 import six
 
 # IMPORT LOCAL LIBRARIES
-from . import finder as find
-from . import situation as sit
 from . import trace
 from . import common
+from . import finder as find
+from . import situation as sit
 from .core import compat
 
 __DEFAULT_OBJECT = object()

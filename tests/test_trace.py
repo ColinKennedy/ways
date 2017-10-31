@@ -16,9 +16,9 @@ import tempfile
 import textwrap
 
 # IMPORT WAYS LIBRARIES
-from ways import common
-import ways.api
 import ways
+import ways.api
+from ways import common
 
 # IMPORT LOCAL LIBRARIES
 from . import common_test

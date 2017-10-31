@@ -12,9 +12,9 @@ extra behavior that would otherwise be impossible.
 import six
 
 # IMPORT LOCAL LIBRARIES
-from . import situation as sit
 from . import cache
 from . import common
+from . import situation as sit
 
 
 class ActionRegistry(type):
