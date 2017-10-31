@@ -737,6 +737,7 @@ def serialize(obj):
         str: The output encoding.
 
     '''
+    # pylint: disable=redundant-keyword-arg
     return six.moves.urllib.parse.urlencode(obj, doseq=True)
 
 

@@ -25,7 +25,7 @@ class ReadOnlyDict(collections.Mapping):
                 it is set to read-only. Default is False.
 
         '''
-        super(ReadOnlyDict, self).__init__()
+        super(ReadOnlyDict, self).__init__()  # pylint: disable=no-member
 
         self._data = data
         self.settable = settable
