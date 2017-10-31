@@ -737,7 +737,7 @@ def serialize(obj):
 
     '''
     # pylint: disable=redundant-keyword-arg
-    return six.moves.urllib.parse.urlencode(obj, doseq=True)
+    return six.moves.urllib.parse.urlencode(obj, True)
 
 
 def conform_decode(info):

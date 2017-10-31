@@ -4,11 +4,11 @@
 '''Test all things related to the cache.py file.'''
 
 # IMPORT STANDARD LIBRARIES
-import textwrap
-import json
 import os
+import json
+import textwrap
 
-# IMPORT THIRD-PARTY LIBRARIES
+# IMPORT WAYS LIBRARIES
 import ways.api
 
 # IMPORT LOCAL LIBRARIES
@@ -426,4 +426,3 @@ def get_example_plugin_file(name='SomePlugin'):
             def get_uuid(self):
                 return ''
         '''.format(class_name=name))
-

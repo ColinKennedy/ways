@@ -4,10 +4,10 @@
 '''Test all of the different ways that Context objects can be parsed.'''
 
 # IMPORT STANDARD LIBRARIES
-import textwrap
 import os
+import textwrap
 
-# IMPORT THIRD-PARTY LIBRARIES
+# IMPORT WAYS LIBRARIES
 import ways.api
 
 # IMPORT LOCAL LIBRARIES
@@ -345,4 +345,3 @@ class ContextParserMethodTestCase(common_test.ContextTestCase):
         parser = context.get_parser()
 
         self.assertEqual(set(parser.get_tokens()), {'THING', 'JOB'})
-

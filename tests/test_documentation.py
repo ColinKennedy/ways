@@ -13,15 +13,17 @@ Also, it lets us copy/paste these files and provide as user-demos
 '''
 
 # IMPORT STANDARD LIBRARIES
+import os
+import sys
 import tempfile
 import textwrap
-import sys
-import os
 
 # IMPORT THIRD-PARTY LIBRARIES
-from ways import descriptor as descriptor_
 # pylint: disable=import-error
 from six.moves.urllib import parse
+
+# IMPORT WAYS LIBRARIES
+import ways.descriptor
 import ways.api
 
 # IMPORT LOCAL LIBRARIES
@@ -270,7 +272,7 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         # TODO : nose!
         for info, encoding, class_item in composite:
             # Check to make sure the inspected encoding is OK
-            details = descriptor_.conform_decode(parse.parse_qs(encoding))
+            details = ways.descriptor.conform_decode(parse.parse_qs(encoding))
             self.assertEqual(info, details)
             desc1 = self.cache._resolve_descriptor(info)
             desc2 = self.cache._resolve_descriptor(encoding)
@@ -808,4 +810,3 @@ def _build_action(action, folders):
             return folders
 
     return SomeAction
-

@@ -4,10 +4,10 @@
 '''Build tests for Plugin objects - like how they are made and their methods.'''
 
 # IMPORT STANDARD LIBRARIES
-import textwrap
 import os
+import textwrap
 
-# IMPORT THIRD-PARTY LIBRARIES
+# IMPORT WAYS LIBRARIES
 import ways.api
 
 # IMPORT LOCAL LIBRARIES
@@ -225,4 +225,3 @@ class PluginMergeMethodTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('foo/bar')
         expected_mapping = 'something/yyz'
         self.assertEqual(expected_mapping, context.get_mapping())
-

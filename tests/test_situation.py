@@ -10,11 +10,11 @@ behave properly in other test modules.
 '''
 
 # IMPORT STANDARD LIBRARIES
+import os
 import tempfile
 import textwrap
-import os
 
-# IMPORT THIRD-PARTY LIBRARIES
+# IMPORT WAYS LIBRARIES
 import ways.api
 
 # IMPORT LOCAL LIBRARIES
@@ -559,4 +559,3 @@ def get_generic_job_config():
                 uuid: 040a5511-aa53-42ae-9bc3-eb332841616e
 
         ''')
-

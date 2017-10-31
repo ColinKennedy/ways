@@ -4,19 +4,19 @@
 '''Generic classes and functions to reuse for the Ways test suite.'''
 
 # IMPORT STANDARD LIBRARIES
-import unittest
-import tempfile
-import shutil
-import json
-import sys
 import os
+import sys
+import json
+import shutil
+import tempfile
+import unittest
 
-# IMPORT 'LOCAL' LIBRARIES
-from ways import situation as sit
-from ways import common
-from ways import cache
+# IMPORT WAYS LIBRARIES
 import ways.api
-
+# IMPORT 'LOCAL' LIBRARIES
+from ways import cache
+from ways import common
+from ways import situation as sit
 
 _SYS_PATH = list(sys.path)
 _ORIGINAL_ENVIRON = os.environ.copy()
@@ -199,4 +199,3 @@ def create_plugin(hierarchy=('a', ), assignment=common.DEFAULT_ASSIGNMENT, platf
             return platforms
 
     return PluginObj
-

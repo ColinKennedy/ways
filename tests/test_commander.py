@@ -4,13 +4,16 @@
 '''Test Action and Find-related methods and helper functions.'''
 
 # IMPORT STANDARD LIBRARIES
-import textwrap
-import glob
 import os
+import glob
+import textwrap
 
+# IMPORT WAYS LIBRARIES
+import ways.api
+
+# IMPORT LOCAL LIBRARIES
 # IMPORT 'LOCAL' LIBRARIES
 from . import common_test
-import ways.api
 
 
 class CommanderTestCase(common_test.ContextTestCase):
@@ -353,4 +356,3 @@ class FindCommanderTestCase(common_test.ContextTestCase):
 
         with self.assertRaises(AttributeError):
             find.get_assets()
-

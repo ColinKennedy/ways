@@ -4,10 +4,10 @@
 '''Test the different ways that Context and Plugin objects merge together.'''
 
 # IMPORT STANDARD LIBRARIES
-import textwrap
 import os
+import textwrap
 
-# IMPORT THIRD-PARTY LIBRARIES
+# IMPORT WAYS LIBRARIES
 import ways.api
 
 # IMPORT LOCAL LIBRARIES
@@ -531,4 +531,3 @@ class ContextMergeTestCase(common_test.ContextTestCase):
 
     #     '''
     #     pass
-

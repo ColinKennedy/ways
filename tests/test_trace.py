@@ -11,17 +11,16 @@ whatever other purpose). Or some other reportive info that we want to know.
 '''
 
 # IMPORT STANDARD LIBRARIES
+import os
 import tempfile
 import textwrap
-import os
 
-# IMPORT THIRD-PARTY LIBRARIES
+# IMPORT WAYS LIBRARIES
 import ways.api
-
-# IMPORT 'LOCAL' LIBRARIES
 from ways import common
-from . import common_test
 
+# IMPORT LOCAL LIBRARIES
+from . import common_test
 
 # TODO : The types of plugin-trace tests that we need to make sure works
 #
@@ -42,6 +41,7 @@ from . import common_test
 # TODO : Possibly make a set parse order function
 
 
+# pylint: disable=too-few-public-methods
 class Common(common_test.ContextTestCase):
 
     '''Just a class that has a couple setup methods that subclasses need.'''
@@ -108,7 +108,6 @@ class TraceTestCase(Common):
                 self.assertNotEqual(obj, ways.api.DEFAULT_ASSIGNMENT)
             except AssertionError:
                 raise ValueError(obj)
-
 
         self.assertEqual(ways.api.trace_assignment('invalid_input'),
                          ways.api.DEFAULT_ASSIGNMENT)
@@ -364,4 +363,3 @@ def _init_actions():
     '''Create a couple random classes and register them to Ways.'''
     common_test.create_action('another_action_here')
     common_test.create_action('action_here')
-

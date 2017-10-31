@@ -5,6 +5,9 @@
 
 # IMPORT STANDARD LIBRARIES
 import collections
+import six
+
+six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
 
 __version__ = "0.1.0b1"
 

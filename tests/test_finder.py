@@ -4,13 +4,14 @@
 '''Test the classes and methods for finder.py.'''
 
 # IMPORT STANDARD LIBRARIES
+import os
 import tempfile
 import textwrap
-import os
 
-# IMPORT THIRD-PARTY LIBRARIES
+# IMPORT WAYS LIBRARIES
 from ways import finder
 
+# IMPORT LOCAL LIBRARIES
 # IMPORT 'LOCAL' LIBRARIES
 from . import common_test
 
@@ -139,4 +140,3 @@ class PathConstructionTestCase(common_test.ContextTestCase):
 
 #     def test_get_piece_max_depth_failed(self):
 #         pass
-

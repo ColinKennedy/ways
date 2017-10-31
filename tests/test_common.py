@@ -6,7 +6,7 @@
 # IMPORT STANDARD LIBRARIES
 import unittest
 
-# IMPORT LOCAL LIBRARIES
+# IMPORT WAYS LIBRARIES
 from ways import common
 
 
@@ -45,4 +45,3 @@ class ParseTestCase(unittest.TestCase):
         pattern = '/jobs/{JOB}/some_kind/{SHOTNAME}/real_folders/inner'
 
         self.assertFalse(common.expand_string(pattern, text))
-

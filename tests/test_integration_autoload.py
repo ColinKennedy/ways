@@ -9,13 +9,14 @@ of being added to the Ways cache so we'll test these methods, in this module.
 '''
 
 # IMPORT STANDARD LIBRARIES
+import os
 import tempfile
 import textwrap
-import os
 
-# IMPORT THIRD-PARTY LIBRARIES
+# IMPORT WAYS LIBRARIES
 import ways.api
 
+# IMPORT LOCAL LIBRARIES
 # IMPORT 'LOCAL' LIBRARIES
 from . import common_test
 
@@ -247,4 +248,3 @@ class AutoloadTestCase(common_test.ContextTestCase):
 
     #     context = ways.api.get_context('2tt/whatever')
     #     self.assertNotEqual(context, None)
-

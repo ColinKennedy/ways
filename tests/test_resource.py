@@ -5,15 +5,17 @@
 '''Test the basic methods of the Asset class, in a variety of Contexts.'''
 
 # IMPORT STANDARD LIBRARIES
-import platform
-import textwrap
-import glob
 import os
 import re
+import glob
+import platform
+import textwrap
 
-# IMPORT 'LOCAL' LIBRARIES
-from . import common_test
+# IMPORT WAYS LIBRARIES
 import ways.api
+
+# IMPORT LOCAL LIBRARIES
+from . import common_test
 
 
 class AssetCreateTestCase(common_test.ContextTestCase):
@@ -851,4 +853,3 @@ def _get_asset_class():
             self.context = context
 
     return SomeNewAssetClass
-
