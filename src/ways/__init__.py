@@ -5,10 +5,13 @@
 
 # IMPORT STANDARD LIBRARIES
 import collections
-import six
 import os
 
+# IMPORT THIRD-PARTY LIBRARIES
+import six
+
 # IMPORT LOCAL LIBRARIES
+from . import resource
 from . import common
 
 
@@ -25,12 +28,12 @@ PLUGIN_LOAD_RESULTS = []
 
 
 # IMPORT LOCAL LIBRARIES
-from . import situation as sit
 # TODO : ugh this import is bad. FIXME
 #        It's only used so that we can clear our Context instances
 #        Find a better way to do this. Maybe store the instances here, too?
 #
-from . import resource
+# pylint: disable=wrong-import-position
+from . import situation as sit
 
 
 def _get_actions(hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=False):

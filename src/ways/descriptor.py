@@ -86,10 +86,12 @@ class FileDescriptor(object):
         '''
         info['hierarchy'] = common.split_hierarchy(info['hierarchy'])
 
-    # TODO : When I remove 'items', it causes a unittest to fail. FIXME
     def _get_files(self, items):
         '''list[str]: Get all supported Plugin files.'''
-        return list(self.filter_plugin_files(self.items))
+        if not items:
+            items = self.items
+
+        return list(self.filter_plugin_files(items))
 
     @classmethod
     def get_supported_extensions(cls):

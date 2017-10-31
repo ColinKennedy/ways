@@ -630,7 +630,7 @@ def get_context(hierarchy,
         *args, **kwargs)
 
 
-def register_context_alias(alias_hierarchy, old_hierarchy, force=False):
+def register_context_alias(alias_hierarchy, old_hierarchy):
     '''Set a hierarchy to track the changes of another hierarchy.
 
     This function lets you refer to plugins and Context objects

@@ -205,6 +205,7 @@ class AliasAssignmentFactory(_AssignmentFactory):
         resolved_hierarchy = common.split_hierarchy(current)
         return resolved_hierarchy
 
+    # pylint: disable=arguments-differ
     def get_instance(self, hierarchy, assignment, follow_alias=False, force=False):
         '''Get an instance of our class if it exists and make it if does not.
 
