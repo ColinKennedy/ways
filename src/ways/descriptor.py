@@ -25,8 +25,6 @@ import json
 import os
 
 # IMPORT THIRD-PARTY LIBRARIES
-# pylint: disable=import-error
-from six.moves.urllib import parse
 import yamlordereddictloader
 import six
 
@@ -87,6 +85,7 @@ class FileDescriptor(object):
         '''
         info['hierarchy'] = common.split_hierarchy(info['hierarchy'])
 
+    # TODO : When I remove 'items', it causes a unittest to fail. FIXME
     def _get_files(self, items):
         '''list[str]: Get all supported Plugin files.'''
         return list(self.filter_plugin_files(self.items))
@@ -445,7 +444,29 @@ class GitLocalDescriptor(FolderDescriptor):
 
 
 class GitRemoteDescriptor(GitLocalDescriptor):
+
+    '''A Descriptor that clones an online Git repository.'''
+
     def __init__(self, url, items, path='', branch='master'):
+        '''Clone the repository locally and read its contents for plugins.
+
+        Args:
+            url (str):
+                The absolute URL to some git repository local/remote repo.
+            items (list[str]):
+                The paths to search for plugin files. These items can be
+                absolute paths or paths that are relative to the cloned repo.
+            path (:obj:`str`, optional):
+                The location to clone this repository into.
+                If the directory exists, it's assumed that this repository
+                was already cloned to the location and its contents are read
+                directly. If it does not exist, the repo is cloned there.
+                If no path is given, a temporary directory is used.
+            branch (:obj:`str`, optional):
+                The branch in this repository to checkout and use.
+                Default: 'master'.
+
+        '''
         # We do an inner import here for Python 3.3 - Because it looks like
         # GitPython isn't supported for that Python version
         # (pip install GitPython failed when I tried it)
@@ -528,6 +549,17 @@ def get_loaders():
         dict[str]: The installed loaders.
 
     '''
+    def load_hook(info):
+        '''A function to modify some loaded data.
+
+        This function is used specifically for use_yaml and use_json,
+        to make sure that certain loaded keys come in as certain object types.
+
+        '''
+        if 'groups' in info:
+            info['groups'] = tuple(info['groups'])
+        return info
+
     def use_yaml():
         '''Try to load a description for YAML.'''
         extensions = ('.yml', '.yaml')
@@ -542,6 +574,19 @@ def get_loaders():
             return dict()
 
         def load_wrap(file_path, func, after):
+            '''Load a file using func and then run another function after load.
+
+            Args:
+                file_path (str): The absolute path to a file to load.
+                func (callable[str]): The loader function to run
+                                      (yaml.safe_load/json.load/etc)
+                after (callable[str]): The function to load after file_path
+                                       has been deserialized.
+
+            Returns:
+                The loaded information from func.
+
+            '''
             value = func(file_path)
             after(value)
             return value
@@ -597,7 +642,7 @@ def get_loaders():
     return output_dict
 
 
-def try_load(path, default=None, safe=False):
+def try_load(path, default=None):
     '''Try our best to load the given file, using a number of different methods.
 
     The path is assumed to be a file that is serialized, like JSON or YAML.
@@ -608,17 +653,17 @@ def try_load(path, default=None, safe=False):
         default (:obj:`dict`, optional):
             The information to return back if no data could be found.
             Default is an empty dict.
-        safe (:obj:`bool`, optional):
-            Some functions can be potentially unsafe. Set this option to True
-            if you want to make sure that no arbitrary code can be executed
-            when a file is loaded. Default is False.
 
     Returns:
         dict: The information stored on this object.
 
     '''
-    def not_found_raise_error(*args, **kwargs):
-        '''Just a generic function that will return an error.'''
+    def not_found_raise_error(*args, **kwargs):  # pylint: disable=unused-argument
+        '''Just a generic function that will raise an error.
+
+        This function is never run unless no loader was found for the given path.
+
+        '''
         raise ValueError('This exception is just a placeholder')
 
     if default is None:
@@ -692,16 +737,18 @@ def serialize(obj):
         str: The output encoding.
 
     '''
-    return parse.urlencode(obj, doseq=True)
-
-
-def load_hook(info):
-    if 'groups' in info:
-        info['groups'] = tuple(info['groups'])
-    return info
+    return six.moves.urllib.parse.urlencode(obj, doseq=True)
 
 
 def conform_decode(info):
+    '''Make sure that 'create_using' returns a single string.
+
+    This function is a hacky solution because I don't understand why,
+    for some reason, decoding will decode a string as a list.
+
+    TODO: Remove this awful function.
+
+    '''
     output = dict(info)
     try:
         value = output['create_using']

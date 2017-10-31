@@ -351,6 +351,7 @@ class Context(object):
 
     @property
     def data(self):
+        '''dict[str]: Data that was automatically generated and user data.'''
         data = dict(self._init_data())
         data.update(self._user_data)
 
@@ -358,6 +359,16 @@ class Context(object):
 
     @data.setter
     def data(self, value):
+        '''Set the user data to whatever the given value is.
+
+        Note:
+            This function cannot modify the data that was generated from the
+            plugins for this Context - that data is intentionally read-only.
+
+        Args:
+            dict[str]: The new user data.
+
+        '''
         self._user_data = value
 
     def _init_data(self):
@@ -691,7 +702,8 @@ def context_connection_info():
             return appended_mapping
 
         try:
-            latest_absolute_plugin = next(plugin for plugin in reversed(plugins) if not plugin.get_uses())
+            latest_absolute_plugin = next(
+                plugin for plugin in reversed(plugins) if not plugin.get_uses())
         except StopIteration:
             raise RuntimeError('This should not happen. Every plugin found '
                                'was a relative plugin. No absolute (root) '
@@ -957,5 +969,14 @@ def clear_aliases():
 
 
 def clear_contexts():
+    '''Remove every Context instance that this object knows about.
+
+    If a Context is re-queried after this method is run, a new instance
+    for the Context will be created and returned.
+
+    Running this method is not recommended because it messes with the
+    internals of Ways.
+
+    '''
     __FACTORY.clear()
 

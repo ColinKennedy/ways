@@ -130,5 +130,7 @@ class Find(compat.DirMixIn, object):
                                 trace.trace_action_names(self.context))))
 
 
+# TODO : Possibly remove this, now that we use this in ways.api
+# pylint: disable=invalid-name
 find_context = finder_common.find_context
 

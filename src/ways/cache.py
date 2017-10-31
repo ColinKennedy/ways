@@ -178,6 +178,7 @@ class HistoryCache(object):
         def get_description_from_dict(description):
             '''Build a descriptor from a Python dict.'''
             def try_load(obj, description):
+                '''Load the object, as-is.'''
                 return obj(**description)
 
 

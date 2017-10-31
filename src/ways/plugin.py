@@ -42,6 +42,7 @@ class PluginRegistry(type):
         return new_class
 
 
+# pylint: disable=too-few-public-methods
 @six.add_metaclass(PluginRegistry)
 class Plugin(object):
 
