@@ -13,7 +13,6 @@ import six
 # IMPORT LOCAL LIBRARIES
 from .core import check
 from . import common
-from . import cache
 
 
 class PluginRegistry(type):
@@ -51,10 +50,6 @@ class Plugin(object):
     add_to_registry = True
     _data = dict()
 
-    def __init__(self):
-        '''Create the object and keep a reference to the cache.'''
-        super(Plugin, self).__init__()
-
     @property
     def data(self):
         '''dict[str]: The display properties (like {'color': 'red'}).'''
@@ -62,6 +57,12 @@ class Plugin(object):
 
     @data.setter
     def data(self, value):
+        '''Set the data on this instance with whatever value is.
+
+        Args:
+            value (dict[str]): The new values for this instance.
+
+        '''
         self._data = value
 
 
@@ -154,6 +155,7 @@ class DataPlugin(Plugin):
         return self._info.get('selectable', True)
 
     def get_assignment(self):
+        '''str: Where this Plugin lives in Ways, along with its hierarchy.'''
         return self.assignment
 
     def get_groups(self):
@@ -229,6 +231,7 @@ class DataPlugin(Plugin):
 
 
 def get_assignment(obj):
+    '''str: Get an object's assignment or fallback to ways.DEFAULT_ASSIGNMENT.'''
     try:
         return obj.get_assignment()
     except AttributeError:

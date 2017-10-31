@@ -56,7 +56,7 @@ def find_context(path, sort_with='', resolve_with=('glob', ), search=glob.glob):
         <ways.api.Context> or NoneType: The matched Context.
 
     '''
-    def sort_with_levenshtein_before_expand(contexts, path):
+    def sort_levenshtein(contexts, path):
         '''Sort all contexts based on how similar their mapping is to path.
 
         Args:
@@ -121,8 +121,8 @@ def find_context(path, sort_with='', resolve_with=('glob', ), search=glob.glob):
 
     sort_types = {
         'default': do_not_sort,
-        'levenshtein-pre': sort_with_levenshtein_before_expand,
-        'levenshtein': sort_with_levenshtein_before_expand,
+        'levenshtein-pre': sort_levenshtein,
+        'levenshtein': sort_levenshtein,
     }
 
     try:

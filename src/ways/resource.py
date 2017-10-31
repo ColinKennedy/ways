@@ -146,7 +146,7 @@ class Asset(object):
 
         return missing_tokens
 
-    def get_str(self, required=True, force=False, *args, **kwargs):
+    def get_str(self, required=True, *args, **kwargs):
         '''Get the full path to the asset, if any.
 
         Args:
@@ -158,10 +158,6 @@ class Asset(object):
                 This variable is very useful if we want to make sure that this
                 instance has all of the necessary pieces before calling this
                 function. Default is True.
-            force (:obj:`bool`, optional):
-                If False, values are checked against their tokens
-                before being set. If True, values are set for each token, even
-                if they are not valid input for that token. Default is False.
             *args (list): Positional args to send to ContextParser.get_str.
             **kwargs (list): Keywords args to send to ContextParser.get_str.
 
@@ -328,7 +324,7 @@ class Asset(object):
                 str: The found value. Returns nothing if no value was found.
 
             '''
-            def get_value_from_parent_regex_parser(parent):
+            def get_value_from_parent_regex(parent):
                 '''Use regex to get a value, using known parent tokens.
 
                 Args:
@@ -343,7 +339,8 @@ class Asset(object):
                 '''
                 details = parser.get_all_mapping_details()
                 try:
-                    mapping = details[parent]['mapping']
+                    # We must have a mapping to proceed
+                    details[parent]['mapping']
                 except KeyError:
                     return dict()
 
@@ -408,8 +405,6 @@ class Asset(object):
             except KeyError:
                 pass
 
-            details = parser.get_all_mapping_details()
-
             parents = _get_recursive_parents(token, parser)
 
             if not parents:
@@ -417,9 +412,29 @@ class Asset(object):
 
             # TODO : Move this function later
             def build_value_from_parents(token, parents):
+                '''Get the value by checking every parent of a token recursively.
+
+                Warning:
+                    This function will modify any parser that is passed into it.
+                    The parser is changed intentionally so that the value
+                    can be referenced during recursion (It's treated as
+                    persistent data that gets reused).
+
+                Args:
+                    token (str):
+                        The token to get the value of by looking at its parents.
+                    parents (list[str]):
+                        The parents of token and any parents of those parents.
+                        This list should always start with the immediate parent
+                        of token, followed by other parents-of-parents.
+
+                Returns:
+                    str: The output value.
+
+                '''
                 options = [
                     get_value_from_parent_format,
-                    get_value_from_parent_regex_parser,
+                    get_value_from_parent_regex,
                 ]
 
                 for parent in parents:
@@ -429,7 +444,6 @@ class Asset(object):
                     except KeyError:
                         pass
 
-                    parent_split_info = ''
                     for option in options:
                         try:
                             info = option(parent)
@@ -858,7 +872,8 @@ def _expand_using_context(context, text, choices=None, default=__DEFAULT_OBJECT)
     # TODO : register these keys/values as plugins or something?
     pattern_getter = collections.OrderedDict()
     pattern_getter['default'] = functools.partial(context.get_str, display_tokens=True)
-    pattern_getter['regex'] = functools.partial(context.get_str, resolve_with=('regex', ), display_tokens=True)
+    pattern_getter['regex'] = functools.partial(
+        context.get_str, resolve_with=('regex', ), display_tokens=True)
 
     for key in order:
         getter = pattern_getter.get(key, lambda: None)

@@ -5,13 +5,9 @@
 
 # IMPORT STANDARD LIBRARIES
 import collections
-import functools
 import itertools
 import os
 import re
-
-# IMPORT THIRD-PARTY LIBRARIES
-import six
 
 # IMPORT LOCAL LIBRARIES
 from .core import check
@@ -48,13 +44,30 @@ class ContextParser(object):
         self.context = context
         self._data = dict()
 
-    def is_valid(self, key, value, resolve_with='regex'):
+    def is_valid(self, token, value, resolve_with='regex'):
+        '''Check if a given value will work for some Ways token.
+
+        Args:
+            token (str):
+                The token to use to check against the given value.
+            value:
+                The object to check for validity.
+            resolve_with (:obj:`str`, optional):
+                The parse type to use to check if value is valid for token.
+                Currently, only 'regex' is supported. Default: 'regex'.
+
+        Returns:
+            bool:
+                If the given value was valid.
+
+        '''
+        # TODO : factor out using engine.py
         if resolve_with != 'regex':
             raise NotImplementedError('This is not supported yet')
 
         mapping_details = self.get_all_mapping_details()
         try:
-            info = mapping_details[key]
+            info = mapping_details[token]
         except KeyError:
             return False
 
@@ -87,6 +100,9 @@ class ContextParser(object):
             str: The resolved mapping.
 
         '''
+        # TODO : Factor out display_tokens once this module is completely
+        #        refactored to not require/expect regex input
+        #
         def make_value(token, value):
             '''Wrap the output value with a regex token group, if needed.'''
             if display_tokens:
@@ -256,7 +272,7 @@ class ContextParser(object):
             pass
 
         try:
-            mapping = details[name]['mapping']
+            details[name]['mapping']
         except KeyError:
             # If we don't have a mapping for this token, there's nothing
             # more that we can do

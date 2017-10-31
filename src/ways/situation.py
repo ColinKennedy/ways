@@ -58,7 +58,7 @@ class _AssignmentFactory(object):
         self._class_type = class_type
         self._instances = collections.defaultdict(dict)
 
-    def get_instance(self, hierarchy, assignment, force=False, *args, **kwargs):
+    def get_instance(self, hierarchy, assignment, force=False):
         '''Get an instance of our class if it exists and make it if does not.
 
         Args:
@@ -68,12 +68,6 @@ class _AssignmentFactory(object):
             force (:obj:`bool`, optional):
                 If False and the Context has no plugins, return None.
                 If True, return the empty Context. Default is False.
-            *args (list): If no object instance is found at the
-                          hierarchy/assignment, this gets passed to the
-                          instantiation of that object.
-            *kwargs (dict[str]): If no object instance is found at the
-                                 hierarchy/assignment, this gets passed to the
-                                 instantiation of that object.
 
         Returns:
             class_type or NoneType:
@@ -174,6 +168,15 @@ class _AssignmentFactory(object):
         return make_and_store_instance(hierarchy, assignment)
 
     def clear(self):
+        '''Remove every Context instance that this object knows about.
+
+        If a Context is re-queried after this method is run, a new instance
+        for the Context will be created and returned.
+
+        Running this method is not recommended because it messes with the
+        internals of Ways.
+
+        '''
         self._instances.clear()
 
 
@@ -227,7 +230,7 @@ class _AliasAssignmentFactory(_AssignmentFactory):
         resolved_hierarchy = common.split_hierarchy(current)
         return resolved_hierarchy
 
-    def get_instance(self, hierarchy, assignment, follow_alias=False, force=False, *args, **kwargs):
+    def get_instance(self, hierarchy, assignment, follow_alias=False, force=False):
         '''Get an instance of our class if it exists and make it if does not.
 
         Args:
@@ -244,12 +247,6 @@ class _AliasAssignmentFactory(_AssignmentFactory):
             force (:obj:`bool`, optional):
                 If False and the Context has no plugins, return None.
                 If True, an empty Context is returned. Default is False.
-            *args (list):
-                If no object instance is found at the hierarchy/assignment,
-                this gets passed to the instantiation of that object.
-            **kwargs (dict[str]):
-                If no object instance is found at the hierarchy/assignment,
-                this gets passed to the instantiation of that object.
 
         Returns:
             self._class_type() or NoneType:
@@ -266,7 +263,7 @@ class _AliasAssignmentFactory(_AssignmentFactory):
         hierarchy = common.split_hierarchy(hierarchy)
 
         instance = super(_AliasAssignmentFactory, self).get_instance(
-            hierarchy=hierarchy, assignment=assignment, force=force, *args, **kwargs)
+            hierarchy=hierarchy, assignment=assignment, force=force)
 
         if not self.is_aliased(hierarchy):
             return instance
@@ -278,7 +275,7 @@ class _AliasAssignmentFactory(_AssignmentFactory):
 
         # Follow the alias to get a Context with the 'real' hierarchy
         return super(_AliasAssignmentFactory, self).get_instance(
-            hierarchy=resolved_hierarchy, assignment=assignment, force=force, *args, **kwargs)
+            hierarchy=resolved_hierarchy, assignment=assignment, force=force)
 
     def clear(self):
         '''Remove all the stored aliases in this instance.'''
@@ -290,7 +287,7 @@ class Context(object):
 
     '''A collection of plugins that are read in order to resolve its methods.'''
 
-    def __init__(self, hierarchy, assignment='', connection=None, parser=None):
+    def __init__(self, hierarchy, assignment='', connection=None):
         '''The object that will be used to describe a location on disk.
 
         Attributes:
@@ -315,12 +312,6 @@ class Context(object):
                 Plugin objects so that we can get a single value.
                 This attribute, connection, describes how Context
                 objects resolve. Default: context_connection_info().
-            parser (:obj:`<ways.api.ContextParser`, optional):
-                The class that is responsible for keeping track of a Context's
-                tokens, what needs to be filled out, and how those tokens
-                are filled. Default: <ways.api.ContextParser>.
-
-                TODO : Make docs and then link to them on what tokens are
 
         Raises:
             ValueError:
@@ -471,7 +462,7 @@ class Context(object):
         return value
 
     @classmethod
-    def validate_plugin(cls, plugin, use_environment=True):
+    def validate_plugin(cls, plugin):
         '''Check if a plugin is "valid" for this Context.
 
         Typically, a plugin is invalid if it was meant for a different OS
@@ -479,8 +470,7 @@ class Context(object):
         being run on a Linux machine.
 
         Args:
-            plugin (<ways.api.Plugin>):
-                The plugin to check.
+            plugin (<ways.api.Plugin>): The plugin to check.
 
         Raises:
             OSError:
@@ -609,7 +599,7 @@ class Context(object):
         return data
 
 
-__ContextFactory = _AliasAssignmentFactory(Context)
+__FACTORY = _AliasAssignmentFactory(Context)
 
 
 @common.memoize
@@ -861,7 +851,7 @@ def get_context(hierarchy,
             we return None.
 
     '''
-    return __ContextFactory.get_instance(
+    return __FACTORY.get_instance(
         hierarchy,
         assignment=assignment,
         follow_alias=follow_alias,
@@ -926,11 +916,11 @@ def register_context_alias(alias_hierarchy, old_hierarchy, force=False):
         raise ValueError('Hierarchy: "{hier}" cannot be aliased to itself'
                          ''.format(hier=old_hierarchy))
 
-    if alias_hierarchy in __ContextFactory.aliases:
+    if alias_hierarchy in __FACTORY.aliases:
         raise ValueError('Alias: "{alias}" was already defined.'.format(
             alias=alias_hierarchy))
 
-    __ContextFactory.aliases[alias_hierarchy] = old_hierarchy
+    __FACTORY.aliases[alias_hierarchy] = old_hierarchy
 
     # Link the plugins from the old hierarchy to our alias
     # so that your plugin cache now has two keys that both point to the same
@@ -958,14 +948,14 @@ def resolve_alias(hierarchy):
         tuple[str]: The real hierarchy.
 
     '''
-    return __ContextFactory.resolve_alias(hierarchy)
+    return __FACTORY.resolve_alias(hierarchy)
 
 
 def clear_aliases():
     '''Remove all the stored aliases in this instance.'''
-    __ContextFactory.clear()
+    __FACTORY.clear()
 
 
 def clear_contexts():
-    __ContextFactory.clear()
+    __FACTORY.clear()
 

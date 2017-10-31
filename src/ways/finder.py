@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''The main class/functions used to find actions for Context/Asset objects.'''
+
 # IMPORT STANDARD LIBRARIES
 import collections
 import functools
@@ -16,6 +18,7 @@ from . import trace
 # TODO : In general, I regret the name of this module. FIXME
 
 
+# pylint: disable=too-few-public-methods
 class Find(compat.DirMixIn, object):
 
     '''A wrapper around a Context object that provides some basic syntax-sugar.
@@ -103,16 +106,15 @@ class Find(compat.DirMixIn, object):
         for the action. If no default is found, just return None like normal.
 
         '''
-        def return_value(arg, *args, **kwargs):
+        def return_value(arg):
             '''Just return the vaue of the original function.'''
             return arg
-
-        return_none = functools.partial(return_value, None)
 
         command = self.context.get_action(name)
         if command is None:
             try:
-                context_dict = self.defaults[self.context.get_hierarchy()]
+                return functools.partial(
+                    return_value, self.defaults[self.context.get_hierarchy()][name])
             except KeyError:
                 message = "AttributeError: '{obj}' has no attribute '{attr}'" \
                           "".format(obj=self.__class__.__name__, attr=name)
