@@ -23,7 +23,7 @@ class PluginCreationTestCase(common_test.ContextTestCase):
         hierarchy = ('maya', 'exports')
         plugin = common_test.create_plugin(hierarchy=hierarchy)
 
-        found_instances = self.cache.plugin_cache['hierarchy'][hierarchy]['master']
+        found_instances = ways.PLUGIN_CACHE['hierarchy'][hierarchy]['master']
         self.assertEqual([plug.__class__ for plug in found_instances], [plugin])
 
     # def test_create_plugin_from_loaded_python_file(self):
@@ -51,7 +51,7 @@ class PluginCreationTestCase(common_test.ContextTestCase):
         self._make_plugin_folder_with_plugin2(
             contents=contents, ending='.json')
 
-        found_instances = self.cache.plugin_cache['hierarchy'][hierarchy]['master']
+        found_instances = ways.PLUGIN_CACHE['hierarchy'][hierarchy]['master']
         self.assertEqual([plug.get_hierarchy() for plug in found_instances],
                          [hierarchy])
 
@@ -166,7 +166,7 @@ class PluginMethodTestCase(common_test.ContextTestCase):
 
         plugin_file = self._make_plugin_folder_with_plugin(contents=contents)
 
-        self.cache.add_search_path(os.path.dirname(plugin_file))
+        ways.api.add_search_path(os.path.dirname(plugin_file))
         context = ways.api.get_context('31tt/whatever')
         self.assertEqual(context.get_groups(), ('*', ))
 
@@ -195,7 +195,7 @@ class PluginMethodTestCase(common_test.ContextTestCase):
         }
         plugin_file = self._make_plugin_folder_with_plugin(contents=contents)
 
-        self.cache.add_search_path(os.path.dirname(plugin_file))
+        ways.api.add_search_path(os.path.dirname(plugin_file))
         context = ways.api.get_context('31tt/whatever')
         self.assertEqual(context.get_groups(), ('*', ))
 

@@ -12,9 +12,9 @@ import tempfile
 import unittest
 
 # IMPORT WAYS LIBRARIES
+import ways
 import ways.api
 # IMPORT 'LOCAL' LIBRARIES
-from ways import cache
 from ways import common
 from ways import situation as sit
 
@@ -30,8 +30,7 @@ class ContextTestCase(unittest.TestCase):
 
     def setUp(self):
         '''Create a cache and a place to put temp folders, for later cleanup.'''
-        self.cache = cache.HistoryCache()
-        self.cache.clear()
+        ways.clear()
         sit.clear_aliases()
         sit.clear_contexts()
 
@@ -54,7 +53,7 @@ class ContextTestCase(unittest.TestCase):
         self.temp_paths.append(os.path.dirname(plugin_file))
 
         if register:
-            self.cache.add_search_path(os.path.dirname(plugin_file))
+            ways.api.add_search_path(os.path.dirname(plugin_file))
 
         return plugin_file
 

@@ -83,7 +83,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
                 }
 
                 path = make_plugin_folder_with_plugin_load(contents)
-                cache.HistoryCache().add_search_path(path)
+                ways.api.add_search_path(path)
 
                 # Create a default Asset
                 some_path = '/jobs/some_job/some_kind/of/real_folders'
@@ -107,7 +107,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
         # Note: This method normally runs on init but because of other tests
         #       instantiating the HistoryCache, we just re-add our plugins
         #
-        self.cache.init_plugins()
+        ways.api.init_plugins()
 
         path = '/jobs/some_job/some_kind/of/real_folders'
         self.assertFalse(
@@ -126,8 +126,8 @@ class AutoloadTestCase(common_test.ContextTestCase):
             import os
 
             # IMPORT THIRD-PARTY LIBRARIES
-            from ways import cache
             import ways.api
+
 
             def main():
                 class SomeNewAssetClass(object):
@@ -174,8 +174,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
 
                 plugin_file = make_plugin_folder_with_plugin_load(contents=contents)
                 folder = os.path.dirname(plugin_file)
-                history = cache.HistoryCache()
-                history.add_search_path(folder)
+                ways.api.add_search_path(folder)
 
                 # Create a default Asset
                 some_path = '/jobs/some_job/some_kind/of/real_folders'
@@ -199,7 +198,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
         # Note: This method normally runs on init but because of other tests
         #       instantiating the HistoryCache, we just re-add our plugins
         #
-        self.cache.init_plugins()
+        ways.api.init_plugins()
 
         path = '/jobs/some_job/some_kind/of/real_folders'
 

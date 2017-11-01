@@ -25,6 +25,7 @@ from six.moves.urllib import parse
 # IMPORT WAYS LIBRARIES
 import ways.api
 import ways.descriptor
+from ways import cache
 
 # IMPORT LOCAL LIBRARIES
 from . import common_test
@@ -219,7 +220,7 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         descriptor = 'path={root}&create_using=ways.api.GitLocalDescriptor&items=plugins' \
                      ''.format(root=root)
 
-        obj = self.cache._resolve_descriptor(descriptor)
+        obj = cache._resolve_descriptor(descriptor)
         self.assertTrue(isinstance(obj, ways.api.GitLocalDescriptor))
         self.assertEqual(obj.path, root)
         self.assertEqual(obj.items, [resolved_path])
@@ -274,8 +275,8 @@ class DescriptorsTestCase(common_test.ContextTestCase):
             # Check to make sure the inspected encoding is OK
             details = ways.descriptor.conform_decode(parse.parse_qs(encoding))
             self.assertEqual(info, details)
-            desc1 = self.cache._resolve_descriptor(info)
-            desc2 = self.cache._resolve_descriptor(encoding)
+            desc1 = cache._resolve_descriptor(info)
+            desc2 = cache._resolve_descriptor(encoding)
             self.assertEqual(desc1, desc2)
             self.assertTrue(isinstance(desc1, class_item))
             self.assertTrue(isinstance(desc2, class_item))
@@ -306,8 +307,9 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         info = 'path={path}&create_using=some_module.some_function&items=plugins' \
                ''.format(path=path.replace(os.sep, '%2F'))
         os.environ['WAYS_DESCRIPTORS'] = info
-        self.cache.init_plugins()
-        descriptor = self.cache._resolve_descriptor(info)
+        ways.clear()
+        ways.api.init_plugins()
+        descriptor = cache._resolve_descriptor(info)
         self.assertEqual(1, len(descriptor))
 
 
@@ -331,7 +333,7 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('fizz/buzz')
         absolute_info = context.as_dict()
 
-        self.cache.clear()
+        ways.clear()
 
         relative = textwrap.dedent(
             '''
@@ -365,7 +367,7 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('some/place')
         self.assertEqual(context, None)
 
-        self.cache.clear()
+        ways.clear()
 
         contents = textwrap.dedent(
             '''
@@ -443,7 +445,7 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('fizz/buzz/pop/fizz/library')
         absolute_info = context.as_dict()
 
-        self.cache.clear()
+        ways.clear()
 
         contents = textwrap.dedent(
             '''
@@ -515,7 +517,7 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('job/library/reference')
         absolute_info = context.as_dict()
 
-        self.cache.clear()
+        ways.clear()
 
         contents = textwrap.dedent(
             r'''
@@ -570,7 +572,7 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('foo/bar')
         absolute_info = context.data[key]
 
-        self.cache.clear()
+        ways.clear()
 
         contents = textwrap.dedent(
             '''
@@ -617,7 +619,7 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('bar', assignment='foo')
         yml_assignment = context.get_assignment()
 
-        self.cache.clear()
+        ways.clear()
 
         config = textwrap.dedent(
             '''

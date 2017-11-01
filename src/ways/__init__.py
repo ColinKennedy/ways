@@ -26,6 +26,8 @@ __version__ = "0.1.0b1"
 
 
 ACTION_CACHE = collections.OrderedDict()
+DESCRIPTORS = []
+DESCRIPTOR_LOAD_RESULTS = []
 PLUGIN_CACHE = collections.OrderedDict()
 PLUGIN_CACHE['hierarchy'] = collections.OrderedDict()
 PLUGIN_CACHE['all_plugins'] = []
@@ -366,6 +368,8 @@ def clear():
         pass
 
     del PLUGIN_LOAD_RESULTS[:]
+    del DESCRIPTOR_LOAD_RESULTS[:]
+    del DESCRIPTORS[:]
     sit.clear_aliases()
     sit.clear_contexts()
     resource.reset_asset_classes()

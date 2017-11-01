@@ -65,7 +65,7 @@ class Common(common_test.ContextTestCase):
 
         plugin_file = self._make_plugin_folder_with_plugin2(contents=contents)
 
-        self.cache.add_search_path(os.path.dirname(plugin_file))
+        ways.api.add_search_path(os.path.dirname(plugin_file))
 
         return ways.api.get_context('a/context')
 
@@ -293,7 +293,7 @@ class FailureTestCase(common_test.ContextTestCase):
         with open(temp_file, 'w') as file_:
             file_.write(contents)
 
-        self.cache.load_plugin(temp_file)
+        ways.api.load_plugin(temp_file)
 
         # Because the module failed to import, the action won't be visible
         action = ways.get_action(name, hierarchy=hierarchy)
@@ -343,7 +343,7 @@ class FailureTestCase(common_test.ContextTestCase):
         with open(temp_file, 'w') as file_:
             file_.write(contents)
 
-        self.cache.load_plugin(temp_file)
+        ways.api.load_plugin(temp_file)
 
         # The module is importable so we can find out action
         action = ways.get_action(name, hierarchy=hierarchy)

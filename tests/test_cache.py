@@ -23,8 +23,8 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
         '''Add a plugin file and then read its contents.'''
         plugin_file = self._make_plugin_folder_with_plugin()
 
-        self.cache.add_search_path(os.path.dirname(plugin_file))
-        plugins = self.cache.get_all_plugins()
+        ways.api.add_search_path(os.path.dirname(plugin_file))
+        plugins = ways.api.get_all_plugins()
         plugin_names = [plugin.__class__.__name__ for plugin in plugins]
 
         self.assertEqual(plugins[0].sources, (plugin_file, ))
@@ -91,8 +91,8 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
         with open(os.path.join(inner_folder, 'some_plugin.json'), 'w') as file_:
             json.dump(inner_plugin_file, file_)
 
-        self.cache.add_search_path(plugin_folder)
-        plugins = self.cache.get_all_plugins()
+        ways.api.add_search_path(plugin_folder)
+        plugins = ways.api.get_all_plugins()
 
         plugin_names = [plugin.get_id() for plugin in plugins]
         self.assertEqual(plugin_names, ['models', 'rigs'])
@@ -111,9 +111,9 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
         '''Test that clearing the cache works properly.'''
         common_test.create_plugin(hierarchy=('foo', 'bar'))
 
-        had_plugins = bool(self.cache.get_all_plugins())
-        self.cache.clear()
-        self.assertTrue(not self.cache.get_all_plugins() and had_plugins)
+        had_plugins = bool(ways.api.get_all_plugins())
+        ways.clear()
+        self.assertTrue(not ways.api.get_all_plugins() and had_plugins)
 
 
 class CacheCreatePlugin(common_test.ContextTestCase):
@@ -126,7 +126,7 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 
         found_classes = \
             [obj.__class__ for obj
-             in self.cache.plugin_cache['hierarchy'][plugin.get_hierarchy()]['master']]
+             in ways.PLUGIN_CACHE['hierarchy'][plugin.get_hierarchy()]['master']]
 
         self.assertEqual(found_classes, [plugin])
 
@@ -137,7 +137,7 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 
         found_classes = \
             [obj.__class__ for obj
-             in self.cache.plugin_cache['hierarchy'][plugin1.get_hierarchy()]['master']]
+             in ways.PLUGIN_CACHE['hierarchy'][plugin1.get_hierarchy()]['master']]
 
         self.assertEqual(found_classes, [plugin1, plugin2])
 
@@ -149,7 +149,7 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 
         found_classes = \
             [obj.__class__ for obj
-             in self.cache.plugin_cache['hierarchy'][plugin.get_hierarchy()][assignment]]
+             in ways.PLUGIN_CACHE['hierarchy'][plugin.get_hierarchy()][assignment]]
 
         self.assertEqual(found_classes, [plugin])
 
