@@ -172,7 +172,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
         with open(os.path.join(directory, 'sheet.yml'), 'w') as file_:
             file_.write(plugin)
 
-        self.cache.add_search_path(directory)
+        ways.api.add_search_path(directory)
 
         context = ways.api.get_context('foo', assignment=assignment)
 
@@ -210,7 +210,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
         with open(os.path.join(directory, 'sheet.yml'), 'w') as file_:
             file_.write(plugin)
 
-        self.cache.add_search_path(assignment_directory)
+        ways.api.add_search_path(assignment_directory)
 
         context = ways.api.get_context('foo', assignment=assignment)
 
@@ -310,7 +310,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
         with open(os.path.join(directory, 'sheet2.yml'), 'w') as file_:
             file_.write(plugin2)
 
-        self.cache.add_search_path(assignment_directory)
+        ways.api.add_search_path(assignment_directory)
 
         context1 = ways.api.get_context('foo', assignment=assignment)
         context2 = ways.api.get_context('foo', assignment='fizz')
@@ -374,9 +374,9 @@ class ContextMethodTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('maya/exports/thing')
 
         expected_number_of_plugins = len(
-            self.cache.plugin_cache['hierarchy'][('maya', 'exports', 'thing')]['master'])
+            ways.PLUGIN_CACHE['hierarchy'][('maya', 'exports', 'thing')]['master'])
         expected_number_of_plugins += len(
-            self.cache.plugin_cache['hierarchy'][('maya', 'exports')]['master'])
+            ways.PLUGIN_CACHE['hierarchy'][('maya', 'exports')]['master'])
 
         self.assertEqual(expected_number_of_plugins, 4)
         # This context should be missing at least one plugin
@@ -398,9 +398,9 @@ class ContextMethodTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('maya/exports/thing')
 
         expected_number_of_plugins = len(
-            self.cache.plugin_cache['hierarchy'][('maya', 'exports', 'thing')]['master'])
+            ways.PLUGIN_CACHE['hierarchy'][('maya', 'exports', 'thing')]['master'])
         expected_number_of_plugins += len(
-            self.cache.plugin_cache['hierarchy'][('maya', 'exports')]['master'])
+            ways.PLUGIN_CACHE['hierarchy'][('maya', 'exports')]['master'])
 
         self.assertEqual(expected_number_of_plugins, 4)
         # This context should be missing at least one plugin

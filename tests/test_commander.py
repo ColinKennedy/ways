@@ -201,10 +201,7 @@ class CommanderTestCase(common_test.ContextTestCase):
 
         action_name = 'get_database_name'
         database_value = 'some/database/URL/or/something'
-        self.cache.add_action(
-            lambda: database_value,
-            name=action_name,
-            hierarchy=hierarchy)
+        ways.api.add_action(lambda: database_value, name=action_name, hierarchy=hierarchy)
 
         action = context.get_action(action_name)
         self.assertEqual(action(), database_value)

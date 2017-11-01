@@ -11,8 +11,12 @@ It's recommended to always import and use modules, here.
 '''
 
 # IMPORT LOCAL LIBRARIES
+from .cache import load_plugin
 from .cache import find_context
+from .cache import init_plugins
 from .cache import add_descriptor
+from .cache import add_search_path
+from .cache import get_all_plugins
 from .parse import ContextParser
 # Lower-level debug functions
 from .trace import trace_actions
@@ -111,6 +115,10 @@ __all__ = [
     'ContextParser',
 
     'add_descriptor',
+    'add_search_path',
+    'load_plugin',
+    'get_all_plugins',
+    'init_plugins',
 
     'Find',
 

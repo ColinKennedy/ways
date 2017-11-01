@@ -20,439 +20,383 @@ import ways
 
 # IMPORT LOCAL LIBRARIES
 from . import common
-from .retro import single
 
 
-# TODO : Check to see if this class is even necessary. We may be able to get
-#        away with a simple set of functions!
-#
-@six.add_metaclass(single.SingletonContainer)
-class HistoryCache(object):
+def _resolve_descriptor(description):
+    '''Build a descriptor object from a variety of input.
 
-    '''A singleton that stores every Plugin and Action.
+    Args:
+        description (dict or str):
+            Some information to create a descriptor object from.
+            If the descriptor is a string and it is a directory on the path,
+            ways.api.Descriptor is returned. If it is an encoded URI,
+            the string is parsed into a dict and processed.
+            If it's a dict, the dictionary is used, as-is.
 
-    It also determines how those objects are collected, which is later used
-    by retrieved and resolved by Context objects.
-
-    Note:
-        Here's a short description about Context, Action, and Plugin objects
-        are stored in this cache.
-
-        A Context is nothing without Plugin objects. Which Plugin objects
-        that a Context uses is determined by that Context's hierarchy.
-        For example, a Context with hierarchy "some/hierarchy" will inherit
-        from the 'some' Context (and, consequently, all of that parent Context's
-        Plugin objects) and then all of the Plugins found in "some/hierarchy".
-
-        It's very common for a Context to be built from other Contexts as
-        well as Plugins, since Context and Plugin have very similar interfaces.
-
-        Actions work exactly the same way. Actions are bound to a hierarchy.
-        If an Action is requested for a Context and it isn't defined, the
-        Context will look up its hierarchy of Context objects and try to find
-        an Action with the same name.
+    Returns:
+        <ways.api.Descriptor> or NoneType:
+            Some descriptor object that works with the given input.
 
     '''
+    from . import descriptor  # Avoiding a cyclic import
 
-    def __init__(self):
-        '''Create the cache and a default priority.'''
-        super(HistoryCache, self).__init__()
-        self.descriptors = []
-        self.plugin_cache = ways.PLUGIN_CACHE
-        self.action_cache = ways.ACTION_CACHE
-        self.plugin_cache.setdefault('hierarchy', collections.OrderedDict())
-        self.plugin_cache.setdefault('all_plugins', [])
-        self.plugin_load_results = ways.PLUGIN_LOAD_RESULTS
-        self.descriptor_load_results = []
-
-        self.init_plugins()
-
-    @classmethod
-    def _resolve_descriptor(cls, description):
-        '''Build a descriptor object from a variety of input.
-
-        Args:
-            description (dict or str):
-                Some information to create a descriptor object from.
-                If the descriptor is a string and it is a directory on the path,
-                ways.descriptor.Descriptor is returned. If it is
-                an encoded URI, the string is parsed into a dict and processed.
-                If it's a dict, the dictionary is used, as-is.
-
-        Returns:
-            <ways.descriptor.Descriptor> or NoneType:
-                Some descriptor object that works with the given input.
-
-        '''
-        from . import descriptor  # Avoiding a cyclic import
-
-        def get_description_from_path(desc):
-            '''Build a descriptor from a string path.'''
-            func = None
-            try:
-                if os.path.isdir(desc):
-                    func = descriptor.FolderDescriptor
-                elif os.path.isfile(desc):
-                    func = descriptor.FileDescriptor
-            except TypeError:
-                return
-
-            if func:
-                return func(desc)
-
-        def get_description_info(description):
-            '''Build a descriptor from an encoded URI.'''
-            if not isinstance(description, six.string_types):
-                return None
-
-            description = six.moves.urllib.parse.parse_qs(description)
-            if not description:
-                return None
-
-            # Make sure that single-item elements are actually single-items
-            # Sometimes dicts come in like this, for example:
-            # {
-            #     'create_using': ['ways.api.GitLocalDescriptor']
-            # }
-            #
-            description['create_using'] = \
-                description.get('create_using', ['ways.api.FolderDescriptor'])[0]
-
-            return get_description_from_dict(description)
-
-        def get_description_from_dict(description):
-            '''Build a descriptor from a Python dict.'''
-            def try_load(obj, description):
-                '''Load the object, as-is.'''
-                return obj(**description)
-
-            descriptor_class = description.get(
-                'create_using', descriptor.FolderDescriptor)
-            actual_description = {key: value for key, value
-                                  in description.items() if key != 'create_using'}
-
-            try:
-                descriptor_class = import_object(descriptor_class)
-            except (AttributeError, ImportError):
-                pass
-
-            try:
-                return try_load(descriptor_class, actual_description)
-            except Exception:
-                # TODO : LOG the err
-                raise ValueError('Detected object, "{cls_}" could not be called. '
-                                 'Please make sure it is on the PYTHONPATH and '
-                                 'there are no errors in the class/function.'
-                                 ''.format(cls_=descriptor_class))
-
-        final_descriptor = None
-        for choice_strategy in (get_description_info,
-                                get_description_from_path,
-                                get_description_from_dict):
-            final_descriptor = choice_strategy(description)
-
-            if final_descriptor is not None:
-                break
-
-        return final_descriptor
-
-    def init_plugins(self):
-        '''Create the Descriptor and Plugin objects found in our environment.
-
-        This method should only be run, once, when the cache is first
-        initialized.
-
-        '''
-        def get_items_from_env_var(env_var):
-            '''Get all non-empty items in some environment variable.'''
-            items = []
-            for item in os.getenv(env_var, '').split(os.pathsep):
-                item = item.strip()
-                if item:
-                    items.append(item)
-            return items
-
-        plugin_files = []
-        # TODO : This is too confusing. There are "Plugin" files which are just
-        #        Python files that get read, PluginSheets, which are
-        #        YAML/JSON/Python files that contains Plugins. And Plugin class,
-        #        which isn't even a file. This needs to be fixed, badly
-        #
-        for item in get_items_from_env_var(common.PLUGINS_ENV_VAR):
-            plugin_files.extend(common.get_python_files(item))
-
-        for item in plugin_files:
-            self.load_plugin(item)
-
-        for item in get_items_from_env_var(common.DESCRIPTORS_ENV_VAR):
-            self.add_descriptor(item)
-
-    def add_descriptor(self, description, update=True):
-        '''Add an object that describes the location of Plugin objects.
-
-        Args:
-            description (dict or str):
-                Some information to create a descriptor object from.
-                If the descriptor is a string and it is a directory on the path,
-                ways.api.FolderDescriptor is returned. If it is
-                an encoded URI, the string is parsed into a dict and processed.
-                If it's a dict, the dictionary is used, as-is.
-            update (:obj:`bool`, optional):
-                If True, immediately recalculate all of the Plugin objects
-                in this cache. Default is True.
-
-        '''
-        info = {'item': description}
-
+    def get_description_from_path(desc):
+        '''Build a descriptor from a string path.'''
+        func = None
         try:
-            final_descriptor = self._resolve_descriptor(description)
-        except ValueError:
-            _, _, traceback_ = sys.exc_info()
-            info.update(
-                {
-                    'status': common.FAILURE_KEY,
-                    'reason': common.RESOLUTION_FAILURE_KEY,
-                    'traceback': traceback_,
-                }
-            )
-            self.descriptor_load_results.append(info)
-            # TODO : logging?
-            print('Description: "{desc}" could not become a descriptor class.'
-                  ''.format(desc=description))
+            if os.path.isdir(desc):
+                func = descriptor.FolderDescriptor
+            elif os.path.isfile(desc):
+                func = descriptor.FileDescriptor
+        except TypeError:
             return
 
+        if func:
+            return func(desc)
+
+    def get_description_info(description):
+        '''Build a descriptor from an encoded URI.'''
+        if not isinstance(description, six.string_types):
+            return None
+
+        description = six.moves.urllib.parse.parse_qs(description)
+        if not description:
+            return None
+
+        # Make sure that single-item elements are actually single-items
+        # Sometimes dicts come in like this, for example:
+        # {
+        #     'create_using': ['ways.api.GitLocalDescriptor']
+        # }
+        #
+        description['create_using'] = \
+            description.get('create_using', ['ways.api.FolderDescriptor'])[0]
+
+        return get_description_from_dict(description)
+
+    def get_description_from_dict(description):
+        '''Build a descriptor from a Python dict.'''
+        def try_load(obj, description):
+            '''Load the object, as-is.'''
+            return obj(**description)
+
+        descriptor_class = description.get(
+            'create_using', descriptor.FolderDescriptor)
+        actual_description = {key: value for key, value
+                              in description.items() if key != 'create_using'}
+
         try:
-            final_descriptor = final_descriptor.get_plugins
+            descriptor_class = import_object(descriptor_class)
+        except (AttributeError, ImportError):
+            pass
+
+        try:
+            return try_load(descriptor_class, actual_description)
+        except Exception:
+            # TODO : LOG the err
+            raise ValueError('Detected object, "{cls_}" could not be called. '
+                             'Please make sure it is on the PYTHONPATH and '
+                             'there are no errors in the class/function.'
+                             ''.format(cls_=descriptor_class))
+
+    final_descriptor = None
+    for choice_strategy in (get_description_info,
+                            get_description_from_path,
+                            get_description_from_dict):
+        final_descriptor = choice_strategy(description)
+
+        if final_descriptor is not None:
+            break
+
+    return final_descriptor
+
+
+def init_plugins():
+    '''Create the Descriptor and Plugin objects found in our environment.
+
+    This method ideally should only ever be run once, when Ways first starts.
+
+    '''
+    ways.clear()
+
+    def get_items_from_env_var(env_var):
+        '''Get all non-empty items in some environment variable.'''
+        items = []
+        for item in os.getenv(env_var, '').split(os.pathsep):
+            item = item.strip()
+            if item:
+                items.append(item)
+        return items
+
+    plugin_files = []
+    # TODO : This is too confusing. There are "Plugin" files which are just
+    #        Python files that get read, PluginSheets, which are
+    #        YAML/JSON/Python files that contains Plugins. And Plugin class,
+    #        which isn't even a file. This needs to be fixed, badly
+    #
+    for item in get_items_from_env_var(common.PLUGINS_ENV_VAR):
+        plugin_files.extend(common.get_python_files(item))
+
+    for item in plugin_files:
+        load_plugin(item)
+
+    for item in get_items_from_env_var(common.DESCRIPTORS_ENV_VAR):
+        add_descriptor(item)
+
+
+def add_descriptor(description, update=True):
+    '''Add an object that describes the location of Plugin objects.
+
+    Args:
+        description (dict or str):
+            Some information to create a descriptor object from.
+            If the descriptor is a string and it is a directory on the path,
+            ways.api.FolderDescriptor is returned. If it is
+            an encoded URI, the string is parsed into a dict and processed.
+            If it's a dict, the dictionary is used, as-is.
+        update (:obj:`bool`, optional):
+            If True, add this Descriptor's plugins to Ways immediately.
+            If False, the user must register a Descriptor's plugins.
+            Default is True.
+
+    '''
+    info = {'item': description}
+
+    try:
+        final_descriptor = _resolve_descriptor(description)
+    except ValueError:
+        _, _, traceback_ = sys.exc_info()
+        info.update(
+            {
+                'status': common.FAILURE_KEY,
+                'reason': common.RESOLUTION_FAILURE_KEY,
+                'traceback': traceback_,
+            }
+        )
+        ways.DESCRIPTOR_LOAD_RESULTS.append(info)
+        # TODO : logging?
+        print('Description: "{desc}" could not become a descriptor class.'
+              ''.format(desc=description))
+        return
+
+    try:
+        final_descriptor = final_descriptor.get_plugins
+    except AttributeError:
+        pass
+
+    if not callable(final_descriptor):
+        _, _, traceback_ = sys.exc_info()
+        info.update(
+            {
+                'status': common.FAILURE_KEY,
+                'reason': common.NOT_CALLABLE_KEY,
+                'traceback': traceback_,
+            }
+        )
+        ways.DESCRIPTOR_LOAD_RESULTS.append(info)
+        # TODO : logging?
+        print('Description: "{desc}" created a descriptor that cannot '
+              'load plugins.'.format(desc=description))
+        return
+
+    ways.DESCRIPTORS.append(final_descriptor)
+
+    info.update(
+        {
+            'status': common.SUCCESS_KEY,
+        }
+    )
+    ways.DESCRIPTOR_LOAD_RESULTS.append(info)
+
+    if update:
+        update_plugins()
+
+    return final_descriptor
+
+
+def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNMENT):
+    '''Add a created action to Ways.
+
+    Args:
+        action (<ways.api.Action>):
+            The action to add. Action objects are objects that act
+            upon Context objects to gather some kind of information.
+        name (:obj:`str`, optional):
+            A name to associate with this action. The name must be unique
+            to this hierarchy/assignment or it risks overriding another
+            Action that might already exist at the same location.
+            If no name is given, the name on the action is tried, instead.
+            Default: ''.
+        assignment (:obj:`str`, optional): The group to add this action to,
+                                            Default: 'master'.
+
+    Raises:
+        RuntimeError: If no hierarchy is given and no hierarchy could be
+                        found on the given action.
+        RuntimeError: If no name is given and no name could be found
+                        on the given action.
+
+    '''
+    if name == '':
+        try:
+            name = action.name
         except AttributeError:
             pass
 
-        if not callable(final_descriptor):
-            _, _, traceback_ = sys.exc_info()
-            info.update(
-                {
-                    'status': common.FAILURE_KEY,
-                    'reason': common.NOT_CALLABLE_KEY,
-                    'traceback': traceback_,
-                }
-            )
-            self.descriptor_load_results.append(info)
-            # TODO : logging?
-            print(
-                'Description: "{desc}" created a descriptor that cannot '
-                'load plugins.'.format(desc=description))
-            return
-
-        self.descriptors.append(final_descriptor)
-
-        info.update(
-            {
-                'status': common.SUCCESS_KEY,
-            }
-        )
-        self.descriptor_load_results.append(info)
-
-        if update:
-            self.update()
-
-        return final_descriptor
-
-    def add_action(self, action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNMENT):
-        '''Add a created action to this cache.
-
-        Args:
-            action (<ways.api.Action>):
-                The action to add. Action objects are objects that act
-                upon Context objects to gather some kind of information.
-            name (:obj:`str`, optional):
-                A name to associate with this action. The name must be unique
-                to this hierarchy/assignment or it risks overriding another
-                Action that might already exist at the same location.
-                If no name is given, the name on the action is tried, instead.
-                Default: ''.
-            assignment (:obj:`str`, optional): The group to add this action to,
-                                               Default: 'master'.
-
-        Raises:
-            RuntimeError: If no hierarchy is given and no hierarchy could be
-                          found on the given action.
-            RuntimeError: If no name is given and no name could be found
-                          on the given action.
-
-        '''
-        if name == '':
-            try:
-                name = action.name
-            except AttributeError:
-                pass
-
-            try:
-                if name == '':
-                    name = action.__name__
-            except AttributeError:
-                raise RuntimeError('Action: "{act!r}" has no name property '
-                                   'and no name was specified to add_action. '
-                                   'add_action cannot continue.'
-                                   ''.format(act=action))
-
-        # TODO : Possibly change with a "get_hierarchy" function
-        if hierarchy == '':
-            try:
-                hierarchy = action.get_hierarchy()
-            except AttributeError:
-                raise RuntimeError('Action: "{act!r}" has no get_hierarchy '
-                                   'method and no hierarchy was given to '
-                                   'add_action. add_action cannot continue.'
-                                   ''.format(act=action))
-
-        hierarchy = common.split_hierarchy(hierarchy)
-
-        # Set defaults (if needed)
-        self.action_cache.setdefault(hierarchy, collections.OrderedDict())
-        self.action_cache[hierarchy].setdefault(assignment, dict())
-        self.action_cache[hierarchy][assignment][name] = action
-
-    @classmethod
-    def add_plugin(cls, *args, **kwargs):
-        '''Add a created plugin to this cache.
-
-        Args:
-            plugin (<ways.api.Plugin>):
-                The plugin to add. These Plugin objects describe parts of a
-                Context.
-            assignment (:obj:`str`, optional): The group to add this plugin to,
-                                               Default: 'master'.
-
-        '''
-        return ways.add_plugin(*args, **kwargs)
-
-    def add_search_path(self, path, update=True):
-        '''Add a directory to search for Plugin objects.
-
-        Note:
-            This is just a convenience method that calls add_descriptor,
-            under the hood.
-
-        Args:
-            path (str):
-                The full path to a directory with plugin files.
-            update (:obj:`bool`, optional):
-                If True, immediately recalculate all of the Plugin objects
-                in this cache. Default is True.
-
-        '''
-        self.add_descriptor(path, update=update)
-
-    def get_assignments(self, hierarchy):
-        '''list[str]: Get the assignments for a hierarchy key in plugins.'''
-        hierarchy = common.split_hierarchy(hierarchy)
-        return self.plugin_cache['hierarchy'][hierarchy].keys()
-
-    def get_all_plugins(self):
-        '''list[<pathfinder.plugin.Plugin>]: Every registered plugin.'''
-        return self.plugin_cache['all_plugins']
-
-    def get_all_contexts(self):
-        '''Get or Create every Context instance that has plugins.
-
-        Warning:
-            This method can potentially be slow if there are a lot of Context
-            objects left to be defined. That said, the second time this method
-            is called, it'll be fast because the Context instances will
-            be retrieved from the flyweight cache.
-
-        Returns:
-            list[<ways.api.Context>]: The Context objects defined in this system.
-
-        '''
-        from . import situation
-        contexts = []
-        used_hierarchy_assignment_pairs = []
-        for hierarchy, info in six.iteritems(self.plugin_cache['hierarchy']):
-            for assignment in six.iterkeys(info):
-                pair = (hierarchy, assignment)
-                if pair not in used_hierarchy_assignment_pairs:
-                    used_hierarchy_assignment_pairs.append(pair)
-                    contexts.append(situation.get_context(
-                        hierarchy=hierarchy, assignment=assignment))
-        return contexts
-
-    # TODO : This should be renamed. Since this isn't a Plugin but a PluginSheet
-    def load_plugin(self, item):
-        '''Load the Python file as a plugin.
-
-        Args:
-            item (str): The absolute path to a valid Python file (py or pyc).
-
-        '''
-        info = {'item': item}
-
         try:
-            module = imp.load_source('module', item)
-        except Exception as err:
-            _, _, traceback_ = sys.exc_info()
-            info.update(
-                {
-                    'status': common.FAILURE_KEY,
-                    'reason': common.IMPORT_FAILURE_KEY,
-                    'exception': err,
-                    'traceback': traceback_,
-                }
-            )
-            self.plugin_load_results.append(info)
-            return
-
-        try:
-            func = module.main
+            if name == '':
+                name = action.__name__
         except AttributeError:
-            # A plugin file isn't required to have a main function
-            # so we can just return, here
-            #
-            info.update(
-                {
-                    'status': common.SUCCESS_KEY,
-                    'details': 'no_main_function',
-                }
-            )
-            return
+            raise RuntimeError('Action: "{act!r}" has no name property '
+                               'and no name was specified to add_action. '
+                               'add_action cannot continue.'
+                               ''.format(act=action))
 
+    # TODO : Possibly change with a "get_hierarchy" function
+    if hierarchy == '':
         try:
-            func()
-        except Exception as err:
-            _, _, traceback_ = sys.exc_info()
-            info.update(
-                {
-                    'status': common.FAILURE_KEY,
-                    'reason': common.LOAD_FAILURE_KEY,
-                    'exception': err,
-                    'traceback': traceback_,
-                }
-            )
-            self.plugin_load_results.append(info)
-            return
+            hierarchy = action.get_hierarchy()
+        except AttributeError:
+            raise RuntimeError('Action: "{act!r}" has no get_hierarchy '
+                               'method and no hierarchy was given to '
+                               'add_action. add_action cannot continue.'
+                               ''.format(act=action))
 
+    hierarchy = common.split_hierarchy(hierarchy)
+
+    # Set defaults (if needed)
+    ways.ACTION_CACHE.setdefault(hierarchy, collections.OrderedDict())
+    ways.ACTION_CACHE[hierarchy].setdefault(assignment, dict())
+    ways.ACTION_CACHE[hierarchy][assignment][name] = action
+
+
+def add_search_path(path, update=True):
+    '''Add a directory to search for Plugin objects.
+
+    Note:
+        This is just a convenience method that calls add_descriptor,
+        under the hood.
+
+    Args:
+        path (str):
+            The full path to a directory with plugin files.
+        update (:obj:`bool`, optional):
+            If True, add this Descriptor's plugins to Ways immediately.
+            If False, the user must register a Descriptor's plugins.
+            Default is True.
+
+    '''
+    return add_descriptor(path, update=update)
+
+
+def get_assignments(hierarchy):
+    '''list[str]: Get the assignments for a hierarchy key in plugins.'''
+    hierarchy = common.split_hierarchy(hierarchy)
+    return ways.PLUGIN_CACHE['hierarchy'][hierarchy].keys()
+
+
+def get_all_plugins():
+    '''list[<pathfinder.plugin.Plugin>]: Every registered plugin.'''
+    return ways.PLUGIN_CACHE['all_plugins']
+
+
+def get_all_contexts():
+    '''Get or Create every Context instance that has plugins.
+
+    Warning:
+        This method can potentially be slow if there are a lot of Context
+        objects left to be defined. That said, the second time this method
+        is called, it'll be fast because the Context instances will
+        be retrieved from the Context flyweight cache.
+
+    Returns:
+        list[<ways.api.Context>]: The Context objects defined in this system.
+
+    '''
+    from . import situation
+    contexts = []
+    used_hierarchy_assignment_pairs = []
+    for hierarchy, info in six.iteritems(ways.PLUGIN_CACHE['hierarchy']):
+        for assignment in six.iterkeys(info):
+            pair = (hierarchy, assignment)
+            if pair not in used_hierarchy_assignment_pairs:
+                used_hierarchy_assignment_pairs.append(pair)
+                contexts.append(situation.get_context(
+                    hierarchy=hierarchy, assignment=assignment))
+    return contexts
+
+
+# TODO : This should be renamed. Since this isn't a Plugin but a PluginSheet
+def load_plugin(item):
+    '''Load the Python file as a plugin.
+
+    Args:
+        item (str): The absolute path to a valid Python file (py or pyc).
+
+    '''
+    info = {'item': item}
+
+    try:
+        module = imp.load_source('module', item)
+    except Exception as err:
+        _, _, traceback_ = sys.exc_info()
+        info.update(
+            {
+                'status': common.FAILURE_KEY,
+                'reason': common.IMPORT_FAILURE_KEY,
+                'exception': err,
+                'traceback': traceback_,
+            }
+        )
+        ways.PLUGIN_LOAD_RESULTS.append(info)
+        return
+
+    try:
+        func = module.main
+    except AttributeError:
+        # A plugin file isn't required to have a main function
+        # so we can just return, here
+        #
         info.update(
             {
                 'status': common.SUCCESS_KEY,
+                'details': 'no_main_function',
             }
         )
-        self.plugin_load_results.append(info)
+        return
 
-    def update(self):
-        '''Look up every plugin in every descriptor and register them.'''
-        plugins = [plugin for descriptor_method in self.descriptors
-                   for plugin in descriptor_method()]
+    try:
+        func()
+    except Exception as err:
+        _, _, traceback_ = sys.exc_info()
+        info.update(
+            {
+                'status': common.FAILURE_KEY,
+                'reason': common.LOAD_FAILURE_KEY,
+                'exception': err,
+                'traceback': traceback_,
+            }
+        )
+        ways.PLUGIN_LOAD_RESULTS.append(info)
+        return
 
-        _conform_plugins_with_assignments(plugins)
+    info.update(
+        {
+            'status': common.SUCCESS_KEY,
+        }
+    )
+    ways.PLUGIN_LOAD_RESULTS.append(info)
 
-        for plugin, assignment in plugins:
-            self.add_plugin(plugin, assignment=assignment)
 
-    def clear(self):
-        '''Remove all Plugin and Action objects from this cache.'''
-        self.descriptor_load_results = self.descriptor_load_results.__class__()
-        self.descriptors = self.descriptors.__class__()
+def update_plugins():
+    '''Look up every plugin in every descriptor and register them to Ways.'''
+    plugins = [plugin for descriptor_method in ways.DESCRIPTORS
+               for plugin in descriptor_method()]
 
-        ways.clear()
+    _conform_plugins_with_assignments(plugins)
+
+    for plugin, assignment in plugins:
+        ways.add_plugin(plugin, assignment=assignment)
 
 
 def _conform_plugins_with_assignments(plugins):
@@ -517,35 +461,16 @@ def import_object(name):
     return module
 
 
-def add_descriptor(*args, **kwargs):
-    '''Add an object that describes the location of Plugin objects.
-
-    Args:
-        description (dict or str):
-            Some information to create a descriptor object from.
-            If the descriptor is a string and it is a directory on the path,
-            ways.api.FolderDescriptor is returned. If it is
-            an encoded URI, the string is parsed into a dict and processed.
-            If it's a dict, the dictionary is used, as-is.
-        update (:obj:`bool`, optional):
-            If True, immediately recalculate all of the Plugin objects
-            in this cache. Default is True.
-
-    '''
-    history = HistoryCache()
-    history.add_descriptor(*args, **kwargs)
-
-
 # TODO : This function could use more unittests and a facelift
 def find_context(path, sort_with='', resolve_with=('glob', ), search=glob.glob):
     '''Get the best Context object for some path.
 
     Important:
-        This function calls cache.HistoryCache.get_all_contexts(), which is a
-        very expensive method because it is instantiating every Context for
-        every hierarchy/assignment that is in the cache. Once it is run though,
-        this method should be fast because the flyweight factory for each
-        Context will just return the instances you already created.
+        This function calls get_all_contexts, which is a
+        very expensive method because it instantiates every Context for
+        every hierarchy/assignment that Ways sees in the cache if it doesn't
+        already exist. The second time this function runs it will be fast though
+        because every hierarchy/assignment will use the cached Context objects.
 
     Args:
         path (str):
@@ -656,13 +581,8 @@ def find_context(path, sort_with='', resolve_with=('glob', ), search=glob.glob):
                          ''.format(sort=sort_with, opt=sort_types.keys()))
 
     # Process each Context until a proper Context object is found
-    history = HistoryCache()
-    rearranged_contexts = sort_type(history.get_all_contexts())
+    rearranged_contexts = sort_type(get_all_contexts())
     for context in rearranged_contexts:
         found_paths = search(context.get_str(resolve_with=resolve_with))
         if path in found_paths:
             return context
-
-
-if __name__ == '__main__':
-    print(__doc__)

@@ -36,15 +36,13 @@ class ActionRegistry(type):
         except AttributeError:
             return new_class
 
-        # Hold a reference to the plugin registry in each plugin instance
-        history_cache = cache.HistoryCache()
         # Register the Plugin into our registry
         try:
             assignment = new_class.get_assignment()
         except AttributeError:
             assignment = common.DEFAULT_ASSIGNMENT
 
-        history_cache.add_action(new_class(), assignment=assignment)
+        cache.add_action(new_class(), assignment=assignment)
 
         return new_class
 
@@ -125,6 +123,5 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
                         on the given action.
 
     '''
-    history = cache.HistoryCache()
-    return history.add_action(
+    return cache.add_action(
         action=action, name=name, hierarchy=hierarchy, assignment=assignment)

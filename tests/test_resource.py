@@ -68,7 +68,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
             },
         }
         plugin = self._make_plugin_folder_with_plugin(contents=contents)
-        self.cache.add_search_path(os.path.dirname(plugin))
+        ways.api.add_search_path(os.path.dirname(plugin))
 
         some_path = '/jobs/some_job/some_other_kind/of/real_folders'
         context = ways.api.get_context('some/other/context')
