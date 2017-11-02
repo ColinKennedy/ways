@@ -100,37 +100,6 @@ def expand_string(format_string, obj):
     return info
 
 
-def split_into_parts(obj, split, as_type=tuple):
-    '''Split a string-like object into parts, using some split variable.
-
-    Example:
-        >>> path = 'some/thing'
-        >>> split_into_parts(path, split='/')
-        ... ('some', 'thing')
-
-    Args:
-        obj (str or iterable): The object to split.
-        split (str): The character(s) to split obj by.
-        as_type (:obj:`callable[iterable[str]]`, optional):
-            The type to return from this function. Default: tuple.
-
-    Returns:
-        as_type[str]: The split pieces.
-
-    '''
-    obj = check.force_itertype(obj)
-    obj = (part.strip() for obj_ in obj for part in obj_.split(split))
-    return as_type(part for part in obj if part)
-
-
-# pylint: disable=invalid-name
-split_hierarchy = functools.partial(split_into_parts, split=HIERARCHY_SEP)
-
-
-# pylint: disable=invalid-name
-split_by_comma = functools.partial(split_into_parts, split=',')
-
-
 def get_platforms(obj):
     '''tuple[str]: The the platform(s) for the given object.'''
     try:
@@ -163,6 +132,58 @@ def get_python_files(item):
 
         return files
     return []
+
+
+def split_into_parts(obj, split, as_type=tuple):
+    '''Split a string-like object into parts, using some split variable.
+
+    Example:
+        >>> path = 'some/thing'
+        >>> split_into_parts(path, split='/')
+        ... ('some', 'thing')
+
+    Args:
+        obj (str or iterable): The object to split.
+        split (str): The character(s) to split obj by.
+        as_type (:obj:`callable[iterable[str]]`, optional):
+            The type to return from this function. Default: tuple.
+
+    Returns:
+        as_type[str]: The split pieces.
+
+    '''
+    obj = check.force_itertype(obj)
+    obj = (part.strip() for obj_ in obj for part in obj_.split(split))
+    return as_type(part for part in obj if part)
+
+
+# pylint: disable=invalid-name
+split_hierarchy = functools.partial(split_into_parts, split=HIERARCHY_SEP)
+
+
+# pylint: disable=invalid-name
+split_by_comma = functools.partial(split_into_parts, split=',')
+
+
+def import_object(name):
+    '''Import a object of any kind, as long as it is on the PYTHONPATH.
+
+    Args:
+        name (str): An import name (Example: 'ways.api.Plugin')
+
+    Raises:
+        ImportError: If some object down the name chain was not importable or
+                     if the entire name could not be found in the PYTHONPATH.
+
+    Returns:
+        The imported module, classobj, or callable function, or object.
+
+    '''
+    components = name.split('.')
+    module = __import__(components[0])
+    for comp in components[1:]:
+        module = getattr(module, comp)
+    return module
 
 
 def memoize(function):

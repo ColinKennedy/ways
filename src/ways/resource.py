@@ -27,6 +27,7 @@ Attibutes:
 # IMPORT STANDARD LIBRARIES
 import os
 import re
+import ast
 import functools
 import itertools
 import collections
@@ -39,6 +40,7 @@ from . import trace
 from . import common
 from . import finder as find
 from . import situation as sit
+from .core import check
 from .core import compat
 
 __DEFAULT_OBJECT = object()
@@ -223,7 +225,7 @@ class Asset(object):
 
         return [token for token in tokens if token not in self.info]
 
-    def get_value(self, name):
+    def get_value(self, name, real=False):
         '''Get some information about this asset, using a token-name.
 
         If the information is directly available, we return it. If it isn't
@@ -252,6 +254,10 @@ class Asset(object):
 
         Args:
             name (str): The token to get the value of.
+            real (:obj:`bool`, optional):
+                If True, return the value as-is. If False and there are
+                any functions to run using "before_return", process the value
+                before returning it. Default: False.
 
         Returns:
             str: The value at the given token.
@@ -264,7 +270,42 @@ class Asset(object):
         for key, value in six.iteritems(self.info):
             parser[key] = value
 
-        return self._get_value(name, parser)
+        details = parser.get_all_mapping_details()
+        value = self._get_value(name, parser)
+
+        if real:
+            return value
+
+        before_return = check.force_itertype(
+            details.get(name, dict()).get('before_return', []))
+
+        for function in before_return:
+            # TODO : change with something better
+            try:
+                function = common.import_object(function)
+            except ImportError:
+                pass
+            else:
+                value = function(value)
+                continue
+
+            try:
+                value = ast.literal_eval(
+                    '{function}({value})'.format(function=function, value=value))
+                # ValueError - Malformed string
+            except (ValueError, NameError):
+                try:
+                    # TODO : Remove this eval
+                    # pylint: disable=eval-used
+                    value = eval('{function}({value})'.format(function=function, value=value))
+                except NameError:
+                    # NameError will happen if the function is not importable
+                    raise ValueError('Function: "{func}" could not be run'.format(func=function))
+
+
+            # value = ast.literal_eval(value)
+
+        return value
 
     def _get_value(self, name, parser):
         '''Get some information about this asset, using a token-name.

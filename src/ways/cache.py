@@ -86,7 +86,7 @@ def _resolve_descriptor(description):
                               in description.items() if key != 'create_using'}
 
         try:
-            descriptor_class = import_object(descriptor_class)
+            descriptor_class = common.import_object(descriptor_class)
         except (AttributeError, ImportError):
             pass
 
@@ -438,27 +438,6 @@ def _conform_plugins_with_assignments(plugins):
         plugins[index] = (plugin, assignment)
 
     return plugins
-
-
-def import_object(name):
-    '''Import a object of any kind, as long as it is on the PYTHONPATH.
-
-    Args:
-        name (str): An import name (Example: 'ways.api.Plugin')
-
-    Raises:
-        ImportError: If some object down the name chain was not importable or
-                     if the entire name could not be found in the PYTHONPATH.
-
-    Returns:
-        The imported module, classobj, or callable function, or object.
-
-    '''
-    components = name.split('.')
-    module = __import__(components[0])
-    for comp in components[1:]:
-        module = getattr(module, comp)
-    return module
 
 
 # TODO : This function could use more unittests and a facelift

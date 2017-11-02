@@ -114,29 +114,6 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
     def test_asset_get_missing_required_tokens(self):
         '''Find the tokens that are needed by a Asset/Context.'''
-        contents = {
-            'globals': {},
-            'plugins': {
-                'a_parse_plugin': {
-                    'mapping': '/jobs/{JOB}/some_kind/{THING}/real_folders',
-                    'mapping_details': {
-                        'JOB': {
-                            'parse': {
-                                'regex': '.+',
-                            },
-                            'required': True,
-                        },
-                        'THING': {
-                            'parse': {
-                                'regex': '.+',
-                            },
-                            'required': False,
-                        },
-                    },
-                    'hierarchy': 'some/other/context',
-                },
-            },
-        }
         contents = textwrap.dedent(
             '''
             globals: {}
@@ -653,68 +630,191 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         self.assertEqual(len(created_shots), 2)
         self.assertTrue(all((isinstance(shot, ways.api.Asset) for shot in created_shots)))
 
-    def test_asset_get_value_of_subtoken_that_is_defined(self):
-        '''Get the string of some subtoken in an Asset.
+   # def test_asset_get_value_of_subtoken_that_is_defined(self):
+   #     '''Get the string of some subtoken in an Asset.
 
-        This value has been defined in our Asset.
+   #     This value has been defined in our Asset.
 
-        '''
-        pass
+   #     '''
+   #     pass
 
-    def test_asset_get_value_of_subtoken_that_is_not_defined(self):
-        '''Get the string of some subtoken in an Asset.
+   # def test_asset_get_value_of_subtoken_that_is_not_defined(self):
+   #     '''Get the string of some subtoken in an Asset.
 
-        This subtoken's value is not defined in our Asset but the parent token's
-        value is. We are going to forcibly parse the subtoken and return it,
-        instead.
+   #     This subtoken's value is not defined in our Asset but the parent token's
+   #     value is. We are going to forcibly parse the subtoken and return it,
+   #     instead.
 
-        '''
-        pass
+   #     '''
+   #     pass
 
-    def test_asset_get_parse_of_token(self):
-        '''Get the parse information of some token.'''
-        pass
+   # def test_asset_get_parse_of_token(self):
+   #     '''Get the parse information of some token.'''
+   #     pass
 
-    def test_asset_get_parse_of_subtoken(self):
-        '''Get the parse information of some subtoken.'''
-        pass
+   # def test_asset_get_parse_of_subtoken(self):
+   #     '''Get the parse information of some subtoken.'''
+   #     pass
 
-    def test_asset_get_str(self):
-        '''Get the full, resolved path of the Asset.'''
-        pass
+   # def test_asset_get_str(self):
+   #     '''Get the full, resolved path of the Asset.'''
+   #     pass
 
-    def test_asset_get_str_failed_with_missing_required_tokens(self):
-        '''Try to get the full, resolved path of the Asset but fail.
+   # def test_asset_get_str_failed_with_missing_required_tokens(self):
+   #     '''Try to get the full, resolved path of the Asset but fail.
 
-        The method fails because there is at least one missing, required token.
+   #     The method fails because there is at least one missing, required token.
 
-        '''
-        pass
+   #     '''
+   #     pass
 
-    def test_asset_context_substitution_with_context(self):
-        '''Change an Asset object's Context with another Context.
+   # def test_asset_context_substitution_with_context(self):
+   #     '''Change an Asset object's Context with another Context.
 
-        This is particularly useful when we're dealing with asset management
-        and we don't know the output path of the asset.
+   #     This is particularly useful when we're dealing with asset management
+   #     and we don't know the output path of the asset.
 
-        Using this system, we can interchange an asset between its location on
-        a database and where it exists, locally, without rebuilding the instance.
+   #     Using this system, we can interchange an asset between its location on
+   #     a database and where it exists, locally, without rebuilding the instance.
 
-        '''
-        pass
+   #     '''
+   #     pass
 
-    def test_asset_context_substitution_with_context_fail(self):
-        '''Fail to substitute a Context with another Context.
+   # def test_asset_context_substitution_with_context_fail(self):
+   #     '''Fail to substitute a Context with another Context.
 
-        If the substituted Context does not have all of the same required tokens,
-        it cannot be substituted.
+   #     If the substituted Context does not have all of the same required tokens,
+   #     it cannot be substituted.
 
-        '''
-        pass
+   #     '''
+   #     pass
+
+    def test_get_value_builtin(self):
+        '''Cast the return of "get_value" into another datatype.'''
+        contents = textwrap.dedent(
+            r'''
+            plugins:
+                a_parse_plugin:
+                    hierarchy: job
+                    mapping: '/tmp/{JOB}'
+                    mapping_details:
+                        JOB:
+                            mapping: '{JOB_NAME}_{JOB_ID}'
+                        JOB_ID:
+                            before_return:
+                                - int
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents)
+
+        asset = ways.api.get_asset({'JOB': 'something_123'}, context='job')
+        self.assertEqual(asset.get_value('JOB_ID'), 123)
+
+    def test_get_value_function(self):
+        '''Run a function and return its value instead of the original value.'''
+        contents = textwrap.dedent(
+            r'''
+            plugins:
+                scene_plugin:
+                    hierarchy: job/scene
+                    mapping: '/tmp/{JOB}/{SCENE}'
+                    mapping_details:
+                        SCENE:
+                            before_return:
+                                - ways.common.get_platforms
+                shot_plugin:
+                    hierarchy: job/scene/shot
+                    mapping: '/tmp/{JOB}/{SCENE}/{SHOT}'
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents)
+
+        shot = ways.api.get_asset(
+            {'JOB': 'something_123', 'SCENE': 'foo', 'SHOT': 'bar'},
+            context='job/scene/shot')
+
+        scene = shot.get_value('SCENE')
+        self.assertEqual(('*', ), scene)
+
+    def test_get_value_multifunction(self):
+        '''Run multiple, separate functions before returning "get_value".'''
+        contents = textwrap.dedent(
+            r'''
+            plugins:
+                scene_plugin:
+                    hierarchy: job/scene
+                    mapping: '/tmp/{JOB}/{SCENE}'
+                    mapping_details:
+                        SCENE:
+                            before_return:
+                                - ways.common.get_platforms
+                                - ways.trace.trace_assignment
+                shot_plugin:
+                    hierarchy: job/scene/shot
+                    mapping: '/tmp/{JOB}/{SCENE}/{SHOT}'
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents)
+
+        shot = ways.api.get_asset(
+            {'JOB': 'something_123', 'SCENE': 'foo', 'SHOT': 'bar'},
+            context='job/scene/shot')
+
+        scene = shot.get_value('SCENE')
+        self.assertEqual(ways.api.DEFAULT_ASSIGNMENT, scene)
+
+#     # def test_get_value_yaml_function(self):
+#     #     '''Use YAML to define a function, in-file, and use it.'''
+
+    def test_get_value_single_function(self):
+        '''Run a function in "before_value" even if it was not given as a list.'''
+        contents = textwrap.dedent(
+            r'''
+            plugins:
+                scene_plugin:
+                    hierarchy: job/scene
+                    mapping: '/tmp/{JOB}/{SCENE}'
+                    mapping_details:
+                        SCENE:
+                            before_return: ways.common.get_platforms
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents)
+
+        scene = ways.api.get_asset(
+            {'JOB': 'something_123', 'SCENE': 'foo'}, context='job/scene')
+
+        scene = scene.get_value('SCENE')
+        self.assertEqual(('*', ), scene)
+
+    # def test_get_value_invalid_syntax(self):
+    #     '''Make "get_value" fail because the user had invalid syntax.'''
+
+    def test_get_value_real(self):
+        '''Force "get_value" to return the original string.'''
+        contents = textwrap.dedent(
+            r'''
+            plugins:
+                scene_plugin:
+                    hierarchy: job/scene
+                    mapping: '/tmp/{JOB}/{SCENE}'
+                    mapping_details:
+                        SCENE:
+                            before_return:
+                                - ways.common.get_platforms
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents)
+
+        name = 'foo'
+        scene = ways.api.get_asset(
+            {'JOB': 'something_123', 'SCENE': name}, context='job/scene')
+
+        scene = scene.get_value('SCENE', real=True)
+        self.assertEqual(name, scene)
 
 
 class AssetRegistrationTestCase(common_test.ContextTestCase):
-
     '''Test the different ways that we can register classes for our assets.'''
 
     def setUp(self):
