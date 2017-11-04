@@ -141,11 +141,6 @@ class Context(object):
 
         return data
 
-    def get_all_plugins(self, hierarchy='', assignment=''):
-        '''list[<pathfinder.plugin.Plugin>]: The found plugins, if any.'''
-        if hierarchy == '':
-            hierarchy = self.hierarchy
-
         return ways.get_plugins(hierarchy, assignment)
 
     @property
@@ -186,6 +181,13 @@ class Context(object):
         '''<pathfinder.commander.Action> or NoneType: The Action object.'''
         return ways.get_action(
             name=name, hierarchy=self.hierarchy, assignment=self.assignment)
+
+    def get_all_plugins(self, hierarchy='', assignment=''):
+        '''list[<pathfinder.plugin.Plugin>]: The found plugins, if any.'''
+        if hierarchy == '':
+            hierarchy = self.hierarchy
+
+        return ways.get_plugins(hierarchy, assignment)
 
     def get_assignment(self):
         '''str: The assignment for this Context.'''
@@ -233,6 +235,29 @@ class Context(object):
             return dict()
 
         return value
+
+    def get_mapping_tokens(self, mapping=''):
+        '''list[str]: Get all of the tokens that are in this Context's mapping.'''
+        if not mapping:
+            mapping = self.get_mapping()
+
+        return parse.find_tokens(mapping)
+
+    def get_all_tokens(self):
+        '''Get the tokens in this Context's mapping and any subtokens.
+
+        Subtokens are tokens that are within another token's mapping.
+
+        Returns:
+            set[str]: All of the tokens known to this Context.
+
+        '''
+        tokens = set()
+        for token, info in six.iteritems(self.get_mapping_details()):
+            mapping = info.get('mapping')
+            tokens.update(self.get_mapping_tokens(mapping))
+
+        return tokens
 
     @classmethod
     def validate_plugin(cls, plugin):
@@ -433,6 +458,7 @@ def context_connection_info():
         Raises:
             RuntimeError: If there is no absolute plugin in our list of plugins,
                           this function cannot be resolved into absolute.
+            RuntimeError: If not a single plugin provided has a mapping.
 
         Returns:
             str: The resolved mapping.
@@ -475,6 +501,9 @@ def context_connection_info():
         # In order to resolve the absolute mapping, we need a root path to use
         base_mapping = conn.get_right_most_priority(
             plugins[:abs_index + 1], method=operator.methodcaller('get_mapping'))
+
+        if base_mapping is None:
+            raise RuntimeError('None of the plugins provided have mappings. Cannot continue.')
 
         # TODO : Can't we move this block above base_mapping?
         # The resolved mapping came from an absolute plugin
@@ -584,6 +613,30 @@ def context_connection_info():
 
         'get_skip_to': conn.get_right_most_priority,
     }
+
+
+def get_all_contexts():
+    '''Get or Create every Context instance that has plugins.
+
+    Warning:
+        This method can potentially be slow if there are a lot of Context
+        objects left to be defined. That said, the second time this method
+        is called, it'll be fast because the Context instances will
+        be retrieved from the Context flyweight cache.
+
+    Returns:
+        list[<ways.api.Context>]: The Context objects defined in this system.
+
+    '''
+    contexts = []
+    used_hierarchy_assignment_pairs = []
+    for hierarchy, info in six.iteritems(ways.PLUGIN_CACHE['hierarchy']):
+        for assignment in six.iterkeys(info):
+            pair = (hierarchy, assignment)
+            if pair not in used_hierarchy_assignment_pairs:
+                used_hierarchy_assignment_pairs.append(pair)
+                contexts.append(get_context(hierarchy=hierarchy, assignment=assignment))
+    return contexts
 
 
 def get_context(hierarchy,

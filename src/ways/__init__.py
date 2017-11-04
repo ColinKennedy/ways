@@ -312,6 +312,11 @@ def get_plugins(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
     return plugins
 
 
+def get_parse_order():
+    '''list[str]: The order to try all of the parsers registered by the user.'''
+    return os.getenv(common.PARSERS_ENV_VAR, 'regex').split(os.pathsep)
+
+
 def get_priority():
     '''Determine the order that assignments are searched through for plugins.
 

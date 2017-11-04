@@ -28,12 +28,17 @@ Attibutes:
 import os
 import re
 import ast
+import operator
 import functools
 import itertools
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
+import Levenshtein
 import six
+
+# IMPORT WAYS LIBRARIES
+import ways
 
 # IMPORT LOCAL LIBRARIES
 from . import trace
@@ -58,7 +63,7 @@ class Asset(object):
 
     '''
 
-    def __init__(self, info, context=None, parse_type='regex'):
+    def __init__(self, info, context, parse_type='regex'):
         '''Create the instance and store its info and Context.
 
         Note:
@@ -68,22 +73,23 @@ class Asset(object):
         Args:
             info (dict or str):
                 The information about this asset to store.
-            context (:obj:`<sit.Context>`, optional):
+            context (ways.api.Context):
                 The context that this instance belongs to.
-                If no Context is given, a Context is automatically assigned.
             parse_type (:obj:`str`, optional):
                 The engine that will be used to used to check to make sure
                 that a value is OK before setting it onto our parser.
                 If no context is given, this engine is also used to try
                 to resolve the info given to this asset. Default: 'regex'.
 
+        Raises:
+            ValueError:
+                If the information could not be found from a string or
+                if one or more of this Asset's tokens were not filled by
+                the information that was found.
+
         '''
         super(Asset, self).__init__()
         self.parse_type = parse_type
-
-        if context is None:
-            # context = sit.find_context_from_info(info, parse_type=self.parse_type)
-            raise NotImplementedError('Havent implemented an auto-find Context function yet')
 
         info_ = info
         info = expand_info(info, context)
@@ -301,9 +307,6 @@ class Asset(object):
                 except NameError:
                     # NameError will happen if the function is not importable
                     raise ValueError('Function: "{func}" could not be run'.format(func=function))
-
-
-            # value = ast.literal_eval(value)
 
         return value
 
@@ -879,7 +882,9 @@ def get_asset(info, context=None, *args, **kwargs):
         context (:obj:`<sit.Context> or str or tuple[str]`, optional):
             The Context to use for the asset. If a string is given, it is
             assumed to be the Context's hierarchy and a Context object
-            is constructed.
+            is constructed. If nothing is given, the best possible Context
+            is "found" and tried. This auto-find process is not guaranteed.
+            Default is None.
         *args (list): Optional position variables to pass to our found
                       class's constructor.
         **kwargs (list): Optional keyword variables to pass to our found
@@ -894,10 +899,12 @@ def get_asset(info, context=None, *args, **kwargs):
         for the given Context, return a generic Asset object.
 
     '''
-    if context is None:
-        raise NotImplementedError('Havent implemented an auto-find Context function yet')
-
-    context = sit.get_context(context)
+    if not context:
+        context = _find_context_using_info(info)
+        if context is None:
+            raise ValueError('Context could not be found for info, "{info}".'.format(info=info))
+    else:
+        context = sit.get_context(context)
 
     info = expand_info(info, context=context)
     hierarchy = context.get_hierarchy()
@@ -979,9 +986,6 @@ def expand_info(info, context=None):
         dict[str]: The asset info.
 
     '''
-    if context is None:
-        raise NotImplementedError('Havent implemented an auto-find Context function yet')
-
     # Is already a dict
     if isinstance(info, dict):
         return info
@@ -1005,6 +1009,236 @@ def expand_info(info, context=None):
         return dict(info)
     except TypeError:
         return dict()
+
+
+def _find_context_using_info(obj):
+    '''Using some Asset's info, get the best-possible Context.
+
+    This function is meant to assist "get_asset" whenever a Context is not given.
+
+    Args:
+        obj (dict[str: str] or str):
+            The information used to get the Context.
+            It's best to give a string whenever possible but a dict can be
+            used instead, if not.
+
+    Returns:
+        <ways.api.Context>: The "best-guess" Context for some information.
+
+    '''
+    def contains_all_tokens(obj, context):
+        # TODO : Make this function better. It's potentially harmful right now
+        tokens = context.get_all_tokens()
+        parser = context.get_parser()
+        for key, item in six.iterkeys(obj):
+            if key not in tokens or not parser.is_valid(key, item):
+                return False
+
+        return True
+
+    def get_ranking(context, obj):
+        '''Find how similar a given string is to a Context's mapping.
+
+        Args:
+            context (<ways.api.Context>):
+                The context to get the mapping of and use for ranking.
+            obj (str):
+                The string to compare to the given Context and rank.
+
+        Returns:
+            float:
+                A value from 0 to 1 - 0 being having no correlation and 1 being
+                an exact match.
+
+        '''
+        mapping = context.get_mapping()
+
+        # This algorithm gets thrown off by any contents inside {}s
+        # so we're going to make the mapping from strings like
+        # '/jobs/{JOBS}/here' into '/jobs//here' to make the sort more fair
+        #
+        mapping = re.sub('({[^{}}]*)', mapping, '')
+        return Levenshtein.ratio(mapping, obj)
+
+    def get_best_context_by_rankings(contexts, mapping):
+        '''Find the Context that best matches a mapping.
+
+        Args:
+            contexts (list[<ways.api.Context>]):
+                The Context objects to consider.
+            mapping (str):
+                The asset string that will be used to find the best Context.
+                The "best" Context is determined by how closely a Context's
+                mapping is, compared to this given mapping.
+
+        Raises:
+            ValueError:
+                If two values tie for the "best" Context and Ways cannot choose
+                one of them.
+
+        Returns:
+            <ways.api.Context>: The best match.
+
+        '''
+        rankings = [get_ranking(context, mapping) for context in contexts]
+        high_score = max(rankings)
+
+        # If the high score is listed twice then we can't know which Context
+        # to use so raise an error
+        high_scorers = []
+        for context, ranking in six.moves.zip(contexts, rankings):
+            if ranking == high_score:
+                high_scorers.append(context)
+
+        there_was_a_tie_for_first_place = len(high_scorers) > 1
+
+        if there_was_a_tie_for_first_place:
+            raise ValueError(
+                'Two or more Context objects were selected. Cannot continue.',
+                high_scorers)
+
+        return contexts[rankings.index(high_score)]
+
+    def get_context_info_from_pool(contexts, pool):
+        '''Assign information to given Contexts using a pool of Context info.
+
+        To keep computations light, we filter out the best possible Context
+        candidates and then get their information from the total Contexts.
+
+        Args:
+            contexts (list[<ways.api.Context>]):
+                The Context objects to get token information for.
+            pool (list[tuple[<ways.api.Context>, dict[str, str]]]):
+                All of the known Contexts and their token info that Ways knows of.
+
+        Returns:
+            pool (list[tuple[<ways.api.Context>, dict[str, str]]]):
+                The original Context objects and its pool information.
+
+        '''
+        return {context: pool[context] for context in contexts}
+
+    def get_valid_contexts(info):
+        '''Filter out Contexts that expect different info that what is given.
+
+        Args:
+            info (list[tuple[<ways.api.Context>, dict[str, str]]]):
+                All of the known Contexts and their token info that Ways knows of.
+
+        Returns:
+            list[<ways.api.Context>]:
+                The Context objects that are all compatible with their given info.
+
+        '''
+        valid_contexts = []
+        for context, details in six.iteritems(info):
+            parser = context.get_parser()
+
+            # We're going to try to invalidate every token of a Context using
+            # every parser that Ways knows about. If the Context doesn't
+            # ever return False then that means it is 'valid'
+            #
+            tokens_and_parsers = itertools.product(
+                six.iteritems(details), ways.get_parse_order())
+            for (token, value), parse_type in tokens_and_parsers:
+                if not parser.is_valid(token, value, parse_type):
+                    break
+            else:
+                valid_contexts.append(context)
+
+        return valid_contexts
+
+    def tiebreak(contexts, info):
+        '''Attempt to find the "best" Context from a group of tied Contexts.
+
+        Ways does this by looking at the parse groups defined for each Context.
+        If the Context objects's found information doesn't match what the
+        Context expects, it's "excluded". The Context that survives validation
+        is declared the "winner" because there was nothing wrong with it.
+
+        Args:
+            contexts (list[<ways.api.Context>]):
+                The tied Context objects to get a "best" Context of.
+            info (list[dict[<ways.api.Context>: dict[str, str]]]):
+                All of the known Contexts and their token info that Ways knows of.
+
+        Raises:
+            ValueError:
+                If the tie could not be broken. i.e. Two or more Contexts
+                with are both valid, given the user's information.
+
+        Returns:
+            <ways.api.Context>: The "winner" Context.
+
+        '''
+        tied_info = get_context_info_from_pool(contexts, info)
+        valid_contexts = get_valid_contexts(tied_info)
+
+        if len(valid_contexts) == 1:
+            # Tie-break succeeded
+            return valid_contexts[0]
+
+        raise ValueError(
+            'Ways got two or more Contexts that tied for mapping, "{mapping}. '
+            'Ways cannot decide which Contexts to use, "{contexts}".'
+            ''.format(mapping=mapping, contexts=contexts))
+
+    mapping = ''
+    contexts_ = sit.get_all_contexts()
+    contexts_with_info = dict()
+    contexts = []
+    if not isinstance(obj, collections.Mapping):
+        mapping = obj
+
+        # The user gave a string - so let's make it into a dict
+        # whatever string -> dict conversions are successful *might* be the
+        # context that we're looking to find - so add them
+        #
+        for context in contexts_:
+            try:
+                expanded_info = common.expand_string(context.get_mapping(), obj)
+                if not expanded_info:
+                    raise ValueError
+            except (ValueError, RuntimeError):
+                # expand_string raises an error if context.get_mapping is invalid
+                pass
+            else:
+                contexts.append(context)
+                contexts_with_info[context] = expanded_info
+
+        if not contexts:
+            raise ValueError('No plugins found had mappings. Cannot continue.')
+    else:
+        # Otherwise, if it is a mapping (i.e. a dict), we use all contexts
+        for context in contexts_:
+            contexts.append(context)
+            contexts_with_info[context] = obj
+
+    # We'll find the Context we need faster if we sort the more likely
+    # candidates to the front. But we can only do that if obj is a string
+    #
+    # In this example, we use a Levenshtein sort to figure out the "best" Context
+    #
+    if mapping:
+        try:
+            return get_best_context_by_rankings(contexts, mapping)
+        except ValueError as err:
+            # Try to break the tie, if we can
+            return tiebreak(err.args[-1], contexts_with_info)
+
+    valid_contexts = []
+    for context in contexts:
+        try:
+            Asset(obj, context)
+        except ValueError:
+            continue
+        valid_contexts.append(context)
+
+    if len(valid_contexts) == 1:
+        return valid_contexts[0]
+
+    # Try to break the tie, if we can
+    return tiebreak(valid_contexts, contexts_with_info)
 
 
 def register_asset_info(class_type, context, init=None, children=False):

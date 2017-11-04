@@ -12,7 +12,6 @@ It's recommended to always import and use modules, here.
 
 # IMPORT LOCAL LIBRARIES
 from .cache import load_plugin
-from .cache import find_context
 from .cache import init_plugins
 from .cache import add_descriptor
 from .cache import add_search_path
@@ -123,6 +122,4 @@ __all__ = [
     'Find',
 
     'AssetFinder',
-
-    'find_context',
 ]

@@ -50,6 +50,9 @@ def get_right_most_priority(plugins, method):
         The output type of the given method.
 
     '''
+    if not plugins:
+        return
+
     for plugin in reversed(plugins):
         try:
             value = method(plugin)
@@ -59,9 +62,6 @@ def get_right_most_priority(plugins, method):
             if not value:
                 continue
             return value
-
-    raise NotImplementedError(
-        'Need to figure out what to do about default values')
 
 
 def try_and_return(methods):
