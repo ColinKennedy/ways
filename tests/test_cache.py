@@ -61,6 +61,7 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
             plugin_folder, ways.api.PLUGIN_INFO_FILE_NAME + '.json')
 
         assignment = 'tttzt'
+        os.environ[ways.api.PRIORITY_ENV_VAR] = 'tttzt'
         plugin_info = {
             'assignment': assignment,
             'recursive': True,
@@ -75,14 +76,13 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
             'globals': {},
             'plugins': {
                 'some_unique_plugin_name': {
-                    'hidden': True,
-                    'navigatable': False,
-                    'selectable': True,
                     'hierarchy': '/something/whatever',
                     'uuid': '9e9c849b-d98f-4a2e-a295-67f643646c97',
-                    'id': 'rigs',
+                    'data': {
+                        'something': 8,
+                    },
                 },
-            }
+            },
         }
         inner_folder = os.path.join(plugin_folder, 'inner_folder')
         if not os.path.isdir(inner_folder):
@@ -92,10 +92,10 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
             json.dump(inner_plugin_file, file_)
 
         ways.api.add_search_path(plugin_folder)
-        plugins = ways.api.get_all_plugins()
 
-        plugin_names = [plugin.get_id() for plugin in plugins]
-        self.assertEqual(plugin_names, ['models', 'rigs'])
+        context = ways.api.get_context('/something/whatever')
+        expected_result = {'something': 8}
+        self.assertEqual(expected_result, context.data)
 
     # def test_pass_a_failed_import(self):
     #     '''Pass files that fail to import.
@@ -162,14 +162,24 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 
 #         '''
 #         class SomePlugin(plugin.Plugin):
-#             def is_hidden(self):
-#                 return True
+#             def get_groups(self):
+#                 return ('', )
 
-#             def is_navigatable(self):
-#                 return False
+#             def get_hierarchy(self):
+#                 return ('asdf', 'whatever')
 
-#             def is_selectable(self):
-#                 return False
+#             def get_id(self):
+#                 return ''
+
+#             def get_platforms(self):
+#                 return ''
+
+#             def get_uuid(self):
+#                 return ''
+
+#         class JobPlugin(plugin.Plugin):
+
+#             assignment = 'someJob_123'
 
 #             def get_groups(self):
 #                 return ('', )
@@ -190,43 +200,6 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 
 #             assignment = 'someJob_123'
 
-#             def is_hidden(self):
-#                 return True
-
-#             def is_navigatable(self):
-#                 return False
-
-#             def is_selectable(self):
-#                 return False
-
-#             def get_groups(self):
-#                 return ('', )
-
-#             def get_hierarchy(self):
-#                 return ('asdf', 'whatever')
-
-#             def get_id(self):
-#                 return ''
-
-#             def get_platforms(self):
-#                 return ''
-
-#             def get_uuid(self):
-#                 return ''
-
-#         class JobPlugin(plugin.Plugin):
-
-#             assignment = 'someJob_123'
-
-#             def is_hidden(self):
-#                 return True
-
-#             def is_navigatable(self):
-#                 return False
-
-#             def is_selectable(self):
-#                 return False
-
 #             def get_groups(self):
 #                 return ('', )
 
@@ -246,15 +219,6 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 
 #             assignment = 'ttttt'
 
-#             def is_hidden(self):
-#                 return True
-
-#             def is_navigatable(self):
-#                 return False
-
-#             def is_selectable(self):
-#                 return False
-
 #             def get_groups(self):
 #                 return ('', )
 
@@ -273,15 +237,6 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 #         class ArbitraryPlugin(plugin.Plugin):
 
 #             assignment = 'ttttt'
-
-#             def is_hidden(self):
-#                 return True
-
-#             def is_navigatable(self):
-#                 return False
-
-#             def is_selectable(self):
-#                 return False
 
 #             def get_groups(self):
 #                 return ('', )
@@ -308,15 +263,6 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 
 #             assignment = 'some_assignment'
 
-#             def is_hidden(self):
-#                 return True
-
-#             def is_navigatable(self):
-#                 return False
-
-#             def is_selectable(self):
-#                 return False
-
 #             def get_groups(self):
 #                 return ('', )
 
@@ -335,15 +281,6 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 #         class SomePlugin(plugin.Plugin):
 
 #             assignment = 'asfasdf'
-
-#             def is_hidden(self):
-#                 return True
-
-#             def is_navigatable(self):
-#                 return False
-
-#             def is_selectable(self):
-#                 return False
 
 #             def get_groups(self):
 #                 return ('', )
@@ -402,15 +339,6 @@ def get_example_plugin_file(name='SomePlugin'):
         from ways import situation as sit
 
         class {class_name}(plugin.Plugin):
-            def is_hidden(self):
-                return True
-
-            def is_navigatable(self):
-                return False
-
-            def is_selectable(self):
-                return False
-
             def get_groups(self):
                 return ('', )
 

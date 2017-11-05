@@ -36,12 +36,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -62,12 +58,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -92,12 +84,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -140,12 +128,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -186,12 +170,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -213,12 +193,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -308,12 +284,8 @@ class FindCommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -334,12 +306,8 @@ class FindCommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 

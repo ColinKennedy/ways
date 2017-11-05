@@ -18,29 +18,6 @@ class ContextMergeTestCase(common_test.ContextTestCase):
 
     '''Test the ways that Context objects merge with other Context objects.'''
 
-    def test_make_context_unfindable(self):
-        '''Make sure that Contexts can be protected from being queried.'''
-        contents = textwrap.dedent(
-            r'''
-            globals: {}
-            plugins:
-                relative_plugin:
-                    findable: false
-                    hierarchy: some/hierarchy
-                    mapping: ./scenes/animation
-                    platforms:
-                        - Linux
-                        - Windows
-                        - Darwin
-                    uses:
-                        - maya_project
-                        - houdini_project
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents=contents)
-        context = ways.api.get_context('some/hierarchy')
-        self.assertEqual(context, None)
-
     def test_merge_contexts(self):
         '''Add a Context object into another Context object.
 
@@ -125,7 +102,6 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - darwin
                     uuid: houdini_plugin
                 relative_plugin1:
-                    findable: false
                     hierarchy: '{root}/mocap'
                     mapping: '{root}/scenes/mocap'
                     platforms:
@@ -137,7 +113,6 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - houdini_project
                     uuid: some_relative_plugin1
                 relative_plugin2:
-                    findable: false
                     hierarchy: 'animation'
                     mapping: 'scenes/animation'
                     platforms:
@@ -219,7 +194,6 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - darwin
                     max_folder: /jobs/{JOB}/shots
                 relative_plugin1:
-                    findable: false
                     hierarchy: '{root}/mocap'
                     mapping: '{root}/scenes/mocap'
                     platforms:
@@ -230,7 +204,6 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - maya_project
                     uuid: some_relative_plugin1
                 relative_plugin2:
-                    findable: false
                     hierarchy: '{root}/something'
                     mapping: '{root}/some/folders'
                     platforms:
@@ -260,7 +233,6 @@ class ContextMergeTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 relative_plugin1:
-                    findable: false
                     hierarchy: mocap
                     mapping: '{root}/scenes/mocap'
                     platforms:
@@ -303,7 +275,6 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - darwin
                     max_folder: /jobs/{JOB}/shots
                 relative_plugin1:
-                    findable: false
                     hierarchy: '{root}/mocap'
                     mapping: '{root}/scenes/mocap'
                     platforms:
@@ -314,7 +285,6 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - maya_project
                     uuid: some_relative_plugin1
                 relative_plugin2:
-                    findable: false
                     hierarchy: '{root}/something'
                     mapping: '{root}/some/folders'
                     platforms:

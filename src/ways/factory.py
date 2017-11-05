@@ -128,14 +128,7 @@ class _AssignmentFactory(object):
                 self.get_instance(uses, assignment=assignment, force=True))
 
         for plugin in ways.PLUGIN_CACHE['hierarchy'][hierarchy][assignment]:
-            try:
-                if plugin.is_findable():
-                    plugins.append(plugin)
-            except AttributeError:
-                # If the plugin doesn't say whether it is findable, just assume
-                # that the information was just omitted and that it is findable
-                #
-                plugins.append(plugin)
+            plugins.append(plugin)
 
         if not force and not plugins:
             return

@@ -589,10 +589,6 @@ def context_connection_info():
         return os.path.normpath(''.join(max_folders))
 
     return {
-        'is_hidden': conn.get_right_most_priority,
-        'is_navigatable': conn.get_right_most_priority,
-        'is_selectable': conn.get_right_most_priority,
-
         'get_groups': functools.partial(
             conn.get_intersection_priority,
             method=operator.methodcaller('get_groups')),

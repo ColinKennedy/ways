@@ -103,9 +103,6 @@ def make_plugin_folder(
             'globals': {},
             'plugins': {
                 'some_unique_plugin_name': {
-                    'hidden': False,
-                    'navigatable': True,
-                    'selectable': True,
                     'hierarchy': '/asdf/whatever',
                     'uuid': '0d255517-dbbf-4a49-a8d0-285a06b2aa6d',
                     'id': 'models',
