@@ -207,12 +207,13 @@ class TraceTestCase(Common):
         for hierarchy in hierarchies:
             common_test.create_plugin(hierarchy=hierarchy)
 
-        expected_children = [
+        expected_children = {
             ('foo', 'bar', 'fizz'),
             ('foo', 'bar', 'thing'),
             ('foo', 'bar', 'fizz', 'buzz'),
-        ]
-        self.assertEqual(expected_children, ways.api.get_child_hierarchies(('foo', 'bar')))
+        }
+        self.assertEqual(expected_children,
+                         set(ways.api.get_child_hierarchies(('foo', 'bar'))))
 
 #     # def get_aliased_hierarchy_actions(self):
 #     #     pass

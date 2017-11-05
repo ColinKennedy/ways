@@ -34,7 +34,7 @@ import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
-import Levenshtein
+import pylev
 
 # IMPORT WAYS LIBRARIES
 import ways
@@ -1133,8 +1133,8 @@ def _find_context_using_info(obj):
 
         Returns:
             float:
-                A value from 0 to 1 - 0 being having no correlation and 1 being
-                an exact match.
+                A value from 0 to N - 0 being having no correlation and N
+                being some increasing correlation.
 
         '''
         mapping = context.get_mapping()
@@ -1145,8 +1145,7 @@ def _find_context_using_info(obj):
         #
         mapping = re.sub('({[^{}}]*)', mapping, '')
 
-        # Levenshtein.ratio exists. It uses 'import *' so pylint complains
-        return Levenshtein.ratio(mapping, obj)  # pylint: disable=no-member
+        return pylev.levenshtein(mapping, obj)
 
     def get_best_context_by_rankings(contexts, mapping):
         '''Find the Context that best matches a mapping.

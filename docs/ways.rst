@@ -12,7 +12,6 @@ ways package
     ways.descriptor <descriptor>
     ways.dict_classes <dict_classes>
     ways.finder <finder>
-    ways.finder_common <finder_common>
     ways.parse <parse>
     ways.plugin <plugin>
     ways.resource <resource>
