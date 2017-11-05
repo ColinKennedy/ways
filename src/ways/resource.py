@@ -33,8 +33,8 @@ import itertools
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
-import Levenshtein
 import six
+import Levenshtein
 
 # IMPORT WAYS LIBRARIES
 import ways

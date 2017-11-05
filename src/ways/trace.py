@@ -6,11 +6,11 @@
 # IMPORT STANDARD LIBRARIES
 import collections
 
-# IMPORT WAYS LIBRARIES
-import ways
-
 # IMPORT THIRD-PARTY LIBRARIES
 import six
+
+# IMPORT WAYS LIBRARIES
+import ways
 
 # IMPORT LOCAL LIBRARIES
 from . import common
