@@ -9,6 +9,9 @@ import collections
 # IMPORT WAYS LIBRARIES
 import ways
 
+# IMPORT THIRD-PARTY LIBRARIES
+import six
+
 # IMPORT LOCAL LIBRARIES
 from . import common
 
@@ -249,3 +252,28 @@ def get_all_hierarchies():
 def get_all_assignments():
     '''set[str]: All of the assignments found in our environment.'''
     return set(trace_assignment(plug) for plug in ways.PLUGIN_CACHE.get('all_plugins', []))
+
+
+def get_child_hierarchies(hierarchy):
+    '''list[tuple[str]]: Get hierarchies that depend on the given hierarchy.'''
+    def startswith(base, leaf):
+        '''Check if all tuple items match the start of another tuple.'''
+        if len(base) < len(leaf):
+            base, leaf = leaf, base
+
+        for root, item in six.moves.zip(base, leaf):
+            if root != item:
+                return False
+        return True
+
+    base_hierarchy = trace_hierarchy(hierarchy)
+    children = []
+    for plugin in ways.PLUGIN_CACHE['all_plugins']:
+        hierarchy = plugin.get_hierarchy()
+
+        is_parent = len(hierarchy) < len(base_hierarchy)
+
+        if not is_parent and base_hierarchy != hierarchy and startswith(base_hierarchy, hierarchy):
+            children.append(hierarchy)
+
+    return children

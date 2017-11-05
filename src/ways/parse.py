@@ -73,8 +73,11 @@ class ContextParser(object):
         try:
             expression = info['parse'][resolve_with]
         except KeyError:
-            # If we have no expression then just assume that the value is True
-            return True
+            try:
+                expression = self.get_token_parse(token, resolve_with)
+            except KeyError:
+                # If we have no expression then just assume True
+                return True
 
         return re.match(expression, value) is not None
 

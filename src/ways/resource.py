@@ -28,7 +28,6 @@ Attibutes:
 import os
 import re
 import ast
-import operator
 import functools
 import itertools
 import collections
@@ -127,32 +126,7 @@ class Asset(object):
             list[str]: Any tokens that have no value.
 
         '''
-        parser = self.context.get_parser()
-        required_tokens = parser.get_required_tokens()
-
-        # Start filling the parser
-        for key, value in six.iteritems(self.info):
-            parser[key] = value
-
-        # Get missing tokens
-        missing_tokens = []
-        for token in required_tokens:
-            if token not in parser:
-                missing_tokens.append(token)
-
-        # Try to resolve the tokens
-        # TODO : If I reverse the list, could I get away with not creating a
-        #        copy of missing_tokens? Check with unittests + do some profiling
-        #
-        #        Check after coverage
-        #
-        for token in list(missing_tokens):
-            value = self._get_value(token, parser=parser)
-            if value:
-                parser[token] = value
-                missing_tokens.remove(token)
-
-        return missing_tokens
+        return _get_missing_required_tokens(context=self.context, info=self.info)
 
     def get_str(self, required=True, *args, **kwargs):
         '''Get the full path to the asset, if any.
@@ -344,225 +318,7 @@ class Asset(object):
             str: The value at the given token.
 
         '''
-        def get_value_from_parent(token, parser):
-            '''Get the value of a token by looking up at its parent, recursively.
-
-            In order for this function to return anything, the parent of token
-            must be filled out. Or the parent of that parent etc etc.
-
-            This function is very special because it is able to use a mixture
-            of different text parsing engines to get the desired result.
-
-            Args:
-                token (str):
-                    The token to get the value of, by looking at its parent(s).
-                parser (<ways.api.ContextParser>):
-                    The parser associated with the Context associated
-                    with this Asset.
-
-            Returns:
-                str: The found value. Returns nothing if no value was found.
-
-            '''
-            def get_value_from_parent_regex(parent):
-                '''Use regex to get a value, using known parent tokens.
-
-                Args:
-                    parent (str):
-                        The name of the parent token to try to get a
-                        parse-value for.
-
-                Returns:
-                    dict[str]: The values that were found for each token
-                               and each parent token.
-
-                '''
-                details = parser.get_all_mapping_details()
-                try:
-                    # We must have a mapping to proceed
-                    details[parent]['mapping']
-                except KeyError:
-                    return dict()
-
-                info = dict()
-                for child in parser.get_child_tokens(parent):
-                    value = parser.get_value_from_parent(child, parent, 'regex')
-                    info[child] = value
-
-                return info
-
-            def get_value_from_parent_format(parent):
-                '''Try to expand the parent token, using its mapping.
-
-                Note:
-                    This function will basically always pass as long as
-                    two things are true.
-                    1. The mapping cannot have items side-by-side
-                       Example:
-                           valid - {FOO}_{BAR}
-                           invalid - {FOO}{BAR}
-
-                      If two items are back to back, we can't know where
-                      one item starts and one item ends. We'd need regex
-                      or glob or something else to determin that.
-                    2. The value doesn't match the mapping.
-                       Example:
-                           valid -
-                               mapping - {FOO}_{BAR}
-                               value - SOME_THING
-                           invalid -
-                               mapping - {FOO}_{BAR}
-                               value - SOME-THING
-
-                Examples:
-                    >>> parent = 'SHOT_NAME'
-                    >>> value = 'SH_0020'
-                    >>> details = {'SHOT_NAME': {'mapping': '{SHOT_PREFIX}_{SHOT_NUMBER}'}}
-                    >>> get_value_from_parent_format(parent, value, details)
-                    ... {'SHOT_PREFIX': 'SH', 'SHOT_NUMBER': '0020'}
-
-                Args:
-                    parent (str):
-                        The parent token to expand and get the value of.
-
-                Returns:
-                    dict[str: str]:
-                        The pieces of a string, broken into its various pieces.
-
-                '''
-                details = parser.get_all_mapping_details()
-                try:
-                    value = parser[parent]
-                    return common.expand_string(details[parent].get('mapping', ''), value)
-                except KeyError:
-                    return dict()
-
-            # Try once to get the value if the parser already has it
-            # If not, we'll try to search for it
-            #
-            try:
-                return parser[token]
-            except KeyError:
-                pass
-
-            parents = _get_recursive_parents(token, parser)
-
-            if not parents:
-                return ''
-
-            # TODO : Move this function later
-            def build_value_from_parents(token, parents):
-                '''Get the value by checking every parent of a token recursively.
-
-                Warning:
-                    This function will modify any parser that is passed into it.
-                    The parser is changed intentionally so that the value
-                    can be referenced during recursion (It's treated as
-                    persistent data that gets reused).
-
-                Args:
-                    token (str):
-                        The token to get the value of by looking at its parents.
-                    parents (list[str]):
-                        The parents of token and any parents of those parents.
-                        This list should always start with the immediate parent
-                        of token, followed by other parents-of-parents.
-
-                Returns:
-                    str: The output value.
-
-                '''
-                options = [
-                    get_value_from_parent_format,
-                    get_value_from_parent_regex,
-                ]
-
-                for parent in parents:
-                    value = ''
-                    try:
-                        value = self.info[parent]
-                    except KeyError:
-                        pass
-
-                    for option in options:
-                        try:
-                            info = option(parent)
-                            value = info.get(token)
-                            if value:
-                                return value
-                        except Exception:
-                            pass
-
-                    try:
-                        parents[1:]
-                    except IndexError:
-                        return ''
-
-                    # If we've reached this point, it means that we tried to get
-                    # the value of the parent be couldn't. But there's another
-                    # parent above this parent token so lets keep searching
-                    # until there's no more parents to search
-                    #
-                    value = build_value_from_parents(parent, parents[1:])
-                    if value:
-                        # NOTE: We intentionally add the found value to a parser
-                        #       before retrying to hopefully find the next value
-                        #       faster / more efficiently
-                        #
-                        parser[parent] = value
-                        return self._get_value(token, parser=parser)
-
-            return build_value_from_parents(token, parents)
-
-        def get_value_from_children(token, parser):
-            '''Get a value from a parent token by getting its child values.
-
-            Args:
-                token (str):
-                    The token to get the value of by looking at its children.
-                parser (<ways.api.ContextParser>):
-                    The parser associated with the Context associated
-
-            Returns:
-                dict[str: str]: The found tokens and their values.
-
-            '''
-            mapping = details.get(token, dict()).get('mapping', '')
-            if not mapping:
-                return ''
-
-            children = parser.get_child_tokens(token)
-            if not children:
-                return ''
-
-            info = dict()
-
-            for child in children:
-                try:
-                    value = self.info[child]
-                except KeyError:
-                    value = get_value_from_children(child, parser)
-
-                info[child] = value
-
-            return mapping.format(**info)
-
-        try:
-            # If we have a direct value for the given name, return it
-            return self.info[name]
-        except KeyError:
-            pass
-
-        details = parser.get_all_mapping_details()
-
-        value = get_value_from_parent(name, parser)
-        if value:
-            return value
-
-        # TODO : swap Parent-Search and Child-Search. More often than not,
-        #        it will make systems faster (I think)
-        #
-        return get_value_from_children(name, parser)
+        return _get_value(name, parser, self.info)
 
     def set_value(self, key, value, force=False):
         '''Store the given value to some key.
@@ -1011,8 +767,319 @@ def expand_info(info, context=None):
         return dict()
 
 
+def _get_missing_required_tokens(context, info):
+    '''Find any token that still needs to be filled for our parser.
+
+    If a token is missing but it has child tokens and all of those tokens
+    are defined, it is excluded from the final output. If the missing token
+    is a child of some parent token that is defined, then the value of
+    the token is parsed. If the parse is successful, the token is excluded
+    from the final output.
+
+    Args:
+        context (<ways.api.Context>):
+            The Context to use to get missing tokens.
+        info (dict[str: str]):
+            Token-value pairs that should match 1-to-1 with Context.
+
+    Returns:
+        list[str]:
+            Any tokens that have no value.
+
+    '''
+    parser = context.get_parser()
+    required_tokens = parser.get_required_tokens()
+
+    # Start filling the parser
+    for key, value in six.iteritems(info):
+        parser[key] = value
+
+    # Get missing tokens
+    missing_tokens = []
+    for token in required_tokens:
+        if token not in parser:
+            missing_tokens.append(token)
+
+    # Try to resolve the tokens
+    # TODO : If I reverse the list, could I get away with not creating a
+    #        copy of missing_tokens? Check with unittests + do some profiling
+    #
+    #        Check after coverage
+    #
+    for token in list(missing_tokens):
+        value = _get_value(token, parser=parser, info=info)
+        if value:
+            parser[token] = value
+            missing_tokens.remove(token)
+
+    return missing_tokens
+
+
+def _get_value(name, parser, info):
+    '''Get some information about this asset, using a token-name.
+
+    If the information is directly available, we return it. If it isn't
+    though, it is searched for, using whatever information that we do have.
+
+    If the token name is a child of another token that is defined, we
+    use the parent token to "build" a value for the token that was requested.
+
+    If the token name is a parent of some other tokens that all have values,
+    we try to "build" it again, by composition of this child tokens.
+
+    In both cases, the connection is very implicit. But it lets you do this:
+
+    Example:
+        >>> shot_info = {
+        ...     'JOB': 'someJob',
+        ...     'SCENE': 'SOMETHING',
+        ...     'SHOT': 'sh0010'  # Pretend SHOT_NUMBER is a child of SHOT
+        ... }
+        >>> shot_asset = resource.Asset(shot_info, context='job/scene/shot')
+        >>> shot_asset.get_value('SHOT_NUMBER')
+        ... # Result: '0010'
+
+    Args:
+        name (str): The token to get the value of.
+        parser (:obj:`ways.api.ContextParser`, optional):
+            The parse that contains the information about our Context
+            and Asset.
+        info (dict[str: str]):
+            All of the token-value pairs to use to find a value.
+
+    Returns:
+        str: The value at the given token.
+
+    '''
+    def get_value_from_parent(token, parser, info):
+        '''Get the value of a token by looking up at its parent, recursively.
+
+        In order for this function to return anything, the parent of token
+        must be filled out. Or the parent of that parent etc etc.
+
+        This function is very special because it is able to use a mixture
+        of different text parsing engines to get the desired result.
+
+        Args:
+            token (str):
+                The token to get the value of, by looking at its parent(s).
+            parser (<ways.api.ContextParser>):
+                The parser associated with the Context associated
+                with this Asset.
+            info (dict[str: str]):
+                All of the token-value pairs to use to find a value.
+
+        Returns:
+            str: The found value. Returns nothing if no value was found.
+
+        '''
+        def get_value_from_parent_regex(parent):
+            '''Use regex to get a value, using known parent tokens.
+
+            Args:
+                parent (str):
+                    The name of the parent token to try to get a
+                    parse-value for.
+
+            Returns:
+                dict[str]: The values that were found for each token
+                            and each parent token.
+
+            '''
+            details = parser.get_all_mapping_details()
+            try:
+                # We must have a mapping to proceed
+                details[parent]['mapping']
+            except KeyError:
+                return dict()
+
+            info = dict()
+            for child in parser.get_child_tokens(parent):
+                value = parser.get_value_from_parent(child, parent, 'regex')
+                info[child] = value
+
+            return info
+
+        def get_value_from_parent_format(parent):
+            '''Try to expand the parent token, using its mapping.
+
+            Note:
+                This function will basically always pass as long as
+                two things are true.
+                1. The mapping cannot have items side-by-side
+                    Example:
+                        valid - {FOO}_{BAR}
+                        invalid - {FOO}{BAR}
+
+                    If two items are back to back, we can't know where
+                    one item starts and one item ends. We'd need regex
+                    or glob or something else to determin that.
+                2. The value doesn't match the mapping.
+                    Example:
+                        valid -
+                            mapping - {FOO}_{BAR}
+                            value - SOME_THING
+                        invalid -
+                            mapping - {FOO}_{BAR}
+                            value - SOME-THING
+
+            Examples:
+                >>> parent = 'SHOT_NAME'
+                >>> value = 'SH_0020'
+                >>> details = {'SHOT_NAME': {'mapping': '{SHOT_PREFIX}_{SHOT_NUMBER}'}}
+                >>> get_value_from_parent_format(parent, value, details)
+                ... {'SHOT_PREFIX': 'SH', 'SHOT_NUMBER': '0020'}
+
+            Args:
+                parent (str):
+                    The parent token to expand and get the value of.
+
+            Returns:
+                dict[str: str]:
+                    The pieces of a string, broken into its various pieces.
+
+            '''
+            details = parser.get_all_mapping_details()
+            try:
+                value = parser[parent]
+                return common.expand_string(details[parent].get('mapping', ''), value)
+            except KeyError:
+                return dict()
+
+        # Try once to get the value if the parser already has it
+        # If not, we'll try to search for it
+        #
+        try:
+            return parser[token]
+        except KeyError:
+            pass
+
+        parents = _get_recursive_parents(token, parser)
+
+        if not parents:
+            return ''
+
+        def build_value_from_parents(token, parents, info):
+            '''Get the value by checking every parent of a token recursively.
+
+            Warning:
+                This function will modify any parser that is passed into it.
+                The parser is changed intentionally so that the value
+                can be referenced during recursion (It's treated as
+                persistent data that gets reused).
+
+            Args:
+                token (str):
+                    The token to get the value of by looking at its parents.
+                parents (list[str]):
+                    The parents of token and any parents of those parents.
+                    This list should always start with the immediate parent
+                    of token, followed by other parents-of-parents.
+                info (dict[str: str]):
+                    All of the token-value pairs to use to find a value.
+
+            Returns:
+                str: The output value.
+
+            '''
+            options = [
+                get_value_from_parent_format,
+                get_value_from_parent_regex,
+            ]
+
+            for parent in parents:
+                value = ''
+                try:
+                    value = info[parent]
+                except KeyError:
+                    pass
+
+                for option in options:
+                    try:
+                        info = option(parent)
+                        value = info.get(token)
+                        if value:
+                            return value
+                    except Exception:
+                        pass
+
+                try:
+                    parents[1:]
+                except IndexError:
+                    return ''
+
+                # If we've reached this point, it means that we tried to get
+                # the value of the parent be couldn't. But there's another
+                # parent above this parent token so lets keep searching
+                # until there's no more parents to search
+                #
+                value = build_value_from_parents(parent, parents[1:], info)
+                if value:
+                    # NOTE: We intentionally add the found value to a parser
+                    #       before retrying to hopefully find the next value
+                    #       faster / more efficiently
+                    #
+                    parser[parent] = value
+                    return _get_value(token, parser=parser, info=info)
+
+        return build_value_from_parents(token, parents, info)
+
+    def get_value_from_children(token, parser, info):
+        '''Get a value from a parent token by getting its child values.
+
+        Args:
+            token (str):
+                The token to get the value of by looking at its children.
+            parser (<ways.api.ContextParser>):
+                The parser associated with the Context associated
+            info (dict[str: str]):
+                All of the token-value pairs to use to find a value.
+
+        Returns:
+            dict[str: str]: The found tokens and their values.
+
+        '''
+        mapping = details.get(token, dict()).get('mapping', '')
+        if not mapping:
+            return ''
+
+        children = parser.get_child_tokens(token)
+        if not children:
+            return ''
+
+        info_ = dict()
+
+        for child in children:
+            try:
+                value = info[child]
+            except KeyError:
+                value = get_value_from_children(child, parser, info)
+
+            info_[child] = value
+
+        return mapping.format(**info_)
+
+    try:
+        # If we have a direct value for the given name, return it
+        return info[name]
+    except KeyError:
+        pass
+
+    details = parser.get_all_mapping_details()
+
+    value = get_value_from_parent(name, parser, info)
+    if value:
+        return value
+
+    # TODO : swap Parent-Search and Child-Search. More often than not,
+    #        it will make systems faster (I think)
+    #
+    return get_value_from_children(name, parser, info)
+
+
+# pylint: disable=too-many-branches
 def _find_context_using_info(obj):
-    '''Using some Asset's info, get the best-possible Context.
+    '''Use some Asset's info, get the best-possible Context.
 
     This function is meant to assist "get_asset" whenever a Context is not given.
 
@@ -1026,15 +1093,34 @@ def _find_context_using_info(obj):
         <ways.api.Context>: The "best-guess" Context for some information.
 
     '''
-    def contains_all_tokens(obj, context):
-        # TODO : Make this function better. It's potentially harmful right now
-        tokens = context.get_all_tokens()
+    def contains_all_tokens(context, obj):
+        '''Check that every token in a Context has a vaild value.
+
+        Args:
+            context (<ways.api.Context>):
+                The Context to check for valid token values.
+            obj (dict[str: str]):
+                The token-value pairs for our Context to check if they're valid.
+
+        Returns:
+            bool: If every token for our Context has a valid value.
+
+        '''
         parser = context.get_parser()
-        for key, item in six.iterkeys(obj):
-            if key not in tokens or not parser.is_valid(key, item):
+        details = parser.get_all_mapping_details()
+
+        for token, value in six.iteritems(obj):
+            if token not in details:
+                # If this section of code runs, it means the user passed in
+                # more information that necessary. Just skip it
+                #
+                continue
+
+            # Check to make sure our value is OK
+            if not parser.is_valid(token, value):
                 return False
 
-        return True
+        return not _get_missing_required_tokens(context, obj)
 
     def get_ranking(context, obj):
         '''Find how similar a given string is to a Context's mapping.
@@ -1058,7 +1144,9 @@ def _find_context_using_info(obj):
         # '/jobs/{JOBS}/here' into '/jobs//here' to make the sort more fair
         #
         mapping = re.sub('({[^{}}]*)', mapping, '')
-        return Levenshtein.ratio(mapping, obj)
+
+        # Levenshtein.ratio exists. It uses 'import *' so pylint complains
+        return Levenshtein.ratio(mapping, obj)  # pylint: disable=no-member
 
     def get_best_context_by_rankings(contexts, mapping):
         '''Find the Context that best matches a mapping.
@@ -1211,8 +1299,9 @@ def _find_context_using_info(obj):
     else:
         # Otherwise, if it is a mapping (i.e. a dict), we use all contexts
         for context in contexts_:
-            contexts.append(context)
-            contexts_with_info[context] = obj
+            if contains_all_tokens(context, obj):
+                contexts.append(context)
+                contexts_with_info[context] = obj
 
     # We'll find the Context we need faster if we sort the more likely
     # candidates to the front. But we can only do that if obj is a string

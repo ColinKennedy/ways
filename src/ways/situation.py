@@ -141,8 +141,6 @@ class Context(object):
 
         return data
 
-        return ways.get_plugins(hierarchy, assignment)
-
     @property
     def plugins(self):
         '''Find all of the "valid" plugins for this instance.
@@ -253,7 +251,7 @@ class Context(object):
 
         '''
         tokens = set()
-        for token, info in six.iteritems(self.get_mapping_details()):
+        for _, info in six.iteritems(self.get_mapping_details()):
             mapping = info.get('mapping')
             tokens.update(self.get_mapping_tokens(mapping))
 
