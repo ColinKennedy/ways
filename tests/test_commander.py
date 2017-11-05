@@ -121,7 +121,7 @@ class CommanderTestCase(common_test.ContextTestCase):
 
             @classmethod
             def get_hierarchy(cls):
-                '''The hierarchy.'''
+                '''Gather the hierarchy.'''
                 return ('27ztt', 'whatever')
 
             def __call__(self, *args, **kwargs):
@@ -250,7 +250,7 @@ class FindCommanderTestCase(common_test.ContextTestCase):
 
             @classmethod
             def get_hierarchy(cls):
-                '''The hierarchy.'''
+                '''Gather the hierarchy.'''
                 return ('27ztt', 'whatever')
 
             def __call__(self, *args, **kwargs):

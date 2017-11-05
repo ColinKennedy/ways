@@ -28,7 +28,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
     '''Test the different ways that Descriptor objects are created and loaded.'''
 
     def _local_git_repository_test(self, delete):
-        '''A typing-saver for a few tests in this class.'''
+        '''Create a local git repository and return an example Context.'''
         contents = textwrap.dedent(
             '''
             plugins:

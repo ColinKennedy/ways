@@ -93,7 +93,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         context.data['some']['arbitrary'].append('bar2')
 
         def some_function():
-            '''A function in a different scope to test with.'''
+            '''Do the test using a Context in a different scope.'''
             a_new_context = ways.api.get_context('some/context')
             data = ['info1', 'info2', 3, 'bar', 'bar2']
             self.assertEqual(data, a_new_context.data['some']['arbitrary'])
@@ -101,7 +101,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         some_function()
 
     def test_asset_initialization(self):
-        '''test to make sure that every way to instantiate an Asset works.'''
+        '''Test to make sure that every way to instantiate an Asset works.'''
         contents = textwrap.dedent(
             '''
             plugins:
@@ -159,7 +159,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         folders = ['/library', 'library/grades', 'comp', 'anim']
 
         def some_action():
-            '''return our folders.'''
+            '''Return our folders.'''
             return folders
 
         context = ways.api.get_context('some/context')
@@ -765,7 +765,7 @@ class CustomDescriptor(object):
 
     @classmethod
     def get_plugins(cls):
-        '''A list of plutins that this Descriptor creates and returns.'''
+        '''Get a plugin with an explicit assignment.'''
         return [(CustomPlugin(), 'master')]
 
     @classmethod
@@ -780,7 +780,7 @@ class CustomDescriptor1(object):
 
     @classmethod
     def get_plugins(cls):
-        '''A list of plutins that this Descriptor creates and returns.'''
+        '''Get a plugin without an explicit assignment.'''
         return [CustomPlugin()]
 
     @classmethod

@@ -512,7 +512,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
             @classmethod
             def get_hierarchy(cls):
-                '''The Context hierarchy that this action will attach itself to.'''
+                '''Get a hierarchy for this job/scene Action.'''
                 return ('job', 'scene')
 
             def __call__(self, *args, **kwargs):
@@ -951,7 +951,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
             ways.api.get_asset(versioned)
 
     def test_find_context_tie_break_dict(self):
-        '''Get the correct Context/Asset when two Contexts have the same mapping'''
+        '''Get the correct Context/Asset when two Contexts have the same mapping.'''
         contents = textwrap.dedent(
             r'''
             plugins:

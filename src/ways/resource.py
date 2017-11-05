@@ -34,12 +34,12 @@ import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
-import pylev
 
 # IMPORT WAYS LIBRARIES
 import ways
 
 # IMPORT LOCAL LIBRARIES
+from . import pylev
 from . import trace
 from . import common
 from . import finder as find
