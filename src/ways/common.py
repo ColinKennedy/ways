@@ -3,10 +3,11 @@
 
 '''A collection of functions that are used by modules in this package.
 
-Honestly, this module won't be added to that much.
+This module is not likely to change often.
 
 '''
 
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 # IMPORT STANDARD LIBRARIES
 import os
 import string
@@ -62,26 +63,27 @@ def expand_string(format_string, obj):
         ValueError: If the format_string given is invalid.
 
     Returns:
-        dict: The resulting dict, from our obj string.
+        dict: The created dict from our obj string.
 
     '''
     if '}{' in format_string:
         raise ValueError(
-            'format_string: "{temp}" was invalid. Curly braces cannot be used, '
-            'back to back'.format(temp=format_string))
+            'format_string: "{temp}" was invalid. Curly braces, "}{" cannot be '
+            'used, back to back.'.format(temp=format_string))
 
     info = dict()
 
+    # The string is reversed and processed from end to beginning
     for prefix, field, _, _ in reversed(list(string.Formatter().parse(format_string))):
         if not prefix:
-            # We reached the beginning of the formatted str so just return obj
+            # We got to the beginning of the formatted str so just return obj
             info[field] = obj
             continue
 
         try:
             remainder, value = obj.rsplit(prefix, 1)
         except ValueError:
-            # If this block rus, it means that there was a mismatch between
+            # If this block runs it means that there was a bad match between
             # the formatted_string and obj.
             #
             # Example:

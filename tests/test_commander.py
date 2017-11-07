@@ -229,7 +229,7 @@ class FindCommanderTestCase(common_test.ContextTestCase):
                 '''Gather the hierarchy.'''
                 return ('27ztt', 'whatever')
 
-            def __call__(self, *args, **kwargs):
+            def __call__(self, obj, *args, **kwargs):
                 '''Do something.'''
                 # Use env vars if no resolution tags were given
                 kwargs.setdefault('resolve_with', 'env')

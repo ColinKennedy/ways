@@ -51,5 +51,5 @@ Modules
 .. toctree::
    :maxdepth: 4
 
-   Module Documentation <ways>
+   API Documentation <ways>
 

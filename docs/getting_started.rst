@@ -38,7 +38,8 @@ Now that plugin_sheet.yml exists, lets add a "Hello World!" plugin to it.
             hierarchy: 'some/context'
 
 At this point, we've made our first plugin in our first Plugin Sheet.
-Now you can open a Python interpreter or another file and use it, as a Context.
+Now you can open a Python interpreter or import it into another file and use
+it, as a ways.api.Context.
 
 Instantiate your new Context
 ----------------------------
@@ -46,9 +47,9 @@ Instantiate your new Context
 ::
 
     import ways.api
-    ways.api.get_context('some/context')
+    context = ways.api.get_context('some/context')
 
-If get_context did not return None, congratulations, Ways is ready to use.
+If context is not None, congratulations, Ways is ready to use.
 
 Adding features to Context objects
 ----------------------------------
@@ -94,7 +95,8 @@ same hierarchy.
 
 In the above example, we have a Context that initializes with some metadata,
 we add to the metadata, and then we retrieve it in another function without
-passing the Context into it.
+passing the Context into it. This works because there's only ever one instance
+of a Context object and you can add anything to its data.
 
 There's a lot more to how Plugin objects are defined. Including Context
 inheritance, relative plugins, and OS-aware plugins. To know more, Check out
@@ -109,12 +111,12 @@ now we'll extend it using an Asset object.
 
 If Context objects are branches on a tree, think of Asset objects as the leaves.
 Meaning, Context objects describe a range of information and Asset objects are
-specific points along that range.
+specific points along that range. There can only be 1 of any Context but there
+could be any number of Asset objects.
 
 Creating an Asset object is more or less the same as creating a Context. The
 main difference is that any part of a Context's mapping that is an unfilled
-Token (i.e. in our above example, "{JOB}"), we need to define it while creating
-the Asset.
+Token (in our above example "{JOB}" is unfilled), we need to define it.
 
 ::
 
@@ -129,7 +131,7 @@ the Asset.
     # All 3 of these syntaxes create the same Asset object
     asset1 = ways.api.get_asset((('JOB', 'foo'), ), 'some/context')
     asset2 = ways.api.get_asset({'JOB': 'foo'}, 'some/context')
-    asset3 = ways.api.get_asset(path, 'some/context')
+    asset3 = ways.api.get_asset('/jobs/foo/here', 'some/context')
     print(asset1.get_str())
     # Result: '/jobs/foo/here'
     print(asset1.get_value('JOB'))
@@ -152,9 +154,9 @@ both classes have very few methods. Ways tries to not assume how
 you'll use Context and Asset objects and instead lets you to extend the
 object's interfaces at runtime, using Actions.
 
-To create an Action for our original example, create a new file - we'll call
-ours action.py. Add the path to action.py into the WAYS_PLUGINS environment
-variable.
+To create an Action for our original example, create a new file name anything -
+we'll call ours action.py. Add the path to action.py into the WAYS_PLUGINS
+environment variable.
 
 Now just add a new class in action.py, have it inherit from ways.api.Action,
 and implement two methods.
@@ -189,11 +191,15 @@ action.py
         def get_hierarchy(cls):
             return 'some/context'
 
-        def __call__(self):
+        def __call__(self, obj):
             '''Do something.'''
             return ['/library', 'library/grades', 'comp', 'anim']
 
-To use the Action that was just created, call it from a Context or Assset.
+Note: __call__ takes at least one arg - the Context or Asset that called the
+Action. Ways will pass the caller object to this variable before any of the
+user's args/kwargs.
+
+To use the Action that was just created, call it from a Context or Asset.
 
 ::
 
@@ -206,7 +212,7 @@ can also use a regular function and register it.
 
 ::
 
-    def some_action():
+    def some_action(obj):
         return ['/library', 'library/grades', 'comp', 'anim']
 
     context = ways.api.get_context('some/context')
@@ -232,56 +238,12 @@ Context and Asset Actions
 We've been using Context.actions this whole time but Asset objects have an
 "actions" property, too.
 
-ways.api.Asset.actions behaves differently than ways.api.Context.actions.
+Actions called from an Asset object behave the same a Context objects. The only
+difference is that the first arg that get's passed to the Actions object will
+be the instance of Asset that called it, not the Context.
 
-Asset.actions will always assume that the Action's first argument will take the
-current Asset object. Context.actions doesn't assume anything about an Action's
-parameters.
-
-If we have an Action like this:
-
-
-::
-
-    > cat plugin_sheet.yml
-    plugins:
-        job:
-            hierarchy: 'some/context'
-            mapping: /jobs/{JOB}/here
-
-action.py
-
-::
-
-    import ways.api
-
-    class AnotherAction(ways.api.Action):
-
-        '''A subclass that will automatically be registered by Ways.'''
-
-        name = 'get_info'
-
-        @classmethod
-        def get_hierarchy(cls):
-            return 'some/context'
-
-        def __call__(self, shot=None):
-            '''Do something.'''
-            return ['/library', 'library/grades', 'comp', 'anim']
-
-To call it from an Asset, all we have to write is this:
-
-::
-
-    asset = ways.api.get_asset({'JOB': 'foo'}, context='some/context')
-    asset.actions.get_info()
-
-Notice that AnotherAction.__call__ takes an argument but we call get_info with
-no args. That's because the Asset object that calls it is being passed as the
-first arg, since we used Asset.actions. With Context.actions, nothing is passed
-- your args are left unmodified.
-
-If we want to call get_info from a Context, we still can, it's just more work.
+If we want to call get_info from an Asset instance and pass it the Context,
+we still can.
 
 ::
 
@@ -289,13 +251,13 @@ If we want to call get_info from a Context, we still can, it's just more work.
 
     # Using the Context object
     context = ways.api.get_context('some/context')
-    context.actions.get_info(asset)
+    context.actions.get_info()  # get_info will pass 'context'
 
     # Using the Context located in the Asset object
-    asset.context.actions.get_info(asset)
+    asset.context.actions.get_info()  # get_info will pass 'asset.Context'
 
     # This is still the preferred way, most of the time
-    asset.actions.get_info()
+    asset.actions.get_info()  # get_info will pass 'asset'
 
 The most powerful way to chain Actions together is to have Action objects
 return other Context/Asset/Action objects. Actions have very few rules

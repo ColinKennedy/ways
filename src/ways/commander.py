@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''The purpose of this module is to extend Context objects to be more useful.
+'''This module adds to a Context object interface using Action objects.
 
-Currently, you can use Action objects to interface with a Context and add
-extra behavior that would otherwise be impossible.
+Action objects attach to Contexts and let you change data on the Context or
+to run other functions.
 
 '''
 
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 # IMPORT THIRD-PARTY LIBRARIES
 import six
 
@@ -19,14 +20,15 @@ from . import situation as sit
 
 class ActionRegistry(type):
 
-    '''A meteclass registrar that adds new Action objects to a cache.'''
+    '''A metaclass that adds new Action objects to a registry-cache.'''
 
     def __new__(mcs, clsname, bases, attrs):
         '''Add the created class to the Action object cache.'''
         new_class = super(ActionRegistry, mcs).__new__(
             mcs, clsname, bases, attrs)
 
-        # If we explicitly state not to register a plugin, don't register it
+        # If we state not to register a plugin, don't register it
+        #
         # If add_to_registry isn't defined for this Plugin,
         # assume that we should register it
         #
@@ -68,15 +70,13 @@ class _Aktion(object):
 
         Note:
             This is done in a wrapped property for 3 reasons.
-            1. So that the returned Context can be made dynamic, assuming
-               self.get_hierarchy() or self.get_assignment() needed to change
-               at runtime.
+            1. So that the returned Context can be changed at runtime.
             2. To make the property read-only
             3. If the Context isn't defined by the time this object
                is instantiated, self.context would return None. By adding it as
-               a wrapped property, we defer the evaluation of context for as
-               long as possible, to give Context a chance to be defined.
-               Ghetto? Yes. Works well? You bet it does!
+               a wrapped property, we try to avoid loading the context for as
+               long as possible. The Context is only needed when the Action
+               is called. Ghetto? Yes. Works well? You bet it does!
 
         Returns:
             <ways.api.Context>:
@@ -105,10 +105,10 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
 
     Args:
         action (<ways.api.Action>):
-            The action to add. Action objects are objects that act
-            upon Context objects to gather some kind of information.
+            The action to add. Action objects are objects that get passed
+            a Context object and run a function.
         name (:obj:`str`, optional):
-            A name to associate with this action. The name must be unique
+            A name to use with this action. The name must be unique
             to this hierarchy/assignment or it risks overriding another
             Action that might already exist at the same location.
             If no name is given, the name on the action is tried, instead.

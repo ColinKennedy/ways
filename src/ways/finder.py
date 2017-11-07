@@ -120,7 +120,7 @@ class Find(compat.DirMixIn, object):
                           "".format(obj=self.__class__.__name__, attr=name)
                 raise AttributeError(message)
 
-        return command
+        return functools.partial(command, self.context)
 
     def __dir__(self):
         '''list[str]: Add Action names to the list of return items.'''

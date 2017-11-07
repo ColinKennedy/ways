@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''House a number of strategies for resolving Context/Plugin conflicts.
+'''A module that has a strategies for resolving Context/Plugin conflicts.
 
 Depending on the Context object's attributes, it may be best to return a
 compound of all of the Context object's plugins, or the first-defined one or
@@ -19,6 +19,7 @@ Note:
 
 '''
 
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 # IMPORT STANDARD LIBRARIES
 import copy
 import functools
@@ -31,15 +32,15 @@ def get_right_most_priority(plugins, method):
     '''Get the most-latest value of the given plugins.
 
     Note:
-        If a Plugin runs method() successfully but gives a value that evaluates
-        to False (like '', or dict(), or [], etc), keep searching until an
+        If a Plugin runs method() successfully but gives a value that returns
+        False (like '', or dict(), or [], etc), keep searching until an
         explicit value is found.
 
     Args:
         plugins (list[<ways.api.Plugin>]):
             The plugins to get the the values from.
         method (callable[<ways.api.Plugin>]):
-            The callable function to retrieve some value from a Plugin object.
+            The callable function to use to call some value from a Plugin object.
 
     Raises:
         NotImplementedError:
@@ -65,7 +66,7 @@ def get_right_most_priority(plugins, method):
 
 
 def try_and_return(methods):
-    '''Continually try to run methods until one of them passes and returns.
+    '''Try every given method until one of them passes and returns some value.
 
     Args:
         methods (iterable[callable]): Functions that takes no arguments to run.
@@ -83,12 +84,12 @@ def try_and_return(methods):
 
 
 def generic_iadd(obj, other):
-    '''Conform the different ways that built-in Python objects implement iadd.
+    '''Unify the different ways that built-in Python objects implement iadd.
 
     It's important to note that this method is very generic and also unfinished.
-    Add other implementations, as needed. As long as they return a non-None
-    value when successful and a None value when unsuccessful, anything works.
-    (The logic for the non-None/None can be changed, too).
+    Feel free to add any other others, as needed. As long as they return a
+    non-None value when successful and a None value when unsuccessful, any
+    method is okay to use. (The logic for the non-None/None can be changed, too).
 
     Args:
         obj: Some object to add.
@@ -99,13 +100,13 @@ def generic_iadd(obj, other):
 
     '''
     def update_(obj, other):
-        '''Emulate a dictionary.'''
+        '''Run a dict's "iadd" function.'''
         obj.update(other)
 
         return obj
 
     def iadd(obj, other):
-        '''Emulate a custom Python object or built-in class type.'''
+        '''Use the actual __iadd__ method of a custom Python object.'''
         obj += other
         return obj
 
@@ -116,7 +117,7 @@ def generic_iadd(obj, other):
 
     value = try_and_return(setter_methods)
     if value is None:
-        raise ValueError('The two objects, "{obj1}" and "{obj2}" cound not be '
+        raise ValueError('The two objects, "{obj1}" and "{obj2}" could not be '
                          'added together.'.format(obj1=obj, obj2=other))
     return value
 
@@ -128,7 +129,7 @@ def get_left_right_priority(plugins, method):
         plugins (list[<ways.api.Plugin>]):
             The plugins to get the the values from.
         method (callable[<ways.api.Plugin>]):
-            The callable function to retrieve some value from a Plugin object.
+            The callable function to get some value from a Plugin object.
 
     Returns:
         The compound value that was created from all of the plugins.
@@ -146,7 +147,7 @@ def get_left_right_priority(plugins, method):
 
 
 def get_intersection_priority(plugins, method):
-    '''Get only the common elements from all plugin Objecs and return them.
+    '''Get only the common elements from all plugin Objects and return them.
 
     Note:
         Right now this function is only needed for get_groups() but could be

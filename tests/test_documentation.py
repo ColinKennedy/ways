@@ -142,7 +142,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         _build_action('create', folders)
 
         context = ways.api.get_context('some/context')
-        output = context.actions.create()
+        output = context.actions.create(folders)
         self.assertEqual(folders, output)
 
     def test_context_action_function(self):
@@ -158,7 +158,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
 
         folders = ['/library', 'library/grades', 'comp', 'anim']
 
-        def some_action():
+        def some_action(obj):
             '''Return our folders.'''
             return folders
 
@@ -188,12 +188,12 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         _build_action('get_info', folders)
 
         asset = ways.api.get_asset({'JOB': 'foo'}, context='some/context')
-        asset_info = asset.actions.get_info()
+        asset_info = asset.actions.get_info(folders)
 
         context = ways.api.get_context('some/context')
-        standalone_context_info = context.actions.get_info(asset)
+        standalone_context_info = context.actions.get_info(folders)
 
-        asset_context_info = asset.context.actions.get_info(asset)
+        asset_context_info = asset.context.actions.get_info(folders)
 
         self.assertEqual(folders, asset_info)
         self.assertEqual(folders, standalone_context_info)
@@ -807,7 +807,7 @@ def _build_action(action, folders):
         def get_hierarchy(cls):
             return 'some/context'
 
-        def __call__(self, shot=None):
+        def __call__(self, obj, folders):
             '''Do something.'''
             return folders
 

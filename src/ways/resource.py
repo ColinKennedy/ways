@@ -418,6 +418,11 @@ class AssetFinder(compat.DirMixIn, object):
 
         function = self.finder.__getattr__(name)
 
+        # Finder returns a functools.partial. So we'll unpack it by getting
+        # ".func" and then insert our own Asset object into it, instead
+        #
+        function = function.func
+
         return add_asset_info_to_function(func=function, asset=self._asset)
 
     def __dir__(self):

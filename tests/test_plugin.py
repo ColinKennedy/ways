@@ -90,11 +90,6 @@ class PluginCreationTestCase(common_test.ContextTestCase):
 
             ''')
 
-        # TODO : Make this function actually pass. And once it passes, test it
-        #        just checking for data like this:
-        #
-        # TODOID: 751 (search for related sections with this ID)
-        #
         with self.assertRaises(ValueError):
             self._make_plugin_folder_with_plugin2(contents=contents, ending='.yml')
 

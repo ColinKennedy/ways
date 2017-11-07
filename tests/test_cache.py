@@ -303,7 +303,7 @@ class CacheCreatePlugin(common_test.ContextTestCase):
 #     # def test_set_assignment_by_file(self):
 #     #     plugin_folder = tempfile.mkdtemp()
 #     #     plugin_info_file = os.path.join(plugin_folder, 'search_path',
-#     #                                    '.waypoint_plugin_info.json')
+#     #                                    '.ways_plugin_info.json')
 #     #     os.makedirs(os.path.dirname(plugin_info_file))
 
 #     #     example_plugin_info_with_assignment = {

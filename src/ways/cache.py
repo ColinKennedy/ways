@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''Create a persistent cache that stores all the Plugin and Action objects.'''
+'''A set of functions that make working with the cache in Ways easier.'''
 
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 # IMPORT STANDARD LIBRARIES
 import os
 import imp
@@ -25,8 +26,8 @@ def _conform_plugins_with_assignments(plugins):
 
     We have no way of knowing if a Descriptor is returning a list of
     Plugin/assignment pairs (which is what Ways needs) or just a simple
-    list of Plugin objects or some mixture of the two. This function smoothes
-    any inconsistencies into something that Ways can use.
+    list of Plugin objects or both. This function helps make sure that, no matter
+    what the user initially created, Ways can use it.
 
     Example:
         >>> plugins1 = [ways.api.Plugin()]
@@ -62,7 +63,7 @@ def _conform_plugins_with_assignments(plugins):
 
 
 def _resolve_descriptor(description):
-    '''Build a descriptor object from a variety of input.
+    '''Build a descriptor object from different types of user input.
 
     Args:
         description (dict or str):
@@ -79,19 +80,19 @@ def _resolve_descriptor(description):
     '''
     from . import descriptor  # Avoiding a cyclic import
 
-    def get_description_from_path(desc):
+    def get_description_from_path(path):
         '''Build a descriptor from a string path.'''
         func = None
         try:
-            if os.path.isdir(desc):
+            if os.path.isdir(path):
                 func = descriptor.FolderDescriptor
-            elif os.path.isfile(desc):
+            elif os.path.isfile(path):
                 func = descriptor.FileDescriptor
         except TypeError:
             return
 
         if func:
-            return func(desc)
+            return func(path)
 
     def get_description_info(description):
         '''Build a descriptor from an encoded URI.'''
@@ -133,7 +134,7 @@ def _resolve_descriptor(description):
             return try_load(descriptor_class, actual_description)
         except Exception:
             # TODO : LOG the err
-            raise ValueError('Detected object, "{cls_}" could not be called. '
+            raise ValueError('Found object, "{cls_}" could not be called. '
                              'Please make sure it is on the PYTHONPATH and '
                              'there are no errors in the class/function.'
                              ''.format(cls_=descriptor_class))
@@ -171,7 +172,7 @@ def init_plugins():
     # TODO : This is too confusing. There are "Plugin" files which are just
     #        Python files that get read, PluginSheets, which are
     #        YAML/JSON/Python files that contains Plugins. And Plugin class,
-    #        which isn't even a file. This needs to be fixed, badly
+    #        which isn't even a file. This needs to be fixed
     #
     for item in get_items_from_env_var(common.PLUGINS_ENV_VAR):
         plugin_files.extend(common.get_python_files(item))
@@ -194,7 +195,7 @@ def add_descriptor(description, update=True):
             an encoded URI, the string is parsed into a dict and processed.
             If it's a dict, the dictionary is used, as-is.
         update (:obj:`bool`, optional):
-            If True, add this Descriptor's plugins to Ways immediately.
+            If True, add this Descriptor's plugins to Ways.
             If False, the user must register a Descriptor's plugins.
             Default is True.
 
@@ -259,11 +260,11 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
     Args:
         action (<ways.api.Action>):
             The action to add. Action objects are objects that act
-            upon Context objects to gather some kind of information.
+            on Context objects to gather some kind of information.
         name (:obj:`str`, optional):
-            A name to associate with this action. The name must be unique
-            to this hierarchy/assignment or it risks overriding another
-            Action that might already exist at the same location.
+            A name to identify this action. The name must be unique
+            to this hierarchy/assignment or it might override another
+            pre-existing Action in the same location.
             If no name is given, the name on the action is tried, instead.
             Default: ''.
         assignment (:obj:`str`, optional): The group to add this action to,
@@ -309,23 +310,8 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
     ways.ACTION_CACHE[hierarchy][assignment][name] = action
 
 
-def add_search_path(path, update=True):
-    '''Add a directory to search for Plugin objects.
-
-    Note:
-        This is just a convenience method that calls add_descriptor,
-        under the hood.
-
-    Args:
-        path (str):
-            The full path to a directory with plugin files.
-        update (:obj:`bool`, optional):
-            If True, add this Descriptor's plugins to Ways immediately.
-            If False, the user must register a Descriptor's plugins.
-            Default is True.
-
-    '''
-    return add_descriptor(path, update=update)
+add_search_path = add_descriptor
+add_search_path.__doc__ = add_descriptor.__doc__
 
 
 def get_assignments(hierarchy):
