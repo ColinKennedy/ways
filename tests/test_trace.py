@@ -10,8 +10,9 @@ whatever other purpose). Or some other reportive info that we want to know.
 
 '''
 
-# pylint: disable=invalid-name
+
 # IMPORT STANDARD LIBRARIES
+# pylint: disable=invalid-name
 import os
 import tempfile
 import textwrap

@@ -7,8 +7,9 @@ A descriptor string could be a path to a file or folder or even to a database
 
 '''
 
-# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
+
 # IMPORT STANDARD LIBRARIES
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import os
 import copy
 import glob

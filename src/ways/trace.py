@@ -3,8 +3,9 @@
 
 '''A module to help you debug all of your Context, Plugin, and Action objects.'''
 
-# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
+
 # IMPORT STANDARD LIBRARIES
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
@@ -14,8 +15,8 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from .core import loop
 from . import common
+from .core import loop
 
 # TODO : Maybe move this to find.py and then move the path class out
 
