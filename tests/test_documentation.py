@@ -158,7 +158,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
 
         folders = ['/library', 'library/grades', 'comp', 'anim']
 
-        def some_action(obj):
+        def some_action(obj):  # pylint: disable=unused-argument
             '''Return our folders.'''
             return folders
 
@@ -802,6 +802,7 @@ def _build_action(action, folders):
         '''
 
         name = action
+        items = []
 
         @classmethod
         def get_hierarchy(cls):
@@ -811,4 +812,5 @@ def _build_action(action, folders):
             '''Do something.'''
             return folders
 
+    SomeAction.items = folders
     return SomeAction

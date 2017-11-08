@@ -10,6 +10,7 @@ whatever other purpose). Or some other reportive info that we want to know.
 
 '''
 
+# pylint: disable=invalid-name
 # IMPORT STANDARD LIBRARIES
 import os
 import tempfile
@@ -238,34 +239,14 @@ class TraceTestCase(Common):
 
         self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=True))
 
-    def test_get_all_hierarchies_as_dict_full(self):
+    def test_get_all_hierarchies_as_dict_part(self):
         '''Print all of the hierarhies as a big dictionary.'''
         _setup_hierarchies()
 
         expected = {
-            ('another', ): {
-                ('another', 'here'): {},
+            'another': {
+                'here': {},
             },
-            ('foo', ): {
-                ('foo', 'bar'): {
-                    ('foo', 'bar', 'fizz'): {
-                        ('foo', 'bar', 'fizz', 'buzz'): {},
-                    },
-                    ('foo', 'bar', 'thing'): {},
-                },
-            },
-            ('frodo', ): {
-                ('frodo', 'baggins'): {},
-            },
-        }
-
-        self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=True))
-
-    def test_get_child_hierarchies_as_dict_part(self):
-        '''Print all of the hierarhies at the given hierarchy.'''
-        _setup_hierarchies()
-
-        expected = {
             'foo': {
                 'bar': {
                     'fizz': {
@@ -274,9 +255,12 @@ class TraceTestCase(Common):
                     'thing': {},
                 },
             },
+            'frodo': {
+                'baggins': {},
+            },
         }
 
-        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=False))
+        self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=False))
 
     def test_get_child_hierarchies_as_dict_full(self):
         '''Print all of the hierarhies at the given hierarchy.'''
@@ -294,6 +278,23 @@ class TraceTestCase(Common):
         }
 
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=True))
+
+    def test_get_child_hierarchies_as_dict_part(self):
+        '''Print all of the hierarhies at the given hierarchy.'''
+        _setup_hierarchies()
+
+        expected = {
+            'foo': {
+                'bar': {
+                    'fizz': {
+                        'buzz': {},
+                    },
+                    'thing': {},
+                },
+            },
+        }
+
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=False))
 
 
 # TODO : Make sure to run tests to make sure that the contents of dir
@@ -439,7 +440,7 @@ def _init_actions():
 
 
 def _setup_hierarchies():
-    '''A function that just creates a generic set of hierarchies.'''
+    '''Register some generic plugins into Ways.'''
     hierarchies = {
         ('another', ),
         ('another', 'here'),

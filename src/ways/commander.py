@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''This module adds to a Context object interface using Action objects.
+'''A set of classes and functions used to extend a Context's interface.
 
 Action objects attach to Contexts and let you change data on the Context or
-to run other functions.
+to run any kind of function.
 
 '''
 

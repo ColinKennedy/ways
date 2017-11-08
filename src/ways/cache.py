@@ -310,6 +310,7 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
     ways.ACTION_CACHE[hierarchy][assignment][name] = action
 
 
+# pylint: disable=invalid-name
 add_search_path = add_descriptor
 add_search_path.__doc__ = add_descriptor.__doc__
 
