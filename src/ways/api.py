@@ -26,6 +26,8 @@ from .trace import trace_action_names
 from .trace import get_all_hierarchies
 from .trace import trace_actions_table
 from .trace import get_child_hierarchies
+from .trace import get_child_hierarchy_tree
+from .trace import get_all_hierarchy_trees
 from .trace import trace_all_plugin_results
 from .trace import trace_all_plugin_results_info
 # High-use classes and functions
@@ -104,6 +106,8 @@ __all__ = [
 
     'get_all_hierarchies',
     'get_child_hierarchies',
+    'get_child_hierarchy_tree',
+    'get_all_hierarchy_trees',
 
     'FileDescriptor',
     'FolderDescriptor',

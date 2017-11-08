@@ -1,0 +1,4 @@
+- dealing with Contexts that have bad parses
+- getting hierarchy info
+- tracing the plugins that make up a Context
+-

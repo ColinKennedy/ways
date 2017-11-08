@@ -3,6 +3,7 @@
 
 '''A module to help you debug all of your Context, Plugin, and Action objects.'''
 
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 # IMPORT STANDARD LIBRARIES
 import collections
 
@@ -13,6 +14,7 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
+from .core import loop
 from . import common
 
 # TODO : Maybe move this to find.py and then move the path class out
@@ -26,7 +28,7 @@ def trace_actions(obj, *args, **kwargs):
              <ways.api.Context> or <ways.finder.Find>):
             The object to get the actions of.
         *args (list):
-            Positional args to pass to ways.get_actions.
+            Position args to pass to ways.get_actions.
         **kwargs (dict[str]):
             Keyword args to pass to ways.get_actions.
 
@@ -47,7 +49,7 @@ def trace_action_names(obj, *args, **kwargs):
              <ways.api.Context> or <ways.finder.Find>):
             The object to get the actions of.
         *args (list):
-            Positional args to pass to ways.get_action_names.
+            Position args to pass to ways.get_action_names.
         **kwargs (dict[str]):
             Keyword args to pass to ways.get_action_names.
 
@@ -66,7 +68,7 @@ def trace_actions_table(obj, *args, **kwargs):
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
              <ways.api.Context> or <ways.finder.Find>):
         *args (list):
-            Positional args to pass to ways.get_actions_info..
+            Position args to pass to ways.get_actions_info..
         **kwargs (dict[str]):
             Keyword args to pass to ways.get_action_info.
 
@@ -87,8 +89,8 @@ def trace_all_plugin_results():
 def trace_all_plugin_results_info():
     '''Get the load-results for each plugin that Ways found.
 
-    Not all plugins that we attempt to load will, though (maybe the file)
-    has a syntax error or something).
+    Not all plugins that we try to load will. (maybe the file has a syntax
+    error or something).
 
     Using this function we can check
     1. What plugins that Ways found and tried to load.
@@ -112,7 +114,7 @@ def trace_context(obj):
     '''Get a Context, using some object.
 
     This function assumes that the given object is a Ways class that
-    only has 1 Context associated with it (not several).
+    only has 1 Context added to it (not several).
 
     Args:
         obj: Some Ways object instance.
@@ -168,7 +170,7 @@ def trace_assignment(obj):
 
 
 def trace_hierarchy(obj):
-    '''Try to find a hierarchy associated with the given object.
+    '''Try to find a hierarchy for the given object.
 
     Args:
         obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
@@ -208,7 +210,6 @@ def trace_hierarchy(obj):
 
 
 # TODO : Make tests for this function and uncomment it
-# TODO : Also move it to someplace in this file, alphabetical, when it's done
 # def trace_context_plugins_info(context):
 #     context = trace_context(context)
 
@@ -244,9 +245,69 @@ def trace_hierarchy(obj):
 #     trace_context_plugins_info(context)
 
 
+def _get_hierarchy_tree(hierachies, full=False):
+    output = collections.defaultdict()
+
+    for hierarchy in hierachies:
+        if full:
+            iterator = loop.walk_items(hierarchy)
+        else:
+            iterator = hierarchy
+
+        previous_dict = output
+        for part in iterator:
+            previous_dict.setdefault(part, collections.defaultdict())
+            previous_dict = previous_dict[part]
+
+    return output
+
+
 def get_all_hierarchies():
     '''set[tuple[str]]: The Contexts that have plugins in our environment.'''
     return set(trace_hierarchy(plug) for plug in ways.PLUGIN_CACHE.get('all_plugins', []))
+
+
+def get_all_hierarchy_trees(full=False):
+    '''Get a description of every Ways hierarchy.
+
+    Examples:
+        >>> get_all_hierarchy_trees(full=True)
+        >>> {
+        >>>     ('foo', ): {
+        >>>         ('foo', 'bar'): {
+        >>>             ('foo' 'bar', 'fizz'): {},
+        >>>         },
+        >>>         ('foo', 'something', 'buzz'): {
+        >>>             ('foo', 'something', 'buzz', 'thing'): {},
+        >>>         },
+        >>>     },
+        >>> }
+
+        >>> get_all_hierarchy_trees(full=False)
+        >>> {
+        >>>     'foo': {
+        >>>         'bar': {
+        >>>             'fizz': {},
+        >>>         },
+        >>>         'something': {
+        >>>             'buzz': {
+        >>>                 'thing': {},
+        >>>             },
+        >>>         },
+        >>>     },
+        >>> }
+
+    Args:
+        full (:obj:`bool`, optional):
+            If True, each item in the dict will be its own hierarchy.
+            If False, only a single part will be written.
+            See examples for details. Default is False.
+
+    Returns:
+        <collections.defaultdict[str]>: The entire hierarchy.
+
+    '''
+    return _get_hierarchy_tree(get_all_hierarchies(), full=full)
 
 
 def get_all_assignments():
@@ -277,3 +338,49 @@ def get_child_hierarchies(hierarchy):
             children.append(hierarchy)
 
     return children
+
+
+def get_child_hierarchy_tree(hierarchy, full=False):
+    '''Get all of the hierarchies that inherit the given hierarchy.
+
+    Examples:
+        >>> get_all_hierarchy_trees(full=True)
+        >>> {
+        >>>     ('foo', ): {
+        >>>         ('foo', 'bar'): {
+        >>>             ('foo' 'bar', 'fizz'): {},
+        >>>         },
+        >>>         ('foo', 'something', 'buzz'): {
+        >>>             ('foo', 'something', 'buzz', 'thing'): {},
+        >>>         },
+        >>>     },
+        >>> }
+
+        >>> get_all_hierarchy_trees(full=False)
+        >>> {
+        >>>     'foo': {
+        >>>         'bar': {
+        >>>             'fizz': {},
+        >>>         },
+        >>>         'something': {
+        >>>             'buzz': {
+        >>>                 'thing': {},
+        >>>             },
+        >>>         },
+        >>>     },
+        >>> }
+
+    Args:
+        hierarchy (tuple[str]):
+            The hierarchy to get the child hierarchy items of.
+        full (:obj:`bool`, optional):
+            If True, each item in the dict will be its own hierarchy.
+            If False, only a single part will be written.
+            See examples for details. Default is False.
+
+    Returns:
+        <collections.defaultdict[str]>: The entire hierarchy.
+
+    '''
+    hierarchy = common.split_hierarchy(hierarchy)
+    return _get_hierarchy_tree(get_child_hierarchies(hierarchy), full=full)

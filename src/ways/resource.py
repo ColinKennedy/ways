@@ -7,23 +7,24 @@
 They are necessary because Context objects are flyweights and, because of that,
 cannot carry instance data.
 
-Attibutes:
+Attributes:
     ASSET_FACTORY (dict[tuple[str]: dict[str]]:
-        This dict should not be messed with directly. You should use
-        the functions provided in this module, instead.
+        This dict should not be changed directly. You should use
+        the functions in this module, instead.
 
         It is a global dictionary that stores classes that are meant to swap
-        for an Asset object. ASSET_FACTORY's key is the hierarchy that a class
-        will be applied to and its value is a dict that looks like this:
+        for an Asset object. ASSET_FACTORY's key is the hierarchy of the Context
+        and its value is another dict, which looks like this:
 
         'class': The class to swap for.
         'init': A custom inititialization function for the class (if needed).
         'children': If True, the class is used for all hierarchies that build
-        off of the given hierarchy. If False, the class only applies to the
+        off of the given hierarchy. If False, the class is only added to the
         given hierarchy.
 
 '''
 
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 # IMPORT STANDARD LIBRARIES
 import os
 import re
@@ -55,7 +56,7 @@ class Asset(object):
 
     '''An object that contains a Context and data about the Context.
 
-    The idea of this class is to keep Context information highly abstract,
+    The idea of this class is to keep Context information abstract,
     and let Context parse/use that information. Depending on what the Context
     is for, it could be used to ground the information to a filesystem or
     a database or some other structure that the Context knows about.
@@ -66,19 +67,18 @@ class Asset(object):
         '''Create the instance and store its info and Context.
 
         Note:
-            It goes without saying that the keys in info must match all tokens
-            in the Context (or at least all required tokens) to be valid.
+            Keys in info must match all tokens in the Context
+            (or at least all required tokens) or the Context will fail to
+            initialize.
 
         Args:
             info (dict or str):
                 The information about this asset to store.
             context (ways.api.Context):
-                The context that this instance belongs to.
+                The context that this instance points to.
             parse_type (:obj:`str`, optional):
                 The engine that will be used to used to check to make sure
-                that a value is OK before setting it onto our parser.
-                If no context is given, this engine is also used to try
-                to resolve the info given to this asset. Default: 'regex'.
+                that a value is OK before it is set on this instance.
 
         Raises:
             ValueError:
@@ -116,11 +116,11 @@ class Asset(object):
     def get_missing_required_tokens(self):
         '''Find any token that still needs to be filled for our parser.
 
-        If a token is missing but it has child tokens and all of those tokens
-        are defined, it is excluded from the final output. If the missing token
-        is a child of some parent token that is defined, then the value of
-        the token is parsed. If the parse is successful, the token is excluded
-        from the final output.
+        If a token is missing but it has child tokens and all of the child
+        tokens are defined, it is excluded from the final output. If
+        the missing token is a child of some parent token that is defined,
+        then the value of the token is parsed. If the parse is successful,
+        the token is excluded from the final output.
 
         Returns:
             list[str]: Any tokens that have no value.
@@ -215,9 +215,10 @@ class Asset(object):
         use the parent token to "build" a value for the token that was requested.
 
         If the token name is a parent of some other tokens that all have values,
-        we try to "build" it again, by composition of this child tokens.
+        we try to "build" it again, by combining all of the child tokens.
 
-        In both cases, the connection is very implicit. But it lets you do this:
+        In both cases, the return value is created but not defined.
+        But it lets you do this:
 
         Example:
             >>> shot_info = {
@@ -229,21 +230,19 @@ class Asset(object):
             >>> shot_asset.get_value('SHOT_NUMBER')
             ... # Result: '0010'
 
-        Todo:
-            Let the user decide the default parse engine to use.
-
         Args:
             name (str): The token to get the value of.
             real (:obj:`bool`, optional):
-                If True, return the value as-is. If False and there are
-                any functions to run using "before_return", process the value
-                before returning it. Default: False.
+                If True, the original parsed value is returned. If False and
+                the given token has functions defined in "before_return" then
+                those functions will process the output and then return it.
+                Default is False.
 
         Returns:
-            str: The value at the given token.
+            The value at the given token.
 
         '''
-        # Create a parser and fill it up with as much info as we can
+        # Create a parser and fill it up with all of the info we can
         # so that we can use it using Parent-Search and Child-Search
         #
         parser = self.context.get_parser()
@@ -272,7 +271,7 @@ class Asset(object):
             try:
                 value = ast.literal_eval(
                     '{function}({value})'.format(function=function, value=value))
-                # ValueError - Malformed string
+                # literal_eval will raise ValueError if the string has syntax errors
             except (ValueError, NameError):
                 try:
                     # TODO : Remove this eval
@@ -294,9 +293,10 @@ class Asset(object):
         use the parent token to "build" a value for the token that was requested.
 
         If the token name is a parent of some other tokens that all have values,
-        we try to "build" it again, by composition of this child tokens.
+        we try to "build" it again, by combining all of the child tokens.
 
-        In both cases, the connection is very implicit. But it lets you do this:
+        In both cases, the return value is created but not defined.
+        But it lets you do this:
 
         Example:
             >>> shot_info = {
@@ -830,9 +830,10 @@ def _get_value(name, parser, info):
     use the parent token to "build" a value for the token that was requested.
 
     If the token name is a parent of some other tokens that all have values,
-    we try to "build" it again, by composition of this child tokens.
+    we try to "build" it again, by combining all of the child tokens.
 
-    In both cases, the connection is very implicit. But it lets you do this:
+    In both cases, the return value is created but not defined.
+    But it lets you do this:
 
     Example:
         >>> shot_info = {

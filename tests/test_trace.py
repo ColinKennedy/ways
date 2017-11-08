@@ -215,36 +215,85 @@ class TraceTestCase(Common):
         self.assertEqual(expected_children,
                          set(ways.api.get_child_hierarchies(('foo', 'bar'))))
 
-#     # def get_aliased_hierarchy_actions(self):
-#     #     pass
+    def test_get_all_hierarchies_as_dict_full(self):
+        '''Print all of the hierarhies as a big dictionary.'''
+        _setup_hierarchies()
 
-# #     def test_get_defined_aliases(self):
-# #         pass
+        expected = {
+            ('another', ): {
+                ('another', 'here'): {},
+            },
+            ('foo', ): {
+                ('foo', 'bar'): {
+                    ('foo', 'bar', 'fizz'): {
+                        ('foo', 'bar', 'fizz', 'buzz'): {},
+                    },
+                    ('foo', 'bar', 'thing'): {},
+                },
+            },
+            ('frodo', ): {
+                ('frodo', 'baggins'): {},
+            },
+        }
 
-# #     def test_get_defines_aliases(self):
-# #         pass
+        self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=True))
 
-# #     def test_get_plugin_info_0001_complex(self):
-# #         pass
+    def test_get_all_hierarchies_as_dict_full(self):
+        '''Print all of the hierarhies as a big dictionary.'''
+        _setup_hierarchies()
 
+        expected = {
+            ('another', ): {
+                ('another', 'here'): {},
+            },
+            ('foo', ): {
+                ('foo', 'bar'): {
+                    ('foo', 'bar', 'fizz'): {
+                        ('foo', 'bar', 'fizz', 'buzz'): {},
+                    },
+                    ('foo', 'bar', 'thing'): {},
+                },
+            },
+            ('frodo', ): {
+                ('frodo', 'baggins'): {},
+            },
+        }
 
-# class InspectTestCase(Common):
+        self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=True))
 
-#     # invalid platform
-#     # plugin didn't match the platform
-#     # Was not in the assignment
+    def test_get_child_hierarchies_as_dict_part(self):
+        '''Print all of the hierarhies at the given hierarchy.'''
+        _setup_hierarchies()
 
-#     # def test_trace_context_plugins(self):
-#     #     '''Find out which plugins make up a Context and why.'''
+        expected = {
+            'foo': {
+                'bar': {
+                    'fizz': {
+                        'buzz': {},
+                    },
+                    'thing': {},
+                },
+            },
+        }
 
-#     def test_trace_context_plugins_invalid_platform(self):
-#         '''Simulate an environment where a bad OS was given to ways.
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=False))
 
-#         This test exists to help the user troubleshoot when all plugins fail.
+    def test_get_child_hierarchies_as_dict_full(self):
+        '''Print all of the hierarhies at the given hierarchy.'''
+        _setup_hierarchies()
 
-#         '''
-#         context = self._setup_simple_contexts()
-#         plugins = ways.api.trace_context_plugins_info(context)
+        expected = {
+            ('foo', ): {
+                ('foo', 'bar'): {
+                    ('foo', 'bar', 'fizz'): {
+                        ('foo', 'bar', 'fizz', 'buzz'): {},
+                    },
+                    ('foo', 'bar', 'thing'): {},
+                },
+            },
+        }
+
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=True))
 
 
 # TODO : Make sure to run tests to make sure that the contents of dir
@@ -387,3 +436,22 @@ def _init_actions():
     '''Create a couple random classes and register them to Ways.'''
     common_test.create_action('another_action_here')
     common_test.create_action('action_here')
+
+
+def _setup_hierarchies():
+    '''A function that just creates a generic set of hierarchies.'''
+    hierarchies = {
+        ('another', ),
+        ('another', 'here'),
+
+        ('foo', ),
+        ('foo', 'bar'),
+        ('foo', 'bar', 'thing'),
+        ('foo', 'bar', 'fizz'),
+        ('foo', 'bar', 'fizz', 'buzz'),
+
+        ('frodo', 'baggins', ),
+    }
+
+    for hierarchy in hierarchies:
+        common_test.create_plugin(hierarchy=hierarchy)
