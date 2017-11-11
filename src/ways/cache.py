@@ -241,6 +241,7 @@ def add_descriptor(description, update=True):
                 'status': common.FAILURE_KEY,
                 'reason': common.NOT_CALLABLE_KEY,
                 'traceback': traceback_,
+                'description': final_descriptor,
             }
         )
         ways.DESCRIPTOR_LOAD_RESULTS.append(info)
@@ -254,6 +255,7 @@ def add_descriptor(description, update=True):
     info.update(
         {
             'status': common.SUCCESS_KEY,
+            'description': final_descriptor,
         }
     )
     ways.DESCRIPTOR_LOAD_RESULTS.append(info)

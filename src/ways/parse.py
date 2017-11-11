@@ -14,6 +14,7 @@ from . import engine
 from .core import check
 
 ENCLOSURE_TOKEN_REGEX = r'(\{[^\{\}]+\})'
+RESERVED_ENV_VAR_PARSE_TYPES = ('env', 'environment', 'env_vars')
 TOKEN_REGEX = r'\{([^\{\}]+)\}'
 
 
@@ -127,7 +128,7 @@ class ContextParser(object):
             # env/environment are reserved keywords and resolve from the
             # user's environment. All other resolve_types are processed normally
             #
-            if resolve_type.lower() in ('env', 'environment', 'env_vars'):
+            if resolve_type.lower() in RESERVED_ENV_VAR_PARSE_TYPES:
                 token_key = '{' + token + '}'
                 parse_info = make_value(token, os.getenv(token, token_key))
                 mapping = mapping.replace(token_key, str(parse_info))
@@ -364,7 +365,7 @@ class ContextParser(object):
         resolve_with = check.force_itertype(resolve_with)
 
         if depth == -1:
-            depth = 9000  # Some high number
+            depth = 9000  # A high number that will keep the loop going
 
         for current_depth in range(depth):
             # Make a copy and then try to expand the mapping using every

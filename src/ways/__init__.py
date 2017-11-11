@@ -361,16 +361,16 @@ def add_plugin(plugin, assignment='master'):
 
 def clear():
     '''Remove all Ways plugins and actions.'''
-    ACTION_CACHE.clear()
-    try:
-        PLUGIN_CACHE['hierarchy'].clear()
-    except KeyError:
-        pass
+    def reset_cache(cache):
+        try:
+            cache['hierarchy'].clear()
+        except KeyError:
+            pass
 
-    try:
-        PLUGIN_CACHE['all_plugins'][:] = []
-    except KeyError:
-        pass
+        cache['all'][:] = []
+
+    ACTION_CACHE.clear()
+    reset_cache(PLUGIN_CACHE)
 
     del PLUGIN_LOAD_RESULTS[:]
     del DESCRIPTOR_LOAD_RESULTS[:]

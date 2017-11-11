@@ -273,6 +273,42 @@ def trace_hierarchy(obj):
     return hierarchy
 
 
+def trace_method_resolution(method, plugins=False):
+    context = method.im_self
+    original = context.get_all_plugins
+
+    output = []
+
+    try:
+        output = _trace_method_resolution(context, method, plugins)
+    except Exception:
+        context.get_all_plugins = original
+        raise
+
+    context.get_all_plugins = original
+
+    return output
+
+
+def _trace_method_resolution(context, method, plugins=False):
+    def substitute_return(obj, *args, **kwargs):
+        return obj
+
+    all_plugins = context.get_all_plugins()
+
+    results = []
+    for index in six.moves.range(1, len(all_plugins) + 1):
+        context.get_all_plugins = \
+            functools.partial(substitute_return, all_plugins[:index])
+
+        if plugins:
+            results.append((method(), all_plugins[index - 1]))
+        else:
+            results.append(method())
+
+    return results
+
+
 # TODO : Make tests for this function and uncomment it
 # def trace_context_plugins_info(context):
 #     context = trace_context(context)
@@ -408,35 +444,31 @@ def get_all_hierarchy_trees(full=False):
         <collections.defaultdict[str]>: The entire hierarchy.
 
     '''
-    return _get_hierarchy_tree(get_all_hierarchies(), full=full)
+    if not full:
+        return _get_hierarchy_tree(get_all_hierarchies(), hook=_return_tail_of_hierarchy)
+
+    return _get_hierarchy_tree(get_all_hierarchies())
 
 
 def get_all_assignments():
     '''set[str]: All of the assignments found in our environment.'''
-    return set(trace_assignment(plug) for plug in ways.PLUGIN_CACHE.get('all_plugins', []))
+    return set(trace_assignment(plug) for plug in ways.PLUGIN_CACHE.get('all', []))
 
 
 def get_child_hierarchies(hierarchy):
     '''list[tuple[str]]: Get hierarchies that depend on the given hierarchy.'''
-    def startswith(base, leaf):
-        '''Check if all tuple items match the start of another tuple.'''
-        if len(base) < len(leaf):
-            base, leaf = leaf, base
-
-        for root, item in six.moves.zip(base, leaf):
-            if root != item:
-                return False
-        return True
-
     base_hierarchy = trace_hierarchy(hierarchy)
-    children = []
-    for plugin in ways.PLUGIN_CACHE['all_plugins']:
+    children = set()
+    for plugin in ways.PLUGIN_CACHE['all']:
         hierarchy = plugin.get_hierarchy()
 
+        # If the plugin's hierarchy is less than the base, it is probably
+        # above it. Which means it doesn't inherit from this hierachy
+        #
         is_parent = len(hierarchy) < len(base_hierarchy)
 
-        if not is_parent and base_hierarchy != hierarchy and startswith(base_hierarchy, hierarchy):
-            children.append(hierarchy)
+        if not is_parent and base_hierarchy != hierarchy and startswith(hierarchy, base_hierarchy):
+            children.add(hierarchy)
 
     return children
 
@@ -483,5 +515,22 @@ def get_child_hierarchy_tree(hierarchy, full=False):
         <collections.defaultdict[str]>: The entire hierarchy.
 
     '''
-    hierarchy = common.split_hierarchy(hierarchy)
-    return _get_hierarchy_tree(get_child_hierarchies(hierarchy), full=full)
+    def try_startswith(hierarchy, obj):
+        if hierarchy == obj:
+            return False
+
+        try:
+            return startswith(obj, hierarchy)
+        except ValueError:
+            return False
+
+    hierarchy = trace_hierarchy(hierarchy)
+    children = get_child_hierarchies(hierarchy)
+
+    if not full:
+        return _get_hierarchy_tree(children,
+                                   predicate=functools.partial(try_startswith, hierarchy),
+                                   hook=_return_tail_of_hierarchy)
+    return _get_hierarchy_tree(
+        children,
+        predicate=functools.partial(try_startswith, hierarchy))

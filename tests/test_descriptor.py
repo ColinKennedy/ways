@@ -375,6 +375,27 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
 
     '''Test to make sure that invalid Descriptors raise errors properly.'''
 
+    def test_not_importable(self):
+        '''Try to create a Descriptor that isn't on the PYTHONPATH.'''
+        root = tempfile.mkdtemp()
+        self.temp_paths.append(root)
+        descriptor_info = {
+            'items': root,
+            'create_using': 'foo.bar.bad.import.path',
+        }
+
+        # Create an example serialized descriptor that describes our local repo
+        serialized_info = parse.urlencode(descriptor_info, True)
+        with open('/home/soul/temp/output.txt', 'w') as file_:
+            data = file_.write(serialized_info)
+
+        self.assertEqual(ways.api.add_descriptor(serialized_info), None)
+
+        self.assertEqual(
+            ways.api.RESOLUTION_FAILURE_KEY,
+            ways.api.trace_all_descriptor_results()[0]['reason']
+        )
+
     def test_no_callable_method(self):
         '''Descriptor has no get_plugin or __call__ method.'''
         contents = textwrap.dedent(
@@ -398,6 +419,8 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
             """)
 
         some_temp_folder = tempfile.mkdtemp()
+        self.temp_paths.append(some_temp_folder)
+
         module_file_path = os.path.join(some_temp_folder, 'something.py')
         with open(module_file_path, 'w') as file_:
             file_.write(example_bad_class)

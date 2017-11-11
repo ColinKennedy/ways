@@ -268,14 +268,10 @@ class TraceTestCase(Common):
         _setup_hierarchies()
 
         expected = {
-            ('foo', ): {
-                ('foo', 'bar'): {
-                    ('foo', 'bar', 'fizz'): {
-                        ('foo', 'bar', 'fizz', 'buzz'): {},
-                    },
-                    ('foo', 'bar', 'thing'): {},
-                },
+            ('foo', 'bar', 'fizz'): {
+                ('foo', 'bar', 'fizz', 'buzz'): {},
             },
+            ('foo', 'bar', 'thing'): {},
         }
 
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=True))
@@ -285,14 +281,10 @@ class TraceTestCase(Common):
         _setup_hierarchies()
 
         expected = {
-            'foo': {
-                'bar': {
-                    'fizz': {
-                        'buzz': {},
-                    },
-                    'thing': {},
-                },
+            'fizz': {
+                'buzz': {},
             },
+            'thing': {},
         }
 
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=False))

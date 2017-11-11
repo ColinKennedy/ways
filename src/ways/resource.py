@@ -1314,7 +1314,8 @@ def _find_context_using_info(obj):
             return get_best_context_by_rankings(contexts, mapping)
         except ValueError as err:
             # Try to break the tie, if we can
-            return tiebreak(err.args[-1], contexts_with_info)
+            tied_contexts = err.args[-1]
+            return tiebreak(tied_contexts, contexts_with_info)
 
     valid_contexts = []
     for context in contexts:
