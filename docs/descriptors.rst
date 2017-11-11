@@ -60,15 +60,20 @@ when our cache unpacks this descriptor string, the result is a dict
 
     descriptor_info = {
         'create_using': 'ways.api.GitLocalDescriptor',
+        'uuid': 'some_unique_string-we-can_search_for-later',
         'path': '/some/path/on/disk',
         'items': ('plugins', ),
     }
 
-"create_using" is a the only reserved key in our dict. Ways uses
-"create_using" to import the Descriptor object.
-All other key/value pairs are passed to the Descriptor, directly.
-It's worth noting that create_using can be any callable Python object. It could
-be a function or a class, for example.
+"create_using" and "uuid" are the only reserved key in our dict for all custom
+Descriptors. Ways uses "create_using" to import the Descriptor object. "uuid"
+is used to get the Descriptor later. For example, if a Descriptor failed to
+load and you wanted to get its load results to find out why it failed to load,
+you'd use the value in "uuid" to do it.
+
+Excluding "create_using" and "uuid", all other key/value pairs are passed
+to the Descriptor, directly. It's worth noting that create_using can be any
+callable Python object. It could be a function or a class, for example.
 
 Knowing what you now know about Descriptors, the previous example with the 4
 different ways to load Descriptors could technically be rewritten as URL strings.

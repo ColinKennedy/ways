@@ -1309,8 +1309,8 @@ def _find_context_using_info(obj):
                 contexts.append(context)
                 contexts_with_info[context] = obj
 
-    # We'll find the Context we need faster if we sort the more likely
-    # candidates to the front. But we can only do that if obj is a string
+    # We'll find the Context we're searching for faster if we sort the more
+    # likely candidates to the front. But we can only do that if obj is a string
     #
     # In this example, we use a Levenshtein sort to figure out the "best" Context
     #

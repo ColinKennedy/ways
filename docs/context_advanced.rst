@@ -249,7 +249,7 @@ because its syntax is harder to follow
             uses:
                 - foo/bar
 
-Appending with an absolute plugin is much simpler
+Appending with an absolute plugin is much simpler.
 
 .. code-block :: yaml
 
