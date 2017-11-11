@@ -218,6 +218,7 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         self.temp_paths.append(resolved_path)
 
         descriptor = 'path={root}&create_using=ways.api.GitLocalDescriptor&items=plugins' \
+                     '&uuid=some_unique_string-we-can_search_for-later' \
                      ''.format(root=root)
 
         obj = cache._resolve_descriptor(descriptor)

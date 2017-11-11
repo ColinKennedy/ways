@@ -40,6 +40,8 @@ PRIORITY_ENV_VAR = 'WAYS_PRIORITY'
 
 PARENT_TOKEN = '{root}'
 
+WAYS_UUID_KEY = 'uuid'
+
 
 def expand_string(format_string, obj):
     '''Split a string into a dict using a Python-format string.

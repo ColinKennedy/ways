@@ -6,6 +6,8 @@
 
 # IMPORT STANDARD LIBRARIES
 # scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
+import uuid
+import functools
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
@@ -19,6 +21,54 @@ from . import common
 from .core import loop
 
 # TODO : Maybe move this to find.py and then move the path class out
+
+
+def _create_fake_uuid():
+    return 'ways_generated-' + uuid.uuid4().hex
+
+
+def _return_tail_of_hierarchy(obj):
+    return obj[-1]
+
+
+def _get_uuid_from_dict(obj):
+    try:
+        uuid_ = obj[common.WAYS_UUID_KEY]
+    except (AttributeError, KeyError):
+        uuid_ = _create_fake_uuid()
+
+    return uuid_
+
+
+def _get_ways_uuid_from_descriptor(obj):
+    info = common.decode(obj.get('item'))
+    if info is None:
+        info = dict()
+
+    return _get_uuid_from_dict(info)
+
+
+def _get_ways_uuid_from_plugin(obj):
+    try:
+        uuid_ = obj[common.WAYS_UUID_KEY]
+    except KeyError:
+        try:
+            uuid_ = obj['item']
+        except KeyError:
+            uuid_ = _create_fake_uuid()
+
+    return uuid_
+
+
+def startswith(base, leaf):
+    '''Check if all tuple items match the start of another tuple.'''
+    if len(base) < len(leaf):
+        raise ValueError('Base cannot be smaller than leaf')
+
+    for root, item in six.moves.zip(base, leaf):
+        if root != item:
+            return False
+    return True
 
 
 def trace_actions(obj, *args, **kwargs):
@@ -82,6 +132,19 @@ def trace_actions_table(obj, *args, **kwargs):
     return ways.get_actions_info(hierarchy, *args, **kwargs)
 
 
+def trace_all_descriptor_results():
+    '''list[dict[str]]: The load/failure information about each Descriptor.'''
+    return ways.DESCRIPTOR_LOAD_RESULTS
+
+
+def trace_all_descriptor_results_info():
+    info = collections.OrderedDict()
+    for result in trace_all_descriptor_results():
+        info[_get_ways_uuid_from_descriptor(result)] = result
+
+    return info
+
+
 def trace_all_plugin_results():
     '''list[dict[str]]: The results of each plugin's load results.'''
     return ways.PLUGIN_LOAD_RESULTS
@@ -105,8 +168,8 @@ def trace_all_plugin_results_info():
 
     '''
     info = collections.OrderedDict()
-    for result in ways.PLUGIN_LOAD_RESULTS:
-        info[result['item']] = result
+    for result in trace_all_plugin_results():
+        info[_get_ways_uuid_from_plugin(result)] = result
 
     return info
 
@@ -246,26 +309,63 @@ def trace_hierarchy(obj):
 #     trace_context_plugins_info(context)
 
 
-def _get_hierarchy_tree(hierachies, full=False):
-    output = collections.defaultdict()
+def __default_hook(obj):
+    return obj
+
+
+def __default_predicate(obj):
+    return True
+
+
+def _get_hierarchy_tree(
+        hierachies, predicate=__default_predicate, hook=__default_hook):
+    output = dict()
 
     for hierarchy in hierachies:
-        if full:
-            iterator = loop.walk_items(hierarchy)
-        else:
-            iterator = hierarchy
-
         previous_dict = output
-        for part in iterator:
-            previous_dict.setdefault(part, collections.defaultdict())
+
+        for part in loop.walk_items(hierarchy):
+            if not predicate(part):
+                continue
+
+            part = hook(part)
+
+            previous_dict.setdefault(part, dict())
             previous_dict = previous_dict[part]
 
     return output
 
 
+def get_action_hierarchies(action):
+    actions = get_all_action_hierarchies()
+    if action in actions:
+        return actions[action]['hierarchies']
+
+    output = set()
+    for info in six.itervalues(actions):
+        if action == info['name']:
+            output.update(info['hierarchies'])
+
+    return output
+
+
+def get_all_action_hierarchies():
+    actions = dict()
+
+    for hierarchy, info in six.iteritems(ways.ACTION_CACHE):
+        for assignment, action_info in six.iteritems(info):
+            for name, action in six.iteritems(action_info):
+                actions.setdefault(action, dict())
+                actions[action].setdefault('hierarchies', set())
+                actions[action]['hierarchies'].add(hierarchy)
+                actions[action]['name'] = name
+
+    return actions
+
+
 def get_all_hierarchies():
     '''set[tuple[str]]: The Contexts that have plugins in our environment.'''
-    return set(trace_hierarchy(plug) for plug in ways.PLUGIN_CACHE.get('all_plugins', []))
+    return set(trace_hierarchy(plug) for plug in ways.PLUGIN_CACHE.get('all', []))
 
 
 def get_all_hierarchy_trees(full=False):

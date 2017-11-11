@@ -121,10 +121,15 @@ def _resolve_descriptor(description):
             '''Load the object, as-is.'''
             return obj(**description)
 
+        # Keys that Ways uses to register a Descriptor that are not meant to
+        # be passed to the Descriptor's __init__ function
+        #
+        reserved_keys = ('create_using', common.WAYS_UUID_KEY)
+
         descriptor_class = description.get(
             'create_using', descriptor.FolderDescriptor)
         actual_description = {key: value for key, value
-                              in description.items() if key != 'create_using'}
+                              in description.items() if key not in reserved_keys}
 
         try:
             descriptor_class = common.import_object(descriptor_class)
@@ -352,6 +357,12 @@ def load_plugin(item):
         )
         ways.PLUGIN_LOAD_RESULTS.append(info)
         return
+
+    # Add the WAYS_UUID in the file, if it was defined
+    try:
+        info[common.WAYS_UUID_KEY] = module.WAYS_UUID
+    except AttributeError:
+        pass
 
     try:
         func = module.main
