@@ -308,6 +308,7 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
     # Set defaults (if needed)
     ways.ACTION_CACHE.setdefault(hierarchy, collections.OrderedDict())
     ways.ACTION_CACHE[hierarchy].setdefault(assignment, dict())
+
     ways.ACTION_CACHE[hierarchy][assignment][name] = action
 
 
@@ -324,7 +325,7 @@ def get_assignments(hierarchy):
 
 def get_all_plugins():
     '''list[<pathfinder.plugin.Plugin>]: Every registered plugin.'''
-    return ways.PLUGIN_CACHE['all_plugins']
+    return ways.PLUGIN_CACHE['all']
 
 
 # TODO : This should be renamed. Since this isn't a Plugin but a PluginSheet

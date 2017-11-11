@@ -30,7 +30,7 @@ DESCRIPTORS = []
 DESCRIPTOR_LOAD_RESULTS = []
 PLUGIN_CACHE = collections.OrderedDict()
 PLUGIN_CACHE['hierarchy'] = collections.OrderedDict()
-PLUGIN_CACHE['all_plugins'] = []
+PLUGIN_CACHE['all'] = []
 PLUGIN_LOAD_RESULTS = []
 
 
@@ -353,7 +353,7 @@ def add_plugin(plugin, assignment='master'):
     PLUGIN_CACHE['hierarchy'][hierarchy].setdefault(assignment, [])
 
     # Add the plugin if it doesn't already exist
-    all_plugins = PLUGIN_CACHE['all_plugins']
+    all_plugins = PLUGIN_CACHE['all']
     if plugin not in all_plugins:
         PLUGIN_CACHE['hierarchy'][plugin.get_hierarchy()][assignment].append(plugin)
         all_plugins.append(plugin)
