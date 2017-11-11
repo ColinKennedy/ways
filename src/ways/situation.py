@@ -339,27 +339,6 @@ class Context(object):
         '''Set the data on this instance back to its default.'''
         self.data = self._init_data()
 
-    def __getattr__(self, key):
-        '''Try to get this object's attributes by looking through connections.
-
-        Args:
-            key (str): The attribute to get.
-
-        Raises:
-            AttributeError: If this object's self.connections doesn't have a
-                            a description for the given key.
-
-        Returns:
-            Whatever that connection returns.
-
-        '''
-        try:
-            return functools.partial(self.connection[key], self.plugins)
-        except KeyError:
-            raise AttributeError('Attribute: "{attr}" was not defined in '
-                                 'object "{obj}".'.format(
-                                     attr=key, obj=self.__class__.__name__))
-
     def as_dict(self, changes=True):
         '''Convert this object into a dictionary.
 
@@ -392,6 +371,31 @@ class Context(object):
             data['data'] = self._init_data()
 
         return data
+
+    def get_groups(self):
+        '''tuple[str]: The groups that this Context belongs to.'''
+        return self.connection['get_groups'](self.plugins)
+
+    def get_mapping(self):
+        '''str: The mapping that describes this Context.'''
+        return self.connection['get_mapping'](self.plugins)
+
+    def get_mapping_details(self):
+        '''dict[str: dict[str]]: Optional data about the Context's mapping.'''
+        return self.connection['get_mapping_details'](self.plugins)
+
+    def get_max_folder(self):
+        '''str: The highest mapping point that this Context lives in.'''
+        return self.connection['get_max_folder'](self.plugins)
+
+    def get_platforms(self):
+        '''list[str]: The OSes that this Context runs on.'''
+        return self.connection['get_platforms'](self.plugins)
+
+    # TODO : Might delete this one.
+    def get_skip_to(self):
+        '''str: The mapping to jump to.'''
+        return self.connection['get_skip_to'](self.plugins)
 
 
 __FACTORY = factory.AliasAssignmentFactory(Context)
@@ -590,7 +594,7 @@ def context_connection_info():
 
     return {
         'get_groups': functools.partial(
-            conn.get_intersection_priority,
+            conn.get_right_most_priority,
             method=operator.methodcaller('get_groups')),
 
         'get_mapping': get_mapping,
