@@ -391,10 +391,6 @@ class Context(object):
         '''str: The mapping that describes this Context.'''
         return self.connection['get_mapping'](self.plugins)
 
-    def get_mapping_details(self):
-        '''dict[str: dict[str]]: Optional data about the Context's mapping.'''
-        return self.connection['get_mapping_details'](self.plugins)
-
     def get_max_folder(self):
         '''str: The highest mapping point that this Context lives in.'''
         return self.connection['get_max_folder'](self.plugins)

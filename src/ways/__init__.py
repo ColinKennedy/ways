@@ -362,6 +362,7 @@ def add_plugin(plugin, assignment='master'):
 def clear():
     '''Remove all Ways plugins and actions.'''
     def reset_cache(cache):
+        '''Reset some dict cache.'''
         try:
             cache['hierarchy'].clear()
         except KeyError:

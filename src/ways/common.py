@@ -12,8 +12,10 @@ This module is not likely to change often.
 # scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import os
 import string
-import urlparse
 import functools
+
+# IMPORT THIRD-PARTY LIBRARIES
+import six
 
 # IMPORT LOCAL LIBRARIES
 from .core import check
@@ -212,7 +214,8 @@ def memoize(function):
 
 
 def decode(obj):
-    return conform_decode(urlparse.parse_qs(obj))
+    '''dict[str]: Convert a URL-encoded string back into a dict.'''
+    return conform_decode(six.moves.urllib.parse.parse_qs(obj))
 
 
 def conform_decode(info):
@@ -227,6 +230,7 @@ def conform_decode(info):
     output = dict(info)
 
     def change_list_to_string(key, obj):
+        '''Change key/list pairs that are meant to be strings.'''
         try:
             value = obj[key]
         except KeyError:

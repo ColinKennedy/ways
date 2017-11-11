@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# pylint: disable=protected-access,invalid-name
+# pylint: disable=protected-access,invalid-name,too-many-lines
 
 '''A collection of tests for Ways's documentation.
 
@@ -24,8 +24,8 @@ from six.moves.urllib import parse
 
 # IMPORT WAYS LIBRARIES
 import ways.api
-from ways import common
 from ways import cache
+from ways import common
 
 # IMPORT LOCAL LIBRARIES
 from . import common_test
@@ -832,8 +832,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
                 a_parse_plugin:
                     hierarchy: 2tt/whatever
             ''')
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, register=False)
+        self._make_plugin_folder_with_plugin2(contents=contents, register=False)
 
         example_bad_class = textwrap.dedent(
             """\
@@ -1051,7 +1050,8 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('foo/bar')
         expected = [('/jobs', context.plugins[0]),
                     ('/jobs/foo/thing', context.plugins[1])]
-        self.assertEqual(expected, ways.api.trace_method_resolution(context.get_mapping, plugins=True))
+        self.assertEqual(
+            expected, ways.api.trace_method_resolution(context.get_mapping, plugins=True))
 
         # This check is to make sure that trace_method_resolution didn't
         # break the original functionality of the Context
@@ -1087,6 +1087,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         self._make_simple_plugin_tree()
 
         def some_function():
+            '''Do some function.'''
             print('Example function return')
 
         _build_action('some_action', hierarchy='foo/fizz')
@@ -1096,7 +1097,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         self.assertEqual(expected, ways.api.get_action_hierarchies(some_function))
 
     def test_get_all_action_hierarchies(self):
-        '''Get every Action name and the hierarchies that can use it'''
+        '''Get every Action name and the hierarchies that can use it.'''
         self._make_simple_plugin_tree()
 
         _build_action('some_action', hierarchy='foo/bar')

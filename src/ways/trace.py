@@ -61,7 +61,12 @@ def _get_ways_uuid_from_plugin(obj):
 
 
 def startswith(base, leaf):
-    '''Check if all tuple items match the start of another tuple.'''
+    '''Check if all tuple items match the start of another tuple.
+
+    Raises:
+        ValueError: If base is shorted than leaf.
+
+    '''
     if len(base) < len(leaf):
         raise ValueError('Base cannot be smaller than leaf')
 
@@ -137,7 +142,16 @@ def trace_all_descriptor_results():
     return ways.DESCRIPTOR_LOAD_RESULTS
 
 
-def trace_all_descriptor_results_info():
+def trace_all_descriptor_results_info():  # pylint: disable=invalid-name
+    '''Get the UUIDs and load results of every Descriptor.
+
+    If the UUID for a Descriptor cannot be found,
+    Ways will automatically assign it a UUID.
+
+    Returns:
+        <collections.OrderedDict>[str: dict[str]]: The load results.
+
+    '''
     info = collections.OrderedDict()
     for result in trace_all_descriptor_results():
         info[_get_ways_uuid_from_descriptor(result)] = result
@@ -274,6 +288,20 @@ def trace_hierarchy(obj):
 
 
 def trace_method_resolution(method, plugins=False):
+    '''Show the progression of how a Context's method is resolved.
+
+    Args:
+        method (callable):
+            Some function on a Context object.
+        plugins (:obj:`bool`, optional):
+            If False, the result at every step of the method will be returned.
+            If True, the Plugin that created each result will be returned al
+            along with the result at every step. Default is False.
+
+    Returns:
+        list: The plugin resolution at each step.
+
+    '''
     context = method.im_self
     original = context.get_all_plugins
 
@@ -291,7 +319,35 @@ def trace_method_resolution(method, plugins=False):
 
 
 def _trace_method_resolution(context, method, plugins=False):
-    def substitute_return(obj, *args, **kwargs):
+    '''Show the progression of how a Context's method is resolved.
+
+    This function does that actual work of trace_method_resolution.
+
+    Args:
+        context (<ways.api.Context>):
+            Some Context to alter and get the items of back.
+        method (callable):
+            Some function on a Context object.
+        plugins (:obj:`bool`, optional):
+            If False, the result at every step of the method will be returned.
+            If True, the Plugin that created each result will be returned al
+            along with the result at every step. Default is False.
+
+    Returns:
+        list: The plugin resolution at each step.
+
+    '''
+    def substitute_return(obj, *args, **kwargs):  # pylint: disable=unused-argument
+        '''Just return the first object that was given to the function.
+
+        Args:
+            args: The positional items of get_all_plugins, which we will ignore.
+            kwargs: The keyword items of get_all_plugins, which we will ignore.
+
+        Returns:
+            The object.
+
+        '''
         return obj
 
     all_plugins = context.get_all_plugins()
@@ -309,52 +365,36 @@ def _trace_method_resolution(context, method, plugins=False):
     return results
 
 
-# TODO : Make tests for this function and uncomment it
-# def trace_context_plugins_info(context):
-#     context = trace_context(context)
-
-#     plugins = []
-#     for plugin in context.get_all_plugins(assignment=''):
-#         info = {'plugin': plugin}
-
-#         try:
-#             context.validate_plugin(plugin, use_environment=True)
-#         except OSError as err:
-#             info.update({
-#                 'status': common.FAILURE_KEY,
-#                 'reason': common.ENVIRONMENT_FAILURE_KEY,
-#                 'traceback': traceback_,
-#             })
-#         except EnvironmentError as err:
-#             info.update({
-#                 'status': common.FAILURE_KEY,
-#                 'reason': common.PLATFORM_FAILURE_KEY,
-#                 'traceback': traceback_,
-#             })
-#         else:
-#             info['status'] = common.SUCCESS_KEY
-
-#         plugins.append(info)
-
-#     return plugins
-
-
-# # TODO : Finish this
-# def get_context_plugins_report(context):
-#     context = trace_context(context)
-#     trace_context_plugins_info(context)
-
-
 def __default_hook(obj):
+    '''Return back the original object.'''
     return obj
 
 
-def __default_predicate(obj):
+def __default_predicate(obj):  # pylint: disable=unused-argument
+    '''Return True.'''
     return True
 
 
 def _get_hierarchy_tree(
-        hierachies, predicate=__default_predicate, hook=__default_hook):
+        hierachies,
+        predicate=__default_predicate,
+        hook=__default_hook):
+    '''Iterate over a tree of hierarchies, producing a dict-tree.
+
+    Args:
+        hierachies (list[tuple[str]]):
+            The hierachies to build into a tree.
+        predicate (:obj:`callable[str or tuple[str]]`, optional):
+            If False, the hierarchy will not be added to the tree.
+            If True, the hierarchy will be added to the tree.
+        hook (:obj:`callable[str or tuple[str]]`, optional):
+            A function to run on a part before it is added to the tree.
+
+    Returns:
+        dict:
+            The final hierarchy tree.
+
+    '''
     output = dict()
 
     for hierarchy in hierachies:
@@ -373,6 +413,23 @@ def _get_hierarchy_tree(
 
 
 def get_action_hierarchies(action):
+    '''Get the Context hierachies that this Action is registered for.
+
+    .. note ::
+        get_action_hierarchies will return every Action that matches the given
+        Action name. So if multiple classes/functions are all registered
+        under the same name, then every hierarchy that those Actions use will be
+        returned. However, if a object like a function or class that was
+        registered, only that object's hierarchies will be returned.
+
+    Args:
+        action (str or class or callable):
+            The action to get the hierachies of.
+
+    Returns:
+        set[tuple[str]]: The hierarchies for the given Action.
+
+    '''
     actions = get_all_action_hierarchies()
     if action in actions:
         return actions[action]['hierarchies']
@@ -386,10 +443,19 @@ def get_action_hierarchies(action):
 
 
 def get_all_action_hierarchies():
+    '''Organize every Action that is registered into Ways by object and hierarchy.
+
+    Returns:
+        dict[class or callable: dict[str: str or set]]:
+            Actions are stored as either classes or functions.
+            Each Action's value is a dict which contains the hierachies
+            that the Action is applied to and its registered name.
+
+    '''
     actions = dict()
 
     for hierarchy, info in six.iteritems(ways.ACTION_CACHE):
-        for assignment, action_info in six.iteritems(info):
+        for action_info in six.itervalues(info):
             for name, action in six.iteritems(action_info):
                 actions.setdefault(action, dict())
                 actions[action].setdefault('hierarchies', set())
@@ -516,6 +582,11 @@ def get_child_hierarchy_tree(hierarchy, full=False):
 
     '''
     def try_startswith(hierarchy, obj):
+        '''Check if a hierarchy starts with another hierarchy.
+
+        If the startswith function raises a ValueError, just assume False.
+
+        '''
         if hierarchy == obj:
             return False
 

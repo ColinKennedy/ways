@@ -21,7 +21,6 @@ import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
-import urlparse
 import yamlordereddictloader
 # pylint: disable=import-error,ungrouped-imports
 from six.moves.urllib import parse

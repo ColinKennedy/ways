@@ -23,32 +23,30 @@ from .trace import trace_context
 from .trace import trace_hierarchy
 from .trace import trace_assignment
 from .trace import trace_action_names
-from .trace import trace_method_resolution
-from .trace import get_action_hierarchies
-from .trace import get_all_action_hierarchies
 from .trace import get_all_hierarchies
 from .trace import trace_actions_table
 from .trace import get_child_hierarchies
+from .trace import get_action_hierarchies
 from .trace import get_all_hierarchy_trees
+from .trace import trace_method_resolution
 from .trace import get_child_hierarchy_tree
 from .trace import trace_all_plugin_results
+from .trace import get_all_action_hierarchies
 from .trace import trace_all_descriptor_results
-from .trace import trace_all_descriptor_results_info
 from .trace import trace_all_plugin_results_info
+from .trace import trace_all_descriptor_results_info
 # High-use classes and functions
 from .common import PLUGINS_ENV_VAR
+from .common import LOAD_FAILURE_KEY
+from .common import NOT_CALLABLE_KEY
 from .common import PLATFORM_ENV_VAR
 from .common import PRIORITY_ENV_VAR
 from .common import PLATFORMS_ENV_VAR
 from .common import DEFAULT_ASSIGNMENT
-from .common import DESCRIPTORS_ENV_VAR
-
-from .common import ENVIRONMENT_FAILURE_KEY
 from .common import IMPORT_FAILURE_KEY
-from .common import LOAD_FAILURE_KEY
-from .common import NOT_CALLABLE_KEY
-
+from .common import DESCRIPTORS_ENV_VAR
 from .common import RESOLUTION_FAILURE_KEY
+from .common import ENVIRONMENT_FAILURE_KEY
 # TODO : rename Find class into "Finder"
 from .finder import Find
 from .plugin import Plugin
@@ -89,6 +87,8 @@ __all__ = [
     'IMPORT_FAILURE_KEY',
     'LOAD_FAILURE_KEY',
     'NOT_CALLABLE_KEY',
+
+    'RESOLUTION_FAILURE_KEY',
 
     'DEFAULT_ASSIGNMENT',
 

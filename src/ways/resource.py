@@ -91,7 +91,6 @@ class Asset(object):
         super(Asset, self).__init__()
         self.parse_type = parse_type
 
-        info_ = info
         info = expand_info(info, context)
 
         self.info = info
@@ -1079,7 +1078,7 @@ def _get_value(name, parser, info):
     return get_value_from_children(name, parser, info)
 
 
-# pylint: disable=too-many-branches
+# pylint: disable=too-many-branches,too-many-locals
 def _find_context_using_info(obj):
     '''Use some Asset's info, get the best-possible Context.
 
