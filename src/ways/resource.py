@@ -94,11 +94,6 @@ class Asset(object):
         info_ = info
         info = expand_info(info, context)
 
-        if not info:
-            raise ValueError(
-                'Info: "{info}" could not be expanded using Context, '
-                '"{context}".'.format(info=info_, context=context))
-
         self.info = info
         self.context = context
 
