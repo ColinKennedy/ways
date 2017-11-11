@@ -21,6 +21,7 @@ import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
+import urlparse
 import yamlordereddictloader
 # pylint: disable=import-error,ungrouped-imports
 from six.moves.urllib import parse
@@ -706,6 +707,7 @@ def find_loader(path):
         ''.format(path=path, opt=extensions))
 
 
+# TODO : Move this to common.py
 def serialize(obj):
     '''Make the given descriptor information into a standard URL encoding.
 

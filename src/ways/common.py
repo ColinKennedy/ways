@@ -12,6 +12,7 @@ This module is not likely to change often.
 # scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import os
 import string
+import urlparse
 import functools
 
 # IMPORT LOCAL LIBRARIES

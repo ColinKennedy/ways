@@ -181,7 +181,11 @@ def init_plugins():
     #        which isn't even a file. This needs to be fixed
     #
     for item in get_items_from_env_var(common.PLUGINS_ENV_VAR):
-        plugin_files.extend(common.get_python_files(item))
+        files = common.get_python_files(item)
+        if not files:
+            files = [item]
+
+        plugin_files.extend(files)
 
     for item in plugin_files:
         load_plugin(item)
