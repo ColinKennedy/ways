@@ -45,7 +45,7 @@ class ActionRegistry(type):
         except AttributeError:
             assignment = common.DEFAULT_ASSIGNMENT
 
-        cache.add_action(new_class(), assignment=assignment)
+        cache.add_action(new_class, assignment=assignment)
 
         return new_class
 

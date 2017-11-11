@@ -720,24 +720,3 @@ def serialize(obj):
     '''
     # pylint: disable=redundant-keyword-arg
     return parse.urlencode(obj, True)
-
-
-def conform_decode(info):
-    '''Make sure that 'create_using' returns a single string.
-
-    This function is a hacky solution because I don't understand why,
-    for some reason, decoding will decode a string as a list.
-
-    TODO: Remove this function by cleaning the input from urlencode.
-
-    '''
-    output = dict(info)
-    try:
-        value = output['create_using']
-    except KeyError:
-        pass
-    else:
-        if check.is_itertype(value):
-            output['create_using'] = value[0]
-
-    return output

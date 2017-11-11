@@ -20,12 +20,12 @@ the Context.data property).
 
 '''
 
-
 # IMPORT STANDARD LIBRARIES
 # scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import os
 import re
 import copy
+import inspect
 import operator
 import platform
 import functools
@@ -178,14 +178,25 @@ class Context(object):
         return output
 
     def get_action(self, name):
-        '''<pathfinder.commander.Action> or NoneType: The Action object.'''
-        return ways.get_action(
+        '''<ways.api.Action> or callable or NoneType: The Action object.'''
+        action = ways.get_action(
             name=name, hierarchy=self.hierarchy, assignment=self.assignment)
 
+        # If this object is a class, then assume that it's a ways.api.Action
+        # and that it needs to be instantiated so that we can run __call__ on it
+        #
+        if inspect.isclass(action):
+            action = action()
+
+        return action
+
     def get_all_plugins(self, hierarchy='', assignment=''):
-        '''list[<pathfinder.plugin.Plugin>]: The found plugins, if any.'''
-        if hierarchy == '':
+        '''list[<ways.api.Plugin>]: The found plugins, if any.'''
+        if not hierarchy:
             hierarchy = self.hierarchy
+
+        if not assignment:
+            assignment = self.assignment
 
         return ways.get_plugins(hierarchy, assignment)
 

@@ -208,3 +208,33 @@ def memoize(function):
         return value
 
     return wrapper
+
+
+def decode(obj):
+    return conform_decode(urlparse.parse_qs(obj))
+
+
+def conform_decode(info):
+    '''Make sure that 'create_using' returns a single string.
+
+    This function is a hacky solution because I don't understand why,
+    for some reason, decoding will decode a string as a list.
+
+    TODO: Remove this function by cleaning the input from urlencode.
+
+    '''
+    output = dict(info)
+
+    def change_list_to_string(key, obj):
+        try:
+            value = obj[key]
+        except KeyError:
+            pass
+        else:
+            if check.is_itertype(value):
+                output[key] = value[0]
+
+    change_list_to_string('create_using', output)
+    change_list_to_string(WAYS_UUID_KEY, output)
+
+    return output
