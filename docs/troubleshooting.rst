@@ -154,6 +154,7 @@ that is also logged. Though this time, we can grab the Plugin by its uuid
 as long as it's defined in the file.
 
 ::
+
     # cat /some/plugin.py
     import ways.api
 
@@ -167,6 +168,7 @@ In another file or a live Python session, we can search for this Plugin
 file's result.
 
 ::
+
     result = ways.api.trace_all_plugin_results_info()['some_uuid_here']
 
 
@@ -193,7 +195,11 @@ can use.
     For the sake of completeness, the rest of the examples on this page will
     all refer to the plugins defined in this Plugin Sheet.
 
+
+.. code-block :: yaml
+
     cat some_plugin_sheet.yml
+
     plugins:
         a_plugin_root:
             hierarchy: foo
@@ -225,6 +231,7 @@ To get all hierarchies
 To get hierarchies as a dictionary tree
 
 ::
+
     ways.api.get_all_hierarchy_trees(full=True)
     # Result:
     # {
@@ -248,6 +255,7 @@ To get hierarchies as a dictionary tree
 Or if you'd prefer a more concise version
 
 ::
+
     ways.api.get_all_hierarchy_trees(full=False)
     # Result:
     # {
@@ -275,6 +283,7 @@ hierarchy is any hierarchy that contains the given hierarchy.
 
 
 ::
+
     hierarchy = ('foo', 'fizz')
     context = ways.api.get_context(hierarchy)
     asset = ways.api.get_asset({}, context=context)
@@ -343,6 +352,7 @@ To get the raw list of Plugins that a Context can choose from, there is the
 get_all_plugins method
 
 ::
+
     context = ways.api.get_context('foo/bar')
     raw_plugins = context.get_all_plugins()
     plugins = context.plugins

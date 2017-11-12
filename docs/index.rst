@@ -39,6 +39,7 @@ API Details
 .. toctree::
     Descriptors <descriptors>
     Advanced Contexts <context_advanced>
+    Troubleshooting <troubleshooting>
 
 Appendices
 ----------
