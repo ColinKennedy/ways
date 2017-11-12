@@ -300,7 +300,6 @@ class FindCommanderTestCase(common_test.ContextTestCase):
 
     def test_find_action_default(self):
         '''Return default values for Action methods that Find knows about.'''
-        # Build our context file and an action to go with it
         contents = textwrap.dedent(
             '''
             globals: {}
@@ -315,9 +314,6 @@ class FindCommanderTestCase(common_test.ContextTestCase):
 
         context = ways.api.get_context('27ztt/whatever')
 
-        ways.api.Find.add_to_defaults('get_assets', [])
-
-        find = ways.api.Find(context)
-
-        with self.assertRaises(AttributeError):
-            find.get_assets()
+        default = []
+        ways.api.add_action_default('get_assets', default)
+        self.assertEqual(default, context.actions.get_assets())

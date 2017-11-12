@@ -76,6 +76,9 @@ from .descriptor import GitLocalDescriptor
 from .descriptor import GitRemoteDescriptor
 from .descriptor import serialize
 
+
+add_action_default = Find.add_to_defaults
+
 __all__ = [
     'DESCRIPTORS_ENV_VAR',
     'PLATFORM_ENV_VAR',
@@ -150,6 +153,7 @@ __all__ = [
     'init_plugins',
 
     'Find',
+    'add_action_default',
 
     'AssetFinder',
 ]

@@ -116,8 +116,13 @@ class Find(compat.DirMixIn, object):
                 return functools.partial(
                     return_value, self.defaults[self.context.get_hierarchy()][name])
             except KeyError:
+                pass
+
+            try:
+                return functools.partial(return_value, self.defaults[self._default_key][name])
+            except KeyError:
                 message = "AttributeError: '{obj}' has no attribute '{attr}'" \
-                          "".format(obj=self.__class__.__name__, attr=name)
+                          "".format(obj=self.context.__class__.__name__, attr=name)
                 raise AttributeError(message)
 
         return functools.partial(command, self.context)
