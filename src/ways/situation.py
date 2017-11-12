@@ -235,11 +235,7 @@ class Context(object):
             dict[str]: The information.
 
         '''
-        try:
-            function = self.connection['get_mapping_details']
-        except KeyError:
-            return dict()
-
+        function = self.connection['get_mapping_details']
         value = function(self.plugins)
 
         if not value:
@@ -263,7 +259,7 @@ class Context(object):
             set[str]: All of the tokens known to this Context.
 
         '''
-        tokens = set()
+        tokens = set(self.get_mapping_tokens())
         for _, info in six.iteritems(self.get_mapping_details()):
             mapping = info.get('mapping')
             tokens.update(self.get_mapping_tokens(mapping))
@@ -399,11 +395,6 @@ class Context(object):
         '''list[str]: The OSes that this Context runs on.'''
         return self.connection['get_platforms'](self.plugins)
 
-    # TODO : Might delete this one.
-    def get_skip_to(self):
-        '''str: The mapping to jump to.'''
-        return self.connection['get_skip_to'](self.plugins)
-
 
 __FACTORY = factory.AliasAssignmentFactory(Context)
 
@@ -497,13 +488,8 @@ def context_connection_info():
 
             return appended_mapping
 
-        try:
-            latest_absolute_plugin = next(
-                plugin for plugin in reversed(plugins) if not plugin.get_uses())
-        except StopIteration:
-            raise RuntimeError('This should not happen. Every plugin found '
-                               'was a relative plugin. No absolute (root) '
-                               'plugin was found.')
+        latest_absolute_plugin = next(
+            plugin for plugin in reversed(plugins) if not plugin.get_uses())
 
         abs_index = plugins.index(latest_absolute_plugin)
 
@@ -735,13 +721,7 @@ def register_context_alias(alias_hierarchy, old_hierarchy):
 
     '''
     old_hierarchy = common.split_hierarchy(old_hierarchy)
-
-    if alias_hierarchy.startswith(common.HIERARCHY_SEP):
-        pieces = itertools.chain(
-            [common.HIERARCHY_SEP], common.split_hierarchy(alias_hierarchy))
-        alias_hierarchy = tuple(item for item in pieces)
-    else:
-        alias_hierarchy = common.split_hierarchy(alias_hierarchy)
+    alias_hierarchy = common.split_hierarchy(alias_hierarchy)
 
     if old_hierarchy == alias_hierarchy:
         raise ValueError('Hierarchy: "{hier}" cannot be aliased to itself'

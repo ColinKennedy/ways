@@ -13,6 +13,7 @@ This module is not likely to change often.
 import os
 import string
 import functools
+import itertools
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
@@ -167,8 +168,29 @@ def split_into_parts(obj, split, as_type=tuple):
     return as_type(part for part in obj if part)
 
 
-# pylint: disable=invalid-name
-split_hierarchy = functools.partial(split_into_parts, split=HIERARCHY_SEP)
+def split_hierarchy(obj, as_type=tuple):
+    '''Split a hierarchy into pieces, using the "/" character.
+
+    Args:
+        obj (str or tuple[str]):
+            The hierarchy to split.
+        as_type (:obj:`callable`, optional):
+            The iterable type to return the hierarchy.
+
+    Returns:
+        tuple[str]:
+            The hierarchy, split into pieces.
+
+    '''
+    try:
+        if obj[0] == HIERARCHY_SEP:
+            items = itertools.chain(
+                [HIERARCHY_SEP], split_into_parts(obj, split=HIERARCHY_SEP, as_type=list))
+            return tuple(items)
+    except IndexError:
+        pass
+
+    return split_into_parts(obj, split=HIERARCHY_SEP, as_type=as_type)
 
 
 # pylint: disable=invalid-name

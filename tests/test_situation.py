@@ -59,21 +59,30 @@ class ContextAliasTestCase(common_test.ContextTestCase):
         self.assertEqual(context.hierarchy, ('maya', 'scenes', ))
         self.assertEqual(len(context.plugins), 1)
 
-#     def test_alias_part(self):
-#         '''Search for single words to replace with a new alias.'''
-#         contents = get_generic_job_config()
-#         plugin_file = self._make_plugin_folder_with_plugin2(contents=contents)
+    def test_alias_with_starting_sep(self):
+        '''Make an alias that uses "/" as the first character.'''
+        common_test.create_plugin(hierarchy=('maya', 'scenes'), platforms='*')
 
-#         self.cache.add_search_path(os.path.dirname(plugin_file))
+        ways.api.register_context_alias('/maya_scenes', 'maya/scenes')
+        context = ways.api.get_context('/maya_scenes')
+        self.assertNotEqual(context, None)
+        self.assertEqual(context.hierarchy, ('/', 'maya_scenes'))
+        self.assertEqual(len(context.plugins), 1)
 
-#         context = ways.api.get_context('foo/scene')
-#         self.assertNotEqual(context, None)
+    def test_alias_cannot_be_itself(self):
+        '''Try to force an alias to be itself.'''
+        common_test.create_plugin(hierarchy=('maya', 'scenes'), platforms='*')
 
-#     def test_alias_multipart(self):
-#         '''Resolve an alias that spans more than one part of a hierarchy.'''
+        with self.assertRaises(ValueError):
+            ways.api.register_context_alias('maya_scenes', 'maya_scenes')
 
-#     def test_alias_recursive_multipart(self):
-#         '''Resolve a multi-part hierarchy that is more than one layer deep.'''
+    def test_alias_already_defined(self):
+        '''Error out if the user tries to register an existing alias.'''
+        common_test.create_plugin(hierarchy=('maya', 'scenes'), platforms='*')
+
+        ways.api.register_context_alias('maya_scenes', 'maya/scenes')
+        with self.assertRaises(ValueError):
+            ways.api.register_context_alias('maya_scenes', 'maya/scenes')
 
 
 class ContextCreateTestCase(common_test.ContextTestCase):
@@ -415,6 +424,43 @@ class ContextMethodTestCase(common_test.ContextTestCase):
 
         with self.assertRaises(OSError):
             context.validate_plugin('asfdas')
+
+    def test_get_mapping_tokens(self):
+        '''Get the Context's top-level tokens and the tokens from a string.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '/jobs/{THING}/another/{HERE}'
+                    mapping_details:
+                        THING:
+                            mapping: '{INNER}_{ITEMS}'
+            ''')
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context = ways.api.get_context('foo')
+
+        self.assertEqual(['THING', 'HERE'], context.get_mapping_tokens())
+        self.assertEqual(['SOMETHING'], context.get_mapping_tokens('obj{SOMETHING}here'))
+
+    def test_get_all_tokens(self):
+        '''Get every token and subtoken that's defined in a Context.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '/jobs/{THING}/another/{HERE}'
+                    mapping_details:
+                        THING:
+                            mapping: '{INNER}_{ITEMS}'
+            ''')
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context = ways.api.get_context('foo')
+
+        self.assertEqual({'THING', 'HERE', 'INNER', 'ITEMS'}, context.get_all_tokens())
 
 
 class ContextInheritanceTestCase(common_test.ContextTestCase):

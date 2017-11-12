@@ -582,7 +582,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                                 regex: '[A-Z]{5,}'
                                 glob: '*'
                     uses:
-                        - /job
+                        - job
                     uuid: 040a5511-aa53-42ae-9bc3-eb332841616e
 
                 shot_base_plugin:
