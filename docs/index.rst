@@ -38,6 +38,7 @@ API Details
 
 .. toctree::
     Descriptors <descriptors>
+    Plugin Basics <plugin_basics>
     Advanced Contexts <context_advanced>
     Troubleshooting <troubleshooting>
 

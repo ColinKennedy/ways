@@ -91,7 +91,7 @@ Asset objects.
 ::
 
     path = '/foo/some_part_JobName_123/bar'
-    asset = resource.get_asset(path, 'some/context')
+    asset = ways.api.get_asset(path, 'some/context')
     asset.get_value('JOB_NAME_SUFFIX')
     # Result: 'part_JobName'
 
@@ -115,8 +115,6 @@ defined which hook onto any Context or Asset object.
 
 Like the name implies, an Action object can do anything and be anything, as
 long as the object is callable.
-
-TODO : remember ot mention and show that You can also define Actions ahead of plugins.
 
 Defining an Action is a bit verbose so lets save the details for another
 section. But just to give an impression of what they look like when used,

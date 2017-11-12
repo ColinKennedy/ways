@@ -133,6 +133,36 @@ class ContextCreateTestCase(common_test.ContextTestCase):
         with self.assertRaises(ValueError):
             ways.api.get_context('s^ome/context')
 
+    def test_fails_from_unknown_assignment(self):
+        '''If Ways creates a Context with no plugins, error.
+
+        As far as I've found as of this writing, this only happens due to
+        user error - If a person tries to call an assignment
+
+        '''
+        contents = textwrap.dedent(
+            r'''
+            globals:
+                assignment: an_assignment_to_every_plugin
+            plugins:
+                some_plugin:
+                    hierarchy: example
+                    uuid: something_unique
+
+                this_can_be_called_anything:
+                    hierarchy: example/hierarchy
+                    mapping: "/jobs/{JOB}"
+                    uuid: another_unique_uuid
+                    platforms:
+                        - linux
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+        mapping = '/jobs/job_part_something'
+
+        with self.assertRaises(RuntimeError):
+            asset = ways.api.get_asset(mapping, context='example/hierarchy')
+
 #     def test_context_checkout_override_all2(self):
 #         context = ways.api.Context('/some/context')
 #         context.data['metadata'].set('background-color', 'white')

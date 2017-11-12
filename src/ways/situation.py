@@ -29,7 +29,6 @@ import inspect
 import operator
 import platform
 import functools
-import itertools
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
@@ -392,7 +391,15 @@ class Context(object):
         return self.connection['get_max_folder'](self.plugins)
 
     def get_platforms(self):
-        '''list[str]: The OSes that this Context runs on.'''
+        '''Get The OSes that this Context runs on.
+
+        The recognized platforms for this method is anything that platform.system()
+        would return. (Examples: ['darwin', 'java', 'linux', 'windows']).
+
+        Returns:
+            list[str]: The platforms that this Context is allowed to run on.
+
+        '''
         return self.connection['get_platforms'](self.plugins)
 
 
@@ -488,8 +495,20 @@ def context_connection_info():
 
             return appended_mapping
 
-        latest_absolute_plugin = next(
-            plugin for plugin in reversed(plugins) if not plugin.get_uses())
+        if not plugins:
+            raise RuntimeError(
+                'No plugins were found. If you are using a custom assignment, '
+                'make sure that the assignment is listed in WAYS_PRIORITY or it '
+                'may have been skipped.')
+
+        try:
+            latest_absolute_plugin = next(
+                plugin for plugin in reversed(plugins) if not plugin.get_uses())
+        except StopIteration:
+            raise RuntimeError('This should not happen. Every plugin found was '
+                               'a relative plugin. No absolute (root) plugin '
+                               'was found.')
+
 
         abs_index = plugins.index(latest_absolute_plugin)
 

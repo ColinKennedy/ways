@@ -345,6 +345,7 @@ other assignment method.
             hierarchy: another/hierarchy
             assignment: job
 
+
 Applied Assignments - Live Environments
 ---------------------------------------
 
@@ -432,20 +433,29 @@ jobber.yml
             uses:
                 - job/shot
 
-Since "job_plugin" matches a hierarchy of "plates" in master.yml and
-its "job" assignment comes after "master", its contents will apply over the
-original. All of the plugins that are based on "plates" will now get the new
-changes from "job_plugin", which creates a downstream chain reaction.
 
-For example, by including jobber.yml, we changed the Context
-"job/shot/plates/client"
-mapping from
-"/jobs/{JOB}/{SCENE}/{SHOT}/library/graded/plates/clientinfo"
-to
-"/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo"
+Now let's see this in a live environment
 
-because "job/shot/plates/client" is a child hierarchy underneath
-job/shot/plates.
+::
+    # Both get_context versions do the same thing, because assignment='' by default
+    context = ways.api.get_context('job/shot/plates/client', assignment='')
+    context = ways.api.get_context('job/shot/plates/client')
+    context.get_mapping()
+    # Result: "/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo"
+
+Before adding jobber.yml to our system, the mapping was
+"/jobs/{JOB}/{SCENE}/{SHOT}/library/graded/plates/clientinfo". Now, it's
+"/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo". This works because
+the "job_plugin" key in jobber.yml matches the same hierarchy as the "plates"
+key in master.yml.
+
+jobber.yml comes after master.yml and its assignment loads after, so it
+overwrote the hierarchy plugins in master.yml. All of the relative plugins that
+depend on "job/shot/plates" now have a completely different mapping.
+
+
+Now consider this
+*****************
 
 If one project has their WAYS_DESCRIPTORS set to this:
 
@@ -460,32 +470,19 @@ And another project includes the job-assignment folder:
     export WAYS_DESCRIPTORS=/path/to/master.yml:/path/to/job/plugins/jobber.yml
 
 The two projects could have completely different runtime behaviors despite
-having the exact same Python code. Since jobber.yml comes after master.yml,
-it has a higher priority.
+having the exact same Python code.
 
-In a real-world scenario, if you have a job-environment like this
+Or maybe instead of having projects point to different files on disk, you have
+a job-based environment like this.
 
 .. code-block :: bash
 
     export WAYS_DESCRIPTORS=/jobs/$JOB/config/ways
 
-And then define JOB, you can put Plugin Sheet files in one job-folder location
-and then not in another.
+Maybe one job is called "foo" and another is called "bar".
 
-Job1: "foo"
+/jobs/foo/config/ways and /jobs/bar/config/ways could have different Plugin
+Sheet files customized for each job's needs.
 
-.. code-block :: bash
-
-    export JOB=foo
-
-Job2: "bar"
-
-.. code-block :: bash
-
-    export JOB=bar
-
-"foo" might have a completely different runtime behavior than "bar", depending
-on what files are located in /jobs/foo/config/ways vs /jobs/bar/config/ways.
-
-With just a single file, Ways's plugin resolution completetly changes.
+With just a single, 8 line file, Ways's plugin resolution can completely change.
 

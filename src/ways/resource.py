@@ -250,6 +250,7 @@ class Asset(object):
         if real:
             return value
 
+        # Modify the value before it is returned to the user, if they say to
         before_return = check.force_itertype(
             details.get(name, dict()).get('before_return', []))
 
@@ -634,7 +635,9 @@ def get_asset(info, context=None, *args, **kwargs):
         info (dict[str] or str):
             The info to expand. If the input is a dict, it is passed through
             and returned. If it is a string, the string is parsed against the
-            given context.
+            given context. Generally speaking, it's better to give a string that
+            is an exact or partial match to a Context's mapping than it is to
+            give a dict. This is doubly true if no context is given.
         context (:obj:`<sit.Context> or str or tuple[str]`, optional):
             The Context to use for the asset. If a string is given, it is
             assumed to be the Context's hierarchy and a Context object
