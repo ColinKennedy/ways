@@ -476,7 +476,6 @@ def expand_mapping(mapping, details):
 
     '''
     keys_to_expand = set(find_tokens(mapping)) & set(details.keys())
-
     for key in keys_to_expand:
         info = details[key]
         token = '{' + key + '}'
