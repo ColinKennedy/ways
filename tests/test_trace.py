@@ -388,6 +388,8 @@ class FailureTestCase(common_test.ContextTestCase):
             '''
             import ways.api
 
+            WAYS_UUID = 'some_unique_uuid'
+
             class SomeAction(ways.api.Action):
 
                 name = '{name}'
@@ -417,11 +419,10 @@ class FailureTestCase(common_test.ContextTestCase):
         # The module is importable so we can find out action
         action = ways.get_action(name, hierarchy=hierarchy)
         self.assertNotEqual(action, None)
-
         # But main() fails, so the plugin is a registered failure
         results = ways.api.trace_all_plugin_results_info()
-        self.assertTrue(temp_file in results)
-        info = results.get(temp_file, dict())
+        self.assertTrue('some_unique_uuid' in results)
+        info = results.get('some_unique_uuid', dict())
         self.assertEqual(info.get('status'), common.FAILURE_KEY)
         self.assertEqual(info.get('reason'), common.LOAD_FAILURE_KEY)
 

@@ -302,7 +302,7 @@ def trace_method_resolution(method, plugins=False):
         list: The plugin resolution at each step.
 
     '''
-    context = method.im_self
+    context = method.__self__
     original = context.get_all_plugins
 
     output = []

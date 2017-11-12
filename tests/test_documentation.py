@@ -791,7 +791,10 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
             'uuid=foo_bad_path'
 
         os.environ['WAYS_DESCRIPTORS'] = descriptor_string
-        self.assertEqual(descriptor_string, parse.urlencode(info, doseq=True))
+
+        descriptor_string = _itemize_seralized_descriptor(descriptor_string)
+        output = _itemize_seralized_descriptor(parse.urlencode(info, doseq=True))
+        self.assertEqual(descriptor_string, output)
 
         # Add the Descriptor
         ways.api.init_plugins()
@@ -815,7 +818,10 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
             'items=%2Fsome%2Ffolder%2Fpath&create_using=foo.bar.bad.import.path'
 
         os.environ['WAYS_DESCRIPTORS'] = descriptor_string
-        self.assertEqual(descriptor_string, parse.urlencode(info, doseq=True))
+
+        descriptor_string = _itemize_seralized_descriptor(descriptor_string)
+        output = _itemize_seralized_descriptor(parse.urlencode(info, doseq=True))
+        self.assertEqual(descriptor_string, output)
 
         # Add the Descriptor
         ways.api.init_plugins()
@@ -868,7 +874,10 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
             'items=%2Fsomething%2Fhere&' \
             'create_using=module.BadDescriptor&' \
             'uuid=some_uuid'
-        self.assertEqual(expected_encoded_string, serialized_info)
+        expected_encoded_string = _itemize_seralized_descriptor(expected_encoded_string)
+        serialized_info_ = _itemize_seralized_descriptor(serialized_info)
+
+        self.assertEqual(expected_encoded_string, serialized_info_)
         self.assertEqual(ways.api.add_descriptor(serialized_info), None)
         self.assertEqual(ways.api.NOT_CALLABLE_KEY,
                          ways.api.trace_all_descriptor_results_info()[uuid_]['reason'])
@@ -1178,3 +1187,8 @@ def _build_action(action, folders=None, hierarchy='some/context'):
 
     SomeAction.items = folders
     return SomeAction
+
+
+def _itemize_seralized_descriptor(descriptor):
+    '''set[str]: Break a Descriptor string to its parts.'''
+    return set(descriptor.split('&'))
