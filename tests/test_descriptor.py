@@ -386,8 +386,6 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
 
         # Create an example serialized descriptor that describes our local repo
         serialized_info = parse.urlencode(descriptor_info, True)
-        with open('/home/soul/temp/output.txt', 'w') as file_:
-            file_.write(serialized_info)
 
         self.assertEqual(ways.api.add_descriptor(serialized_info), None)
 
