@@ -20,8 +20,6 @@ from . import common
 from . import resource
 from . import situation as sit
 
-six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
-
 __version__ = "0.1.0b1"
 
 

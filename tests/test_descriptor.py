@@ -12,6 +12,8 @@ import textwrap
 
 # IMPORT THIRD-PARTY LIBRARIES
 import git
+import six
+six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
 from six.moves import mock
 # pylint: disable=import-error,unused-import
 from six.moves.urllib import parse
@@ -260,14 +262,33 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('2ff2/whatever')
         self.assertNotEqual(context, None)
 
-    # def test_add_local_git_branch_descriptor(self):
-    #     '''Gather plugins from a local git branch repository.'''
+    def test_add_search_path_env_var(self):
+        '''Add a Plugin Sheet file path that uses a environment variable.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                a_parse_plugin:
+                    hierarchy: 2ff2/whatever
+            ''')
 
-    # def test_add_remote_git_descriptor(self):
-    #     '''Gather plugins from a remote (web) git repository.'''
+        root = tempfile.mkdtemp()
+        self.temp_paths.append(root)
+        fake = os.path.join(root, '$JOB', 'example_plugin.yml')
+        real = os.path.expandvars(fake)
 
-    # def test_add_remote_git(self):
-    #     '''Gather plugins from a remote (web) git branch repository.'''
+        os.environ['JOB'] = 'foo'
+
+        os.makedirs(os.path.dirname(real))
+
+        with open(real, 'w') as file_:
+            file_.write(contents)
+
+        os.environ[ways.api.DESCRIPTORS_ENV_VAR] = fake
+
+        ways.api.init_plugins()
+
+        context = ways.api.get_context('2ff2/whatever')
+        self.assertNotEqual(context, None)
 
     def test_callable_descriptor(self):
         '''Use a callable function/method as a descriptor.'''
