@@ -36,12 +36,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -62,12 +58,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -92,12 +84,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -121,7 +109,7 @@ class CommanderTestCase(common_test.ContextTestCase):
 
             @classmethod
             def get_hierarchy(cls):
-                '''The hierarchy.'''
+                '''Gather the hierarchy.'''
                 return ('27ztt', 'whatever')
 
             def __call__(self, *args, **kwargs):
@@ -140,12 +128,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -186,12 +170,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -213,12 +193,8 @@ class CommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -250,10 +226,10 @@ class FindCommanderTestCase(common_test.ContextTestCase):
 
             @classmethod
             def get_hierarchy(cls):
-                '''The hierarchy.'''
+                '''Gather the hierarchy.'''
                 return ('27ztt', 'whatever')
 
-            def __call__(self, *args, **kwargs):
+            def __call__(self, obj, *args, **kwargs):
                 '''Do something.'''
                 # Use env vars if no resolution tags were given
                 kwargs.setdefault('resolve_with', 'env')
@@ -308,12 +284,8 @@ class FindCommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -334,12 +306,8 @@ class FindCommanderTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 27ztt/whatever
-                    id: models
                     mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 

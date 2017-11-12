@@ -39,6 +39,7 @@ API Details
 .. toctree::
     Descriptors <descriptors>
     Advanced Contexts <context_advanced>
+    Troubleshooting <troubleshooting>
 
 Appendices
 ----------
@@ -51,5 +52,5 @@ Modules
 .. toctree::
    :maxdepth: 4
 
-   Module Documentation <ways>
+   API Documentation <ways>
 

@@ -14,6 +14,7 @@ from . import engine
 from .core import check
 
 ENCLOSURE_TOKEN_REGEX = r'(\{[^\{\}]+\})'
+RESERVED_ENV_VAR_PARSE_TYPES = ('env', 'environment', 'env_vars')
 TOKEN_REGEX = r'\{([^\{\}]+)\}'
 
 
@@ -21,7 +22,7 @@ class ContextParser(object):
 
     '''A class that's used to fill out missing values in a Context's mapping.
 
-    Some quick terminology. If you see the word 'token', it means a
+    Some quick terms: If you see the word 'token', it means a
     piece of a string that needs to be filled out, such as 'some_{TOKEN}_here'.
 
     A field is the token + its information. For example, if the token being
@@ -48,12 +49,12 @@ class ContextParser(object):
 
         Args:
             token (str):
-                The token to use to check against the given value.
+                The token to use to check for the given value.
             value:
                 The object to check for validity.
             resolve_with (:obj:`str`, optional):
                 The parse type to use to check if value is valid for token.
-                Currently, only 'regex' is supported. Default: 'regex'.
+                Only 'regex' is supported right now. Default: 'regex'.
 
         Returns:
             bool:
@@ -68,12 +69,16 @@ class ContextParser(object):
         try:
             info = mapping_details[token]
         except KeyError:
-            return False
+            return True
 
         try:
             expression = info['parse'][resolve_with]
         except KeyError:
-            return True
+            try:
+                expression = self.get_token_parse(token, resolve_with)
+            except KeyError:
+                # If we have no expression then just assume True
+                return True
 
         return re.match(expression, value) is not None
 
@@ -123,7 +128,7 @@ class ContextParser(object):
             # env/environment are reserved keywords and resolve from the
             # user's environment. All other resolve_types are processed normally
             #
-            if resolve_type.lower() in ('env', 'environment', 'env_vars'):
+            if resolve_type.lower() in RESERVED_ENV_VAR_PARSE_TYPES:
                 token_key = '{' + token + '}'
                 parse_info = make_value(token, os.getenv(token, token_key))
                 mapping = mapping.replace(token_key, str(parse_info))
@@ -284,7 +289,7 @@ class ContextParser(object):
     # pylint: disable=too-many-arguments
     def get_str(self, resolve_with='',
                 depth=-1, holdout=None, groups=None, display_tokens=False):
-        r'''Create a string representation of the Context's mapping.
+        r'''Create a string of the Context's mapping.
 
         Note:
             holdout and groups cannot have any common token names.
@@ -360,7 +365,7 @@ class ContextParser(object):
         resolve_with = check.force_itertype(resolve_with)
 
         if depth == -1:
-            depth = 9000  # Some ridiculously high number
+            depth = 9000  # A high number that will keep the loop going
 
         for current_depth in range(depth):
             # Make a copy and then try to expand the mapping using every
@@ -396,7 +401,7 @@ class ContextParser(object):
             if not mapping_changed:
                 # TODO : At the time of writing (2017-10-15 10:50:05.823780)
                 #        replacing this block with just a "break" statement
-                #        didn't cause errors in my unittests.
+                #        did not cause errors in my unittests.
                 #
                 #        Possibly come back to this part, once there are more
                 #        tests

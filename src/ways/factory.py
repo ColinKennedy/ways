@@ -10,7 +10,9 @@ TODO:
 
 '''
 
+
 # IMPORT STANDARD LIBRARIES
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import collections
 
 # IMPORT WAYS LIBRARIES
@@ -41,17 +43,17 @@ class _AssignmentFactory(object):
         Args:
             hierarchy (tuple[str] or str):
                 The position where all the plugins for our instance would live.
-            assignment (str): The category/grouping of the instance.
+            assignment (str): The placement for the instance.
             force (:obj:`bool`, optional):
                 If False and the Context has no plugins, return None.
                 If True, return the empty Context. Default is False.
 
         Returns:
             class_type or NoneType:
-                An instance of our stored class. If the Context that is
-                queried doesn't have any Plugin objects defined for it, it's
-                considered 'empty'. To avoid faults in our code,
-                we return None, in this case.
+                An instance of our stored class. If the given hierarchy does not
+                have any Plugin objects defined for it, it's considered 'empty'.
+                To avoid errors in our code later, we return None, unless
+                force is True.
 
         '''
         if isinstance(hierarchy, self._class_type):
@@ -90,8 +92,9 @@ class _AssignmentFactory(object):
             return instance
 
         hierarchy = common.split_hierarchy(hierarchy)
-        # If no plugins were defined or if the plugins are specifically stated
-        # as "not findable" (like an incomplete Context Plugin)
+
+        # If no plugins were defined or if the plugins are not
+        # "not findable" (like an incomplete Context Plugin)
         # we return None to avoid making an undefined Context
         #
         try:
@@ -104,7 +107,7 @@ class _AssignmentFactory(object):
             is_forcible = (not assignment and ways.PLUGIN_CACHE['hierarchy'].get(hierarchy))
 
             if force or is_forcible:
-                # Register the context, even though it doesn't have plugins
+                # Register the context, even though it does not have plugins
                 return make_and_store_instance(hierarchy, assignment)
 
             # Return nothing, no Plugin objects were found so no Context
@@ -128,14 +131,7 @@ class _AssignmentFactory(object):
                 self.get_instance(uses, assignment=assignment, force=True))
 
         for plugin in ways.PLUGIN_CACHE['hierarchy'][hierarchy][assignment]:
-            try:
-                if plugin.is_findable():
-                    plugins.append(plugin)
-            except AttributeError:
-                # If the plugin doesn't say whether it is findable, just assume
-                # that the information was just omitted and that it is findable
-                #
-                plugins.append(plugin)
+            plugins.append(plugin)
 
         if not force and not plugins:
             return
@@ -145,11 +141,12 @@ class _AssignmentFactory(object):
     def clear(self):
         '''Remove every Context instance that this object knows about.
 
-        If a Context is re-queried after this method is run, a new instance
-        for the Context will be created and returned.
+        If the user tries to get a Context after this method is run,
+        a new instance for the Context will be created and returned.
 
-        Running this method is not recommended because it messes with the
-        internals of Ways.
+        Running this method is not recommended because Ways is not meant to
+        forget Context objects after they have been created.
+
 
         '''
         self._instances.clear()
@@ -179,7 +176,7 @@ class AliasAssignmentFactory(_AssignmentFactory):
         Args:
             hierarchy (tuple[str] or str):
                 The location to look for our instance. In this method,
-                hierarchy is expectex to be an alias for another hierarchy
+                hierarchy is expected to be an alias for another hierarchy
                 so we look for the real hierarchy, here.
 
         Returns:
@@ -191,7 +188,8 @@ class AliasAssignmentFactory(_AssignmentFactory):
 
         while current != hierarchy:
             # On the first run, current will be empty so we just assign it
-            # to hierarchy straightaway - so that the try/except will start
+            # to a fake hierarchy so that the try/except will not immediately
+            # break
             #
             if current == tuple():
                 current = hierarchy
@@ -227,9 +225,9 @@ class AliasAssignmentFactory(_AssignmentFactory):
         Returns:
             self._class_type() or NoneType:
                 An instance of our preferred class. If the Context that is
-                queried doesn't have any Plugin objects defined for it, it's
-                considered 'empty'. To avoid faults in our code,
-                we return None, by default.
+                called does not have any Plugin objects defined for it, it's
+                considered 'empty'. To avoid problems in our code later,
+                we return None, by default unless force is True.
 
         '''
         if isinstance(hierarchy, self._class_type):

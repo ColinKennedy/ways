@@ -30,7 +30,7 @@ DESCRIPTORS = []
 DESCRIPTOR_LOAD_RESULTS = []
 PLUGIN_CACHE = collections.OrderedDict()
 PLUGIN_CACHE['hierarchy'] = collections.OrderedDict()
-PLUGIN_CACHE['all_plugins'] = []
+PLUGIN_CACHE['all'] = []
 PLUGIN_LOAD_RESULTS = []
 
 
@@ -312,6 +312,11 @@ def get_plugins(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
     return plugins
 
 
+def get_parse_order():
+    '''list[str]: The order to try all of the parsers registered by the user.'''
+    return os.getenv(common.PARSERS_ENV_VAR, 'regex').split(os.pathsep)
+
+
 def get_priority():
     '''Determine the order that assignments are searched through for plugins.
 
@@ -348,7 +353,7 @@ def add_plugin(plugin, assignment='master'):
     PLUGIN_CACHE['hierarchy'][hierarchy].setdefault(assignment, [])
 
     # Add the plugin if it doesn't already exist
-    all_plugins = PLUGIN_CACHE['all_plugins']
+    all_plugins = PLUGIN_CACHE['all']
     if plugin not in all_plugins:
         PLUGIN_CACHE['hierarchy'][plugin.get_hierarchy()][assignment].append(plugin)
         all_plugins.append(plugin)
@@ -356,16 +361,17 @@ def add_plugin(plugin, assignment='master'):
 
 def clear():
     '''Remove all Ways plugins and actions.'''
-    ACTION_CACHE.clear()
-    try:
-        PLUGIN_CACHE['hierarchy'].clear()
-    except KeyError:
-        pass
+    def reset_cache(cache):
+        '''Reset some dict cache.'''
+        try:
+            cache['hierarchy'].clear()
+        except KeyError:
+            pass
 
-    try:
-        PLUGIN_CACHE['all_plugins'][:] = []
-    except KeyError:
-        pass
+        cache['all'][:] = []
+
+    ACTION_CACHE.clear()
+    reset_cache(PLUGIN_CACHE)
 
     del PLUGIN_LOAD_RESULTS[:]
     del DESCRIPTOR_LOAD_RESULTS[:]

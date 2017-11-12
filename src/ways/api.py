@@ -12,7 +12,6 @@ It's recommended to always import and use modules, here.
 
 # IMPORT LOCAL LIBRARIES
 from .cache import load_plugin
-from .cache import find_context
 from .cache import init_plugins
 from .cache import add_descriptor
 from .cache import add_search_path
@@ -26,15 +25,28 @@ from .trace import trace_assignment
 from .trace import trace_action_names
 from .trace import get_all_hierarchies
 from .trace import trace_actions_table
+from .trace import get_child_hierarchies
+from .trace import get_action_hierarchies
+from .trace import get_all_hierarchy_trees
+from .trace import trace_method_resolution
+from .trace import get_child_hierarchy_tree
 from .trace import trace_all_plugin_results
+from .trace import get_all_action_hierarchies
+from .trace import trace_all_descriptor_results
 from .trace import trace_all_plugin_results_info
+from .trace import trace_all_descriptor_results_info
 # High-use classes and functions
 from .common import PLUGINS_ENV_VAR
+from .common import LOAD_FAILURE_KEY
+from .common import NOT_CALLABLE_KEY
 from .common import PLATFORM_ENV_VAR
 from .common import PRIORITY_ENV_VAR
 from .common import PLATFORMS_ENV_VAR
 from .common import DEFAULT_ASSIGNMENT
+from .common import IMPORT_FAILURE_KEY
 from .common import DESCRIPTORS_ENV_VAR
+from .common import RESOLUTION_FAILURE_KEY
+from .common import ENVIRONMENT_FAILURE_KEY
 # TODO : rename Find class into "Finder"
 from .finder import Find
 from .plugin import Plugin
@@ -71,6 +83,13 @@ __all__ = [
     'PLUGINS_ENV_VAR',
     'PRIORITY_ENV_VAR',
 
+    'ENVIRONMENT_FAILURE_KEY',
+    'IMPORT_FAILURE_KEY',
+    'LOAD_FAILURE_KEY',
+    'NOT_CALLABLE_KEY',
+
+    'RESOLUTION_FAILURE_KEY',
+
     'DEFAULT_ASSIGNMENT',
 
     'Plugin',
@@ -94,15 +113,25 @@ __all__ = [
     'add_action',
 
     'trace_all_plugin_results',
+    'trace_all_descriptor_results',
+    'trace_all_descriptor_results_info',
     'trace_all_plugin_results_info',
     'trace_actions',
     'trace_action_names',
+    'trace_method_resolution',
+
     'trace_actions_table',
     'trace_assignment',
     'trace_context',
     'trace_hierarchy',
 
+    'get_action_hierarchies',
+    'get_all_action_hierarchies',
+
     'get_all_hierarchies',
+    'get_child_hierarchies',
+    'get_child_hierarchy_tree',
+    'get_all_hierarchy_trees',
 
     'FileDescriptor',
     'FolderDescriptor',
@@ -123,6 +152,4 @@ __all__ = [
     'Find',
 
     'AssetFinder',
-
-    'find_context',
 ]

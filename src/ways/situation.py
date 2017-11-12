@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''The workhorse of the package - A module that contains Context objects.
+'''The most important part of Ways - A module that contains Context objects.
 
 Context objects are persistent objects that are created
 using a Flyweight pattern. Once one instance of a Context is created, it is
-reused whenever it possibly can - which means it can be treated like a monostate.
+reused whenever the same Context is called again - which means it can be
+used like a monostate.
 
 Reference:
     http://sourcemaking.com/design_patterns/flyweight
@@ -14,16 +15,17 @@ Reference:
 The Python example is written in Python 3 but is the same idea.
 
 Parts of the Context are generated at runtime and cannot be directly
-modified (like, for example, its Plugin objects). Other parts are freely
-changeable and will stay the same even if the Context is instantiated
-elsewhere in the code (like metadata).
+modified (like, for example, its Plugin objects). Other parts are dynamic (like
+the Context.data property).
 
 '''
 
 # IMPORT STANDARD LIBRARIES
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import os
 import re
 import copy
+import inspect
 import operator
 import platform
 import functools
@@ -69,7 +71,7 @@ class Context(object):
             connection
                 (:obj:`dict[str, callable[list[<ways.api.Plugin>]]]`,
                  optional):
-                Context objects are built outf of Plugin objects that are defined
+                Context objects are built out of Plugin objects that are defined
                 and retrieved at runtime. Since most Context objects are built
                 of more than one Plugin, we need to know how to merge
                 Plugin objects so that we can get a single value.
@@ -100,7 +102,7 @@ class Context(object):
             connection = context_connection_info()
 
         # TODO : Deprecate self.assignment and self.hierarchy - since these
-        #        shouldn't really be changed anyway
+        #        probably will not change
         #
         self.assignment = assignment
         self.actions = find.Find(self)
@@ -123,7 +125,7 @@ class Context(object):
 
         Note:
             This function cannot modify the data that was generated from the
-            plugins for this Context - that data is intentionally read-only.
+            plugins for this Context - that data is read-only.
 
         Args:
             dict[str]: The new user data.
@@ -141,19 +143,12 @@ class Context(object):
 
         return data
 
-    def get_all_plugins(self, hierarchy='', assignment=''):
-        '''list[<pathfinder.plugin.Plugin>]: The found plugins, if any.'''
-        if hierarchy == '':
-            hierarchy = self.hierarchy
-
-        return ways.get_plugins(hierarchy, assignment)
-
     @property
     def plugins(self):
         '''Find all of the "valid" plugins for this instance.
 
-        What determines if a Plugin is "found" depends on a number of factors.
-        First, the plugin needs to be somewhere in the hierarchy of the Context,
+        What decides if a Plugin is "found" depends on a number of factors.
+        First, the plugin needs to be inside the hierarchy of the Context,
         have the same assignment, and the platform(s) assigned to the Plugin
         must match our current system's platform. If a platform override is
         specified (aka if WAYS_PLATFORM has been set) then the Plugin
@@ -183,9 +178,27 @@ class Context(object):
         return output
 
     def get_action(self, name):
-        '''<pathfinder.commander.Action> or NoneType: The Action object.'''
-        return ways.get_action(
+        '''<ways.api.Action> or callable or NoneType: The Action object.'''
+        action = ways.get_action(
             name=name, hierarchy=self.hierarchy, assignment=self.assignment)
+
+        # If this object is a class, then assume that it's a ways.api.Action
+        # and that it needs to be instantiated so that we can run __call__ on it
+        #
+        if inspect.isclass(action):
+            action = action()
+
+        return action
+
+    def get_all_plugins(self, hierarchy='', assignment=''):
+        '''list[<ways.api.Plugin>]: The found plugins, if any.'''
+        if not hierarchy:
+            hierarchy = self.hierarchy
+
+        if not assignment:
+            assignment = self.assignment
+
+        return ways.get_plugins(hierarchy, assignment)
 
     def get_assignment(self):
         '''str: The assignment for this Context.'''
@@ -212,9 +225,9 @@ class Context(object):
     def get_mapping_details(self):
         '''Get the information that describes a Context instance's mapping.
 
-        This function is literally the same as "mapping_details" key that
-        you'd see in a Plugin Sheet file and is critical to how a Context's
-        parser builds into a file path.
+        This function is the same as "mapping_details" key that you'd see in a
+        Plugin Sheet file and is critical to how a Context's parser builds
+        into a file path.
 
         Without it, you cannot get a proper filepath out of a Context.
 
@@ -233,6 +246,29 @@ class Context(object):
             return dict()
 
         return value
+
+    def get_mapping_tokens(self, mapping=''):
+        '''list[str]: Get all of the tokens that are in this Context's mapping.'''
+        if not mapping:
+            mapping = self.get_mapping()
+
+        return parse.find_tokens(mapping)
+
+    def get_all_tokens(self):
+        '''Get the tokens in this Context's mapping and any subtokens.
+
+        Subtokens are tokens that are inside another token's mapping.
+
+        Returns:
+            set[str]: All of the tokens known to this Context.
+
+        '''
+        tokens = set()
+        for _, info in six.iteritems(self.get_mapping_details()):
+            mapping = info.get('mapping')
+            tokens.update(self.get_mapping_tokens(mapping))
+
+        return tokens
 
     @classmethod
     def validate_plugin(cls, plugin):
@@ -267,9 +303,9 @@ class Context(object):
 
         if current_platform not in recognized_platforms:
             raise OSError(
-                'Found platform: "{plat}" was invalid. Options were, '
+                'Found platform: "{platform_}" was invalid. Options were, '
                 '"{opt}". Detected system platform was: "{d_plat}".'
-                ''.format(plat=current_platform,
+                ''.format(platform_=current_platform,
                           opt=recognized_platforms,
                           d_plat=system_platform))
 
@@ -277,9 +313,7 @@ class Context(object):
         platform_aliases = {'*', 'all', 'everything'}
         plug_platforms = common.get_platforms(plugin)
 
-        # Prevent a Plugin that has a incorrectly-formatted platform
-        # from being filtered
-        #
+        # Prevent a Plugin that has a bad-formatted platform from being filtered
         if plug_platforms == '':
             plug_platforms = '*'
 
@@ -316,34 +350,13 @@ class Context(object):
         '''Set the data on this instance back to its default.'''
         self.data = self._init_data()
 
-    def __getattr__(self, key):
-        '''Try to get this object's attributes by looking through connections.
-
-        Args:
-            key (str): The attribute to get.
-
-        Raises:
-            AttributeError: If this object's self.connections doesn't have a
-                            a description for the given key.
-
-        Returns:
-            Whatever that connection returns.
-
-        '''
-        try:
-            return functools.partial(self.connection[key], self.plugins)
-        except KeyError:
-            raise AttributeError('Attribute: "{attr}" was not defined in '
-                                 'object "{obj}".'.format(
-                                     attr=key, obj=self.__class__.__name__))
-
     def as_dict(self, changes=True):
         '''Convert this object into a dictionary.
 
-        This is slightly different from a standard repr(Context) because
+        This is different from a standard repr(Context) because
         it will include items that are not part of the Context's initialization.
 
-        It also creates a deepcopy of its contents, so that modifications to
+        It also creates a deepcopy of its contents, so that any changes to
         this dictionary won't affect the original object.
 
         Args:
@@ -369,6 +382,27 @@ class Context(object):
             data['data'] = self._init_data()
 
         return data
+
+    def get_groups(self):
+        '''tuple[str]: The groups that this Context belongs to.'''
+        return self.connection['get_groups'](self.plugins)
+
+    def get_mapping(self):
+        '''str: The mapping that describes this Context.'''
+        return self.connection['get_mapping'](self.plugins)
+
+    def get_max_folder(self):
+        '''str: The highest mapping point that this Context lives in.'''
+        return self.connection['get_max_folder'](self.plugins)
+
+    def get_platforms(self):
+        '''list[str]: The OSes that this Context runs on.'''
+        return self.connection['get_platforms'](self.plugins)
+
+    # TODO : Might delete this one.
+    def get_skip_to(self):
+        '''str: The mapping to jump to.'''
+        return self.connection['get_skip_to'](self.plugins)
 
 
 __FACTORY = factory.AliasAssignmentFactory(Context)
@@ -418,7 +452,7 @@ def context_connection_info():
         '''
         platforms = obj.get_platforms()
         obj_type = platforms.__class__
-        return obj_type([plat.lower() for plat in platforms])
+        return obj_type([platform_.lower() for platform_ in platforms])
 
     def get_mapping(plugins):
         '''Get the mapping of our plugins and resolve it to absolute, if needed.
@@ -433,6 +467,7 @@ def context_connection_info():
         Raises:
             RuntimeError: If there is no absolute plugin in our list of plugins,
                           this function cannot be resolved into absolute.
+            RuntimeError: If not a single plugin provided has a mapping.
 
         Returns:
             str: The resolved mapping.
@@ -475,6 +510,9 @@ def context_connection_info():
         # In order to resolve the absolute mapping, we need a root path to use
         base_mapping = conn.get_right_most_priority(
             plugins[:abs_index + 1], method=operator.methodcaller('get_mapping'))
+
+        if base_mapping is None:
+            raise RuntimeError('None of the plugins provided have mappings. Cannot continue.')
 
         # TODO : Can't we move this block above base_mapping?
         # The resolved mapping came from an absolute plugin
@@ -562,12 +600,8 @@ def context_connection_info():
         return os.path.normpath(''.join(max_folders))
 
     return {
-        'is_hidden': conn.get_right_most_priority,
-        'is_navigatable': conn.get_right_most_priority,
-        'is_selectable': conn.get_right_most_priority,
-
         'get_groups': functools.partial(
-            conn.get_intersection_priority,
+            conn.get_right_most_priority,
             method=operator.methodcaller('get_groups')),
 
         'get_mapping': get_mapping,
@@ -584,6 +618,30 @@ def context_connection_info():
 
         'get_skip_to': conn.get_right_most_priority,
     }
+
+
+def get_all_contexts():
+    '''Get or Create every Context instance that has plugins.
+
+    Warning:
+        This method can potentially be slow if there are a lot of Context
+        objects left to be defined. That said, the second time this method
+        is called, it'll be fast because the Context instances will
+        be retrieved from the Context flyweight cache.
+
+    Returns:
+        list[<ways.api.Context>]: The Context objects defined in this system.
+
+    '''
+    contexts = []
+    used_hierarchy_assignment_pairs = []
+    for hierarchy, info in six.iteritems(ways.PLUGIN_CACHE['hierarchy']):
+        for assignment in six.iterkeys(info):
+            pair = (hierarchy, assignment)
+            if pair not in used_hierarchy_assignment_pairs:
+                used_hierarchy_assignment_pairs.append(pair)
+                contexts.append(get_context(hierarchy=hierarchy, assignment=assignment))
+    return contexts
 
 
 def get_context(hierarchy,

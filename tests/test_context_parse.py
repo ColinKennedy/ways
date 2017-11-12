@@ -49,9 +49,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: tt/whatever
-                    id: models
                     mapping: /jobs/{JOB}/some_kind/of/real_folders
                     mapping_details:
                         JOB:
@@ -147,12 +145,8 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
 # #                             'JOB_DESCRIPTION': '[A-Z0-9]+',
 # #                         },
 # #                     },
-# #                     'hidden': False,
-# #                     'navigatable': True,
-# #                     'selectable': True,
 # #                     'hierarchy': '/asdf/whatever',
 # #                     'uuid': '0d255517-dbbf-4a49-a8d0-285a06b2aa6d',
-# #                     'id': 'models',
 # #                 },
 # #             }
 # #         }
@@ -165,9 +159,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: yytt/whatever
-                    id: models
                     mapping: /jobs/{JOB}/some_kind/of/real_folders/{THING}
                     mapping_details:
                         JOB:
@@ -176,8 +168,6 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                         THING:
                             parse:
                                 regex: \w+
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
         self._make_plugin_folder_with_plugin2(contents=contents)
@@ -196,9 +186,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: yytt/whatever
-                    id: models
                     mapping: /thing/{JOB}/folders/{THING}
                     mapping_details:
                         ANOTHER:
@@ -215,8 +203,6 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                         VALUES:
                             parse:
                                 regex: (\w*)?
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -236,16 +222,12 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 31tt/whatever
-                    id: models
                     mapping: /jobs/{JOB}/some_kind/of/real_folders
                     mapping_details:
                         JOB:
                             mapping: '{JOB_NAME}_{JOB_ID}'
                             parse: {}
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -263,16 +245,12 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: 31tt/whatever
-                    id: models
                     mapping: /jobs/{JOB}/some_kind/of/real_folders
                     mapping_details:
                         JOB:
                             mapping: '{JOB_NAME}_{JOB_ID}'
                             parse: {}
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
@@ -324,9 +302,7 @@ class ContextParserMethodTestCase(common_test.ContextTestCase):
             globals: {}
             plugins:
                 a_parse_plugin:
-                    hidden: false
                     hierarchy: whatever
-                    id: models
                     mapping: /jobs/{JOB}/some_kind/of/real_folders/{THING}
                     mapping_details:
                         JOB:
@@ -334,8 +310,6 @@ class ContextParserMethodTestCase(common_test.ContextTestCase):
                             parse: {}
                         THING:
                             mapping: '{WHATEVER}'
-                    navigatable: true
-                    selectable: true
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 

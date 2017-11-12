@@ -90,11 +90,6 @@ class PluginCreationTestCase(common_test.ContextTestCase):
 
             ''')
 
-        # TODO : Make this function actually pass. And once it passes, test it
-        #        just checking for data like this:
-        #
-        # TODOID: 751 (search for related sections with this ID)
-        #
         with self.assertRaises(ValueError):
             self._make_plugin_folder_with_plugin2(contents=contents, ending='.yml')
 
@@ -153,13 +148,8 @@ class PluginMethodTestCase(common_test.ContextTestCase):
                             'parse': {},
                         },
                     },
-                    'groups': ('', '', ''),
-                    'hidden': False,
-                    'navigatable': True,
-                    'selectable': True,
                     'hierarchy': '31tt/whatever',
                     'uuid': '0d255517-dbbf-4a49-a8d0-285a06b2aa6d',
-                    'id': 'models',
                 },
             },
         }
@@ -184,12 +174,32 @@ class PluginMethodTestCase(common_test.ContextTestCase):
                         },
                     },
                     'groups': ('*', ),
-                    'hidden': False,
-                    'navigatable': True,
-                    'selectable': True,
                     'hierarchy': '31tt/whatever',
                     'uuid': '0d255517-dbbf-4a49-a8d0-285a06b2aa6d',
-                    'id': 'models',
+                },
+                'b_parse_plugin': {
+                    'mapping': '/jobs/{JOB}/some_kind/of/real_folders/inner',
+                    'mapping_details': {
+                        'JOB': {
+                            'mapping': '{JOB_NAME}_{JOB_ID}',
+                            'parse': {},
+                        },
+                    },
+                    'groups': tuple(),  # Just adding this plugin for coverage
+                    'hierarchy': '31tt/whatever',
+                    'uuid': '0d255517-dbbf-4a49-a8d0-285a06b2aa6d',
+                },
+                'c_parse_plugin': {
+                    'mapping': '/jobs/{JOB}/some_kind/of/real_folders/inner',
+                    'mapping_details': {
+                        'JOB': {
+                            'mapping': '{JOB_NAME}_{JOB_ID}',
+                            'parse': {},
+                        },
+                    },
+                    'groups': ('some_groups', 'another'),
+                    'hierarchy': '31tt/whatever',
+                    'uuid': '0d255517-dbbf-4a49-a8d0-285a06b2aa6d',
                 },
             },
         }
@@ -197,7 +207,7 @@ class PluginMethodTestCase(common_test.ContextTestCase):
 
         ways.api.add_search_path(os.path.dirname(plugin_file))
         context = ways.api.get_context('31tt/whatever')
-        self.assertEqual(context.get_groups(), ('*', ))
+        self.assertEqual(context.get_groups(), ('some_groups', 'another'))
 
 
 class PluginMergeMethodTestCase(common_test.ContextTestCase):

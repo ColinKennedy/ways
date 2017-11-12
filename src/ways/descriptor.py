@@ -3,18 +3,13 @@
 
 '''A module that holds classes which abstract how Plugin objects are created.
 
-A file path can be described with FolderDescriptor and more advanced constructs,
-like a descriptor that gets its Plugin objects from a database, are listed here.
-
-FolderDescriptor Types:
-+++++++++++++++++++++++
-FolderDescriptor - Get plugin files from a file path
-GitLocalDescriptor - Get plugin files from a local git repository
-GitRemoteDescriptor - Get plugin files from an online git repository
+A descriptor string could be a path to a file or folder or even to a database
 
 '''
 
+
 # IMPORT STANDARD LIBRARIES
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import os
 import copy
 import glob
@@ -38,25 +33,25 @@ from . import dict_classes
 from .core import check
 
 GLOBALS_KEY = 'globals'
-PLUGIN_INFO_FILE_NAME = '.waypoint_plugin_info'
+PLUGIN_INFO_FILE_NAME = '.ways_plugin_info'
 
 
 class FileDescriptor(object):
 
-    '''A generic abstraction that helps find Plugin objects for our code.
+    '''A generic class that creates Plugin objects from a file, on-disk.
 
     Note:
         Any FileDescriptor class that returns back Plugin objects is valid
         (Descriptors can query from a database, locally on file, etc, etc.
-        It's all good) except there is one major constraint. FileDescriptor-like
-        objects cannot append to state asynchronously. In other words,
+        It's all good) except there is one major requirement. FileDescriptor-like
+        objects cannot append asynchronously. In other words,
         If a FileDescriptor manages threads that each find Plugin objects and
         append to a list of Plugin objects whenever each thread finishes, the
-        Plugin objects can potentially append out of order - which will lead to
-        terrible results.
+        Plugin objects might append out of order - which will create
+        results that will be hard to debug.
 
         It's recommended to not use threading at all unless this return process
-        is properly managed (like with a queue or some other kind of idea).
+        is managed (like with a queue or some other kind of idea).
 
     '''
 
@@ -77,10 +72,10 @@ class FileDescriptor(object):
 
     @classmethod
     def _conform_plugin_info(cls, info):
-        '''Mutate the input's hierarchy to something that this object can use.
+        '''Mutate the input's hierarchy to a tuple that this object can use.
 
         Warning:
-            This method does not return and modifies the object directly,
+            This method does not return and mutates the object directly,
             without making a copy.
 
         '''
@@ -149,9 +144,7 @@ class FileDescriptor(object):
             #
             plugin_info = self.get_plugin_info(file_)
 
-            # TODO : This whole plugin resolution could be cleaner. FIXME
-
-            # If the Plugin Sheet has a 'globals' section declared, get its info
+            # If the Plugin Sheet has a 'globals' section, get its info
             assignment = plugin_info.get('assignment', common.DEFAULT_ASSIGNMENT)
             plugin_assignment_ = data.get('globals', dict()).get('assignment', assignment)
 
@@ -176,7 +169,7 @@ class FileDescriptor(object):
     def _build_plugins(cls, source, plugin, info, assignment):
         '''Create a Plugin or multiple Plugin objects.
 
-        This method is a companion to get_plugins and basically just exists
+        This method is meant to be used with get_plugins. It just exists
         to make it get_plugins more readable.
 
         Args:
@@ -187,16 +180,16 @@ class FileDescriptor(object):
                 was defined.
             info (dict[str]):
                 Any data about the plugin to include when the Plugin initializes.
-                In particular, "uses" is retrieved to figure out if plugin is
-                an absolute or relative plugin.
+                "uses" is retrieved to figure out if plugin is an absolute or
+                relative plugin.
             assignment (str):
                 The placement that this Plugin will go into.
 
         Returns:
             list[<ways.api.DataPlugin>]:
-                Generated plugins. One Plugin object
-                if info.get('uses', []) is empty or several, depending on the
-                length of the list of values that 'uses' returns.
+                The generated plugins. It will make one Plugin object if
+                info.get('uses', []) is empty. If "uses" is not empty, it will
+                create one Plugin for each item in "uses".
 
         '''
         duplicate_uses_message = 'Plugin: "{plug}" has duplicate hierarchies ' \
@@ -214,16 +207,15 @@ class FileDescriptor(object):
         if uses:
             duplicates = _get_duplicates(uses)
 
-            # TODO : "if duplicates:" stops bugs from occurring
+            # TODO : "if duplicates:" stops bugs from happening
             #        if a user wrote a plugin that has duplicate items in
-            #        'uses'. This could even just be a copy/paste error
-            #        and basically should never be intentional
+            #        'uses'. Ways likes to think that this is usually a
+            #        copy/paste accident and is not intentional.
+            #        and should never be intentional
             #
-            #        That said, just raising an error is really bad. We
+            #        Raising an error is really bad so we instead
             #        should just "continue" and log the failure so that
             #        a user can look it up, later
-            #
-            # TODOID: 751 (search for related sections with this ID)
             #
             if duplicates:
                 raise ValueError(duplicate_uses_message.format(
@@ -257,8 +249,8 @@ class FileDescriptor(object):
 
         Note:
             Not every item in our info is resolved to absolute immediately.
-            Only the things that must be absolute (like hierarchy) are changed.
-            For all the other things that may still be relative, like mapping,
+            Only the plugins that must be absolute (like hierarchy) are changed.
+            For all the other plugins that may still be relative, like mapping,
             max_folder, etc., it's up to the Context to resolve it.
 
         Args:
@@ -287,7 +279,7 @@ class FileDescriptor(object):
             else:
                 hierarchy_.append(piece)
 
-        # If the user didn't write {root} anywhere in the relative Context,
+        # If the user did not write {root} anywhere in the relative Context,
         # assume that they just wanted to append its hierarchy to the parent
         #
         if not root_was_found:
@@ -312,7 +304,7 @@ class FileDescriptor(object):
             plugin_info_file = ''
             last_item = None
 
-            # This is a bit ghetto but just add an extra name to the path
+            # This is a bit hacky but just add an extra name to the path
             # so that when os.path.dirname happens, we start with the current
             # dir
             #
@@ -351,17 +343,17 @@ class FolderDescriptor(FileDescriptor):
     '''A generic abstraction that helps find Plugin objects for our code.
 
     Note:
-        Any FolderDescriptor class that returns back Plugin objects is valid
+        Any FileDescriptor class that returns back Plugin objects is valid
         (Descriptors can query from a database, locally on file, etc, etc.
-        It's all good) except there is one major constraint. FolderDescriptor-like
-        objects cannot append to state asynchronously. In other words,
-        If a FolderDescriptor manages threads that each find Plugin objects and
+        It's all good) except there is one major requirement. FileDescriptor-like
+        objects cannot append asynchronously. In other words,
+        If a FileDescriptor manages threads that each find Plugin objects and
         append to a list of Plugin objects whenever each thread finishes, the
-        Plugin objects can potentially append out of order - which will lead to
-        terrible results.
+        Plugin objects might append out of order - which will create
+        results that will be hard to debug.
 
         It's recommended to not use threading at all unless this return process
-        is properly managed (like with a queue or some other kind of idea).
+        is managed (like with a queue or some other kind of idea).
 
     '''
 
@@ -400,8 +392,8 @@ class GitLocalDescriptor(FolderDescriptor):
 
     '''An object to describe a local git repository.
 
-    This class simply conforms its input to something that its base class can
-    read and then calls it. Otherwise that, it's not particularly special.
+    This class conforms its input to files that its base class can
+    read and then calls it. Otherwise that, it's not special.
 
     '''
 
@@ -420,8 +412,8 @@ class GitLocalDescriptor(FolderDescriptor):
         # TODO : I added this patch to deal with the way that urlparse.parse_qs
         #        gets back items. For some reason, strings would could be as a
         #        list with just a single path like ['/some/location'] instead of
-        #        '/some/location'. I should really just sanitize my inputs,
-        #        instead of this weird patch
+        #        '/some/location'. I should really just clean my inputs,
+        #        instead of this hacky patch
         #
         if not isinstance(path, six.string_types):
             path = path[0]
@@ -526,7 +518,8 @@ def is_valid_plugin(hierarchy, info):
 def _get_duplicates(obj):
     '''Get all items in some iterable object that occur more than once.
 
-    This is just a helper function - because the original code isn't obvious.
+    This is just a helper function - because the original code was hard to read.
+
     Args:
         obj (iter): The object to test.
 
@@ -554,12 +547,7 @@ def get_loaders():
 
     '''
     def load_hook(info):
-        '''Modify some loaded data after information has been loaded.
-
-        This function is used specifically for use_yaml and use_json,
-        to make sure that certain loaded keys come in as certain object types.
-
-        '''
+        '''Modify some loaded data after information has been loaded.'''
         if 'groups' in info:
             info['groups'] = tuple(info['groups'])
         return info
@@ -594,17 +582,6 @@ def get_loaders():
             value = func(file_path)
             after(value)
             return value
-
-        # _mapping_tag = yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG
-
-        # def dict_representer(dumper, data):
-        #     return dumper.represent_dict(six.iteritems(data))
-
-        # def dict_constructor(loader, node):
-        #     return collections.OrderedDict(loader.construct_pairs(node))
-
-        # yaml.add_representer(collections.OrderedDict, dict_representer)
-        # yaml.add_constructor(_mapping_tag, dict_constructor)
 
         safe_load = functools.partial(yaml.safe_load, Loader=yamlordereddictloader.Loader)
         safe_load_function = functools.partial(load_wrap, func=safe_load, after=load_hook)
@@ -668,7 +645,7 @@ def try_load(path, default=None):
         This function is never run unless no loader was found for the given path.
 
         '''
-        raise ValueError('This exception is just a placeholder')
+        raise ValueError
 
     if default is None:
         default = dict()
@@ -729,12 +706,13 @@ def find_loader(path):
         ''.format(path=path, opt=extensions))
 
 
+# TODO : Move this to common.py
 def serialize(obj):
     '''Make the given descriptor information into a standard URL encoding.
 
     Args:
         obj (dict[str]): The Descriptor information to serialize.
-        This is normally somehing like
+        This is normally something like
         {'create_using': ways.api.FolderDescriptor}.
 
     Returns:
@@ -743,24 +721,3 @@ def serialize(obj):
     '''
     # pylint: disable=redundant-keyword-arg
     return parse.urlencode(obj, True)
-
-
-def conform_decode(info):
-    '''Make sure that 'create_using' returns a single string.
-
-    This function is a hacky solution because I don't understand why,
-    for some reason, decoding will decode a string as a list.
-
-    TODO: Remove this awful function.
-
-    '''
-    output = dict(info)
-    try:
-        value = output['create_using']
-    except KeyError:
-        pass
-    else:
-        if check.is_itertype(value):
-            output['create_using'] = value[0]
-
-    return output

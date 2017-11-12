@@ -135,28 +135,6 @@ class DataPlugin(Plugin):
         '''tuple[str]: Keys that must be set in our Plugin.'''
         return ('hierarchy', )
 
-    def is_findable(self):
-        '''If this Plugin is okay to query directly.
-
-        Some plugins are meant to be combined with other plugins and aren't
-        actually meant to be queried by themselves. This kind of behavior is
-        allowed by our system using the 'findable' key.
-
-        '''
-        return self._info.get('findable', True)
-
-    def is_hidden(self):
-        '''bool: If this Plugin would be hidden (from view or from code).'''
-        return self._info.get('hidden', False)
-
-    def is_navigatable(self):
-        '''bool: If we're allowed to move into the mapping in this instance.'''
-        return self._info.get('navigatable', True)
-
-    def is_selectable(self):
-        '''bool: If this mapping were displayed - whether it is selectable.'''
-        return self._info.get('selectable', True)
-
     def get_assignment(self):
         '''str: Where this Plugin lives in Ways, along with its hierarchy.'''
         return self.assignment
@@ -181,10 +159,6 @@ class DataPlugin(Plugin):
     def get_hierarchy(self):
         '''tuple[str] or str: The location that this Plugin exists within.'''
         return self._info['hierarchy']
-
-    def get_id(self):
-        '''str: The name associated with this Plugin.'''
-        return self._info['id']
 
     def get_mapping(self):
         '''str: The physical location of this Plugin (on the filesystem).'''

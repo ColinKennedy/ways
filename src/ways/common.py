@@ -3,14 +3,19 @@
 
 '''A collection of functions that are used by modules in this package.
 
-Honestly, this module won't be added to that much.
+This module is not likely to change often.
 
 '''
 
+
 # IMPORT STANDARD LIBRARIES
+# scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import os
 import string
 import functools
+
+# IMPORT THIRD-PARTY LIBRARIES
+import six
 
 # IMPORT LOCAL LIBRARIES
 from .core import check
@@ -30,12 +35,15 @@ PLATFORM_FAILURE_KEY = 'platform_failure'
 RESOLUTION_FAILURE_KEY = 'resolution_failure'
 
 DESCRIPTORS_ENV_VAR = 'WAYS_DESCRIPTORS'
+PARSERS_ENV_VAR = 'WAYS_PARSERS'
 PLATFORM_ENV_VAR = 'WAYS_PLATFORM'
 PLATFORMS_ENV_VAR = 'WAYS_PLATFORMS'
 PLUGINS_ENV_VAR = 'WAYS_PLUGINS'
 PRIORITY_ENV_VAR = 'WAYS_PRIORITY'
 
 PARENT_TOKEN = '{root}'
+
+WAYS_UUID_KEY = 'uuid'
 
 
 def expand_string(format_string, obj):
@@ -61,26 +69,28 @@ def expand_string(format_string, obj):
         ValueError: If the format_string given is invalid.
 
     Returns:
-        dict: The resulting dict, from our obj string.
+        dict: The created dict from our obj string.
 
     '''
     if '}{' in format_string:
-        raise ValueError(
-            'format_string: "{temp}" was invalid. Curly braces cannot be used, '
-            'back to back'.format(temp=format_string))
+        # pylint: disable=bad-format-string
+        raise ValueError('format_string: "{temp_}" was invalid. Curly braces, '
+                         '"}{" cannot be used, back to back.'
+                         ''.format(temp_=format_string))
 
     info = dict()
 
+    # The string is reversed and processed from end to beginning
     for prefix, field, _, _ in reversed(list(string.Formatter().parse(format_string))):
         if not prefix:
-            # We reached the beginning of the formatted str so just return obj
+            # We got to the beginning of the formatted str so just return obj
             info[field] = obj
             continue
 
         try:
             remainder, value = obj.rsplit(prefix, 1)
         except ValueError:
-            # If this block rus, it means that there was a mismatch between
+            # If this block runs it means that there was a bad match between
             # the formatted_string and obj.
             #
             # Example:
@@ -201,3 +211,35 @@ def memoize(function):
         return value
 
     return wrapper
+
+
+def decode(obj):
+    '''dict[str]: Convert a URL-encoded string back into a dict.'''
+    return conform_decode(six.moves.urllib.parse.parse_qs(obj))
+
+
+def conform_decode(info):
+    '''Make sure that 'create_using' returns a single string.
+
+    This function is a hacky solution because I don't understand why,
+    for some reason, decoding will decode a string as a list.
+
+    TODO: Remove this function by cleaning the input from urlencode.
+
+    '''
+    output = dict(info)
+
+    def change_list_to_string(key, obj):
+        '''Change key/list pairs that are meant to be strings.'''
+        try:
+            value = obj[key]
+        except KeyError:
+            pass
+        else:
+            if check.is_itertype(value):
+                output[key] = value[0]
+
+    change_list_to_string('create_using', output)
+    change_list_to_string(WAYS_UUID_KEY, output)
+
+    return output

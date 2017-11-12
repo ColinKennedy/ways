@@ -10,7 +10,9 @@ whatever other purpose). Or some other reportive info that we want to know.
 
 '''
 
+
 # IMPORT STANDARD LIBRARIES
+# pylint: disable=invalid-name
 import os
 import tempfile
 import textwrap
@@ -189,36 +191,103 @@ class TraceTestCase(Common):
 
         self.assertEqual(hierarchies, ways.api.get_all_hierarchies())
 
-#     # def get_aliased_hierarchy_actions(self):
-#     #     pass
+    def test_get_child_hierarchies(self):
+        '''Get all hierarchies that depend on a given hierarchy.'''
+        hierarchies = {
+            ('another', ),
+            ('another', 'here'),
 
-# #     def test_get_defined_aliases(self):
-# #         pass
+            ('foo', ),
+            ('foo', 'bar'),
+            ('foo', 'bar', 'thing'),
+            ('foo', 'bar', 'fizz'),
+            ('foo', 'bar', 'fizz', 'buzz'),
 
-# #     def test_get_defines_aliases(self):
-# #         pass
+            ('frodo', 'baggins', ),
+        }
 
-# #     def test_get_plugin_info_0001_complex(self):
-# #         pass
+        for hierarchy in hierarchies:
+            common_test.create_plugin(hierarchy=hierarchy)
 
+        expected_children = {
+            ('foo', 'bar', 'fizz'),
+            ('foo', 'bar', 'thing'),
+            ('foo', 'bar', 'fizz', 'buzz'),
+        }
+        self.assertEqual(expected_children,
+                         set(ways.api.get_child_hierarchies(('foo', 'bar'))))
 
-# class InspectTestCase(Common):
+    def test_get_all_hierarchies_as_dict_full(self):
+        '''Print all of the hierarhies as a big dictionary.'''
+        _setup_hierarchies()
 
-#     # invalid platform
-#     # plugin didn't match the platform
-#     # Was not in the assignment
+        expected = {
+            ('another', ): {
+                ('another', 'here'): {},
+            },
+            ('foo', ): {
+                ('foo', 'bar'): {
+                    ('foo', 'bar', 'fizz'): {
+                        ('foo', 'bar', 'fizz', 'buzz'): {},
+                    },
+                    ('foo', 'bar', 'thing'): {},
+                },
+            },
+            ('frodo', ): {
+                ('frodo', 'baggins'): {},
+            },
+        }
 
-#     # def test_trace_context_plugins(self):
-#     #     '''Find out which plugins make up a Context and why.'''
+        self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=True))
 
-#     def test_trace_context_plugins_invalid_platform(self):
-#         '''Simulate an environment where a bad OS was given to ways.
+    def test_get_all_hierarchies_as_dict_part(self):
+        '''Print all of the hierarhies as a big dictionary.'''
+        _setup_hierarchies()
 
-#         This test exists to help the user troubleshoot when all plugins fail.
+        expected = {
+            'another': {
+                'here': {},
+            },
+            'foo': {
+                'bar': {
+                    'fizz': {
+                        'buzz': {},
+                    },
+                    'thing': {},
+                },
+            },
+            'frodo': {
+                'baggins': {},
+            },
+        }
 
-#         '''
-#         context = self._setup_simple_contexts()
-#         plugins = ways.api.trace_context_plugins_info(context)
+        self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=False))
+
+    def test_get_child_hierarchies_as_dict_full(self):
+        '''Print all of the hierarhies at the given hierarchy.'''
+        _setup_hierarchies()
+
+        expected = {
+            ('foo', 'bar', 'fizz'): {
+                ('foo', 'bar', 'fizz', 'buzz'): {},
+            },
+            ('foo', 'bar', 'thing'): {},
+        }
+
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=True))
+
+    def test_get_child_hierarchies_as_dict_part(self):
+        '''Print all of the hierarhies at the given hierarchy.'''
+        _setup_hierarchies()
+
+        expected = {
+            'fizz': {
+                'buzz': {},
+            },
+            'thing': {},
+        }
+
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=False))
 
 
 # TODO : Make sure to run tests to make sure that the contents of dir
@@ -319,6 +388,8 @@ class FailureTestCase(common_test.ContextTestCase):
             '''
             import ways.api
 
+            WAYS_UUID = 'some_unique_uuid'
+
             class SomeAction(ways.api.Action):
 
                 name = '{name}'
@@ -348,11 +419,10 @@ class FailureTestCase(common_test.ContextTestCase):
         # The module is importable so we can find out action
         action = ways.get_action(name, hierarchy=hierarchy)
         self.assertNotEqual(action, None)
-
         # But main() fails, so the plugin is a registered failure
         results = ways.api.trace_all_plugin_results_info()
-        self.assertTrue(temp_file in results)
-        info = results.get(temp_file, dict())
+        self.assertTrue('some_unique_uuid' in results)
+        info = results.get('some_unique_uuid', dict())
         self.assertEqual(info.get('status'), common.FAILURE_KEY)
         self.assertEqual(info.get('reason'), common.LOAD_FAILURE_KEY)
 
@@ -361,3 +431,22 @@ def _init_actions():
     '''Create a couple random classes and register them to Ways.'''
     common_test.create_action('another_action_here')
     common_test.create_action('action_here')
+
+
+def _setup_hierarchies():
+    '''Register some generic plugins into Ways.'''
+    hierarchies = {
+        ('another', ),
+        ('another', 'here'),
+
+        ('foo', ),
+        ('foo', 'bar'),
+        ('foo', 'bar', 'thing'),
+        ('foo', 'bar', 'fizz'),
+        ('foo', 'bar', 'fizz', 'buzz'),
+
+        ('frodo', 'baggins', ),
+    }
+
+    for hierarchy in hierarchies:
+        common_test.create_plugin(hierarchy=hierarchy)

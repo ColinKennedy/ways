@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# pylint: disable=protected-access,invalid-name
+# pylint: disable=protected-access,invalid-name,too-many-lines
 
 '''A collection of tests for Ways's documentation.
 
@@ -24,8 +24,8 @@ from six.moves.urllib import parse
 
 # IMPORT WAYS LIBRARIES
 import ways.api
-import ways.descriptor
 from ways import cache
+from ways import common
 
 # IMPORT LOCAL LIBRARIES
 from . import common_test
@@ -93,7 +93,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         context.data['some']['arbitrary'].append('bar2')
 
         def some_function():
-            '''A function in a different scope to test with.'''
+            '''Do the test using a Context in a different scope.'''
             a_new_context = ways.api.get_context('some/context')
             data = ['info1', 'info2', 3, 'bar', 'bar2']
             self.assertEqual(data, a_new_context.data['some']['arbitrary'])
@@ -101,7 +101,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         some_function()
 
     def test_asset_initialization(self):
-        '''test to make sure that every way to instantiate an Asset works.'''
+        '''Test to make sure that every way to instantiate an Asset works.'''
         contents = textwrap.dedent(
             '''
             plugins:
@@ -142,7 +142,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         _build_action('create', folders)
 
         context = ways.api.get_context('some/context')
-        output = context.actions.create()
+        output = context.actions.create(folders)
         self.assertEqual(folders, output)
 
     def test_context_action_function(self):
@@ -158,8 +158,8 @@ class GettingStartedTestCase(common_test.ContextTestCase):
 
         folders = ['/library', 'library/grades', 'comp', 'anim']
 
-        def some_action():
-            '''return our folders.'''
+        def some_action(obj):  # pylint: disable=unused-argument
+            '''Return our folders.'''
             return folders
 
         context = ways.api.get_context('some/context')
@@ -188,12 +188,12 @@ class GettingStartedTestCase(common_test.ContextTestCase):
         _build_action('get_info', folders)
 
         asset = ways.api.get_asset({'JOB': 'foo'}, context='some/context')
-        asset_info = asset.actions.get_info()
+        asset_info = asset.actions.get_info(folders)
 
         context = ways.api.get_context('some/context')
-        standalone_context_info = context.actions.get_info(asset)
+        standalone_context_info = context.actions.get_info(folders)
 
-        asset_context_info = asset.context.actions.get_info(asset)
+        asset_context_info = asset.context.actions.get_info(folders)
 
         self.assertEqual(folders, asset_info)
         self.assertEqual(folders, standalone_context_info)
@@ -218,6 +218,7 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         self.temp_paths.append(resolved_path)
 
         descriptor = 'path={root}&create_using=ways.api.GitLocalDescriptor&items=plugins' \
+                     '&uuid=some_unique_string-we-can_search_for-later' \
                      ''.format(root=root)
 
         obj = cache._resolve_descriptor(descriptor)
@@ -273,7 +274,7 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         # TODO : nose!
         for info, encoding, class_item in composite:
             # Check to make sure the inspected encoding is OK
-            details = ways.descriptor.conform_decode(parse.parse_qs(encoding))
+            details = common.conform_decode(parse.parse_qs(encoding))
             self.assertEqual(info, details)
             desc1 = cache._resolve_descriptor(info)
             desc2 = cache._resolve_descriptor(encoding)
@@ -747,6 +748,375 @@ class ContextAdvancedTestCase(common_test.ContextTestCase):
         self.assertEqual(expected, context.get_mapping())
 
 
+class TroubleshootingTestCase(common_test.ContextTestCase):
+
+    '''A group of tests for the code snippets in the troubleshooting page.'''
+
+    def _make_simple_plugin_tree(self):
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                a_plugin_root:
+                    hierarchy: foo
+                    mapping: /jobs
+                another_plugin:
+                    hierarchy: foo/bar
+                    mapping: /jobs/foo/thing
+                yet_another_plugin:
+                    hierarchy: foo/bar/buzz
+                still_more_plugins:
+                    hierarchy: foo/fizz
+                did_you_know_camels_have_three_eyelids?:
+                    hierarchy: foo/fizz/something
+                okay_maybe_you_knew_that:
+                    hierarchy: foo/fizz/another
+                but_I_thought_it_was_cool:
+                    hierarchy: foo/fizz/another/here
+            '''
+        )
+
+        self._make_plugin_folder_with_plugin2(contents=contents)
+
+    def test_basic_descriptor_with_uuid(self):
+        '''Test to make sure that a Descriptor is created as we expect.'''
+        uuid_ = "foo_bad_path"
+        info = {
+            "items": "/some/folder/path",
+            "create_using": "foo.bar.bad.import.path",
+            "uuid": uuid_,
+        }
+
+        descriptor_string = \
+            'items=%2Fsome%2Ffolder%2Fpath&create_using=foo.bar.bad.import.path&' \
+            'uuid=foo_bad_path'
+
+        os.environ['WAYS_DESCRIPTORS'] = descriptor_string
+
+        descriptor_string = _itemize_seralized_descriptor(descriptor_string)
+        output = _itemize_seralized_descriptor(parse.urlencode(info, doseq=True))
+        self.assertEqual(descriptor_string, output)
+
+        # Add the Descriptor
+        ways.api.init_plugins()
+
+        self.assertEqual(
+            ways.api.RESOLUTION_FAILURE_KEY,
+            ways.api.trace_all_descriptor_results_info()[uuid_]['reason'])
+
+    def test_basic_descriptor_no_uuid(self):
+        '''Test to make sure that a Descriptor is created as we expect.
+
+        The Descriptor result should still exist, just not with any known UUID.
+
+        '''
+        info = {
+            "items": "/some/folder/path",
+            "create_using": "foo.bar.bad.import.path",
+        }
+
+        descriptor_string = \
+            'items=%2Fsome%2Ffolder%2Fpath&create_using=foo.bar.bad.import.path'
+
+        os.environ['WAYS_DESCRIPTORS'] = descriptor_string
+
+        descriptor_string = _itemize_seralized_descriptor(descriptor_string)
+        output = _itemize_seralized_descriptor(parse.urlencode(info, doseq=True))
+        self.assertEqual(descriptor_string, output)
+
+        # Add the Descriptor
+        ways.api.init_plugins()
+
+        self.assertEqual(
+            ways.api.RESOLUTION_FAILURE_KEY,
+            ways.api.trace_all_descriptor_results()[0]['reason'])
+
+    def test_not_callable_failure(self):
+        '''Create a Descriptor not-callable error matching what the docs.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                a_parse_plugin:
+                    hierarchy: 2tt/whatever
+            ''')
+        self._make_plugin_folder_with_plugin2(contents=contents, register=False)
+
+        example_bad_class = textwrap.dedent(
+            """\
+            class BadDescriptor(object):
+
+                '''A Descriptor that does not work.'''
+
+                def __init__(self, items):
+                    '''Just create the object and do nothing else.'''
+                    super(BadDescriptor, self).__init__()
+
+                    self.get_plugins = None
+
+            """)
+
+        some_temp_folder = tempfile.mkdtemp()
+        module_file_path = os.path.join(some_temp_folder, 'module.py')
+        with open(module_file_path, 'w') as file_:
+            file_.write(example_bad_class)
+
+        sys.path.append(some_temp_folder)
+
+        uuid_ = 'some_uuid'
+        descriptor_info = {
+            'create_using': 'module.BadDescriptor',
+            'uuid': uuid_,
+            'items': '/something/here',
+        }
+
+        # Create an example serialized descriptor that describes our local repo
+        serialized_info = parse.urlencode(descriptor_info, True)
+        expected_encoded_string = \
+            'items=%2Fsomething%2Fhere&' \
+            'create_using=module.BadDescriptor&' \
+            'uuid=some_uuid'
+        expected_encoded_string = _itemize_seralized_descriptor(expected_encoded_string)
+        serialized_info_ = _itemize_seralized_descriptor(serialized_info)
+
+        self.assertEqual(expected_encoded_string, serialized_info_)
+        self.assertEqual(ways.api.add_descriptor(serialized_info), None)
+        self.assertEqual(ways.api.NOT_CALLABLE_KEY,
+                         ways.api.trace_all_descriptor_results_info()[uuid_]['reason'])
+
+    def test_plugin_import_failure(self):
+        '''Try to load a Plugin that doesn't exist and report an error.'''
+        os.environ['WAYS_PLUGINS'] = '/some/path/that/doesnt/exist.py'
+
+        ways.api.init_plugins()
+
+        self.assertEqual(
+            ways.api.IMPORT_FAILURE_KEY,
+            ways.api.trace_all_plugin_results()[0]['reason'])
+
+    def test_plugin_main_failure(self):
+        '''Try to load a Plugin but stop because the main function is broken.'''
+        uuid_ = 'some_uuid_here'
+        contents = textwrap.dedent(
+            '''
+            import ways.api
+
+            WAYS_UUID = '{uuid_}'
+
+            def main():
+                raise ValueError('invalid main function')
+
+            ''').format(uuid_=uuid_)
+
+        root = tempfile.mkdtemp()
+        self.temp_paths.append(root)
+
+        path = os.path.join(root, 'example_plugin.py')
+        with open(path, 'w') as file_:
+            file_.write(contents)
+
+        os.environ['WAYS_PLUGINS'] = path
+
+        ways.api.init_plugins()
+
+        self.assertEqual(
+            ways.api.LOAD_FAILURE_KEY,
+            ways.api.trace_all_plugin_results_info()[uuid_]['reason'])
+
+    def test_get_all_hierarchies(self):
+        '''Get all of the hierarchies that Ways is allowed to use.'''
+        self._make_simple_plugin_tree()
+
+        expected = {('foo', ), ('foo', 'bar'), ('foo', 'bar', 'buzz'),
+                    ('foo', 'fizz'), ('foo', 'fizz', 'something'),
+                    ('foo', 'fizz', 'another'), ('foo', 'fizz', 'another', 'here')}
+
+        self.assertEqual(expected, ways.api.get_all_hierarchies())
+
+    def test_get_all_hierarchies_full(self):
+        '''Get all of the hierarchies that Ways is allowed to use as a tree.'''
+        self._make_simple_plugin_tree()
+
+        expected = \
+            {
+                ('foo', ):
+                {
+                    ('foo', 'bar'):
+                    {
+                        ('foo', 'bar', 'buzz'): {},
+                    },
+                    ('foo', 'fizz'):
+                    {
+                        ('foo', 'fizz', 'something'): {},
+                        ('foo', 'fizz', 'another'):
+                        {
+                            ('foo', 'fizz', 'another', 'here'): {}
+                        },
+                    },
+                },
+            }
+
+        self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=True))
+
+    def test_get_all_hierarchies_concise(self):
+        '''Get all of the hierarchies that Ways is allowed to use as a tree.'''
+        self._make_simple_plugin_tree()
+
+        expected = \
+            {
+                'foo':
+                {
+                    'bar':
+                    {
+                        'buzz': {},
+                    },
+                    'fizz':
+                    {
+                        'something': {},
+                        'another':
+                        {
+                            'here': {}
+                        },
+                    },
+                },
+            }
+
+        self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=False))
+
+    def test_get_child_hierarchies(self):
+        '''Get the Ways hierarchy starting at a certain point.'''
+        # '''Get some children. Wait, that didn't come out right.'''
+        self._make_simple_plugin_tree()
+
+        hierarchy = ('foo', 'fizz')
+        context = ways.api.get_context(hierarchy)
+        asset = ways.api.get_asset({}, context=context)
+
+        expected = {('foo', 'fizz', 'something'), ('foo', 'fizz', 'another'),
+                    ('foo', 'fizz', 'another', 'here')}
+
+        self.assertEqual(expected, ways.api.get_child_hierarchies(hierarchy))
+        self.assertEqual(expected, ways.api.get_child_hierarchies(context))
+        self.assertEqual(expected, ways.api.get_child_hierarchies(asset))
+
+    def test_get_child_hierarchy_tree_full(self):
+        '''Get the Ways hierarchy starting at a certain point.'''
+        self._make_simple_plugin_tree()
+
+        hierarchy = ('foo', 'fizz')
+        context = ways.api.get_context(hierarchy)
+        asset = ways.api.get_asset({}, context=context)
+
+        expected = \
+            {
+                ('foo', 'fizz', 'something'): {},
+                ('foo', 'fizz', 'another'):
+                {
+                    ('foo', 'fizz', 'another', 'here'): {},
+                },
+            }
+
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(hierarchy, full=True))
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(context, full=True))
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(asset, full=True))
+
+    def test_get_child_hierarchy_tree_concise(self):
+        '''Get the Ways hierarchy starting at a certain point.'''
+        self._make_simple_plugin_tree()
+
+        hierarchy = ('foo', 'fizz')
+        context = ways.api.get_context(hierarchy)
+        asset = ways.api.get_asset({}, context=context)
+
+        expected = \
+            {
+                'something': {},
+                'another':
+                {
+                    'here': {},
+                },
+            }
+
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(hierarchy, full=False))
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(context, full=False))
+        self.assertEqual(expected, ways.api.get_child_hierarchy_tree(asset, full=False))
+
+    def test_trace_method_resolution_plugins_off(self):
+        '''Find out the way a method "resolves" its plugins.'''
+        self._make_simple_plugin_tree()
+
+        context = ways.api.get_context('foo/bar')
+        expected = ['/jobs', '/jobs/foo/thing']
+        self.assertEqual(expected, ways.api.trace_method_resolution(context.get_mapping))
+
+        # This check is to make sure that trace_method_resolution didn't
+        # break the original functionality of the Context
+        #
+        self.assertEqual(expected[-1], context.get_mapping())
+
+    def test_trace_method_resolution_plugins_on(self):
+        '''Find out the way a method "resolves" its plugins.'''
+        self._make_simple_plugin_tree()
+
+        context = ways.api.get_context('foo/bar')
+        expected = [('/jobs', context.plugins[0]),
+                    ('/jobs/foo/thing', context.plugins[1])]
+        self.assertEqual(
+            expected, ways.api.trace_method_resolution(context.get_mapping, plugins=True))
+
+        # This check is to make sure that trace_method_resolution didn't
+        # break the original functionality of the Context
+        #
+        self.assertEqual(expected[-1][0], context.get_mapping())
+
+    def test_get_action_hierarchies(self):
+        '''Get the hierarchies that an Action name is attached to.'''
+        self._make_simple_plugin_tree()
+
+        _build_action('some_action', hierarchy='foo/bar')
+        _build_action('some_action', hierarchy='foo/fizz')
+
+        _build_action('another_action', hierarchy='foo/bar')
+
+        expected = {('foo', 'bar'), ('foo', 'fizz')}
+        self.assertEqual(expected, ways.api.get_action_hierarchies('some_action'))
+
+    def test_get_action_hierarchies_from_class(self):
+        '''Use an Action class to find the hierachies that it can run on.'''
+        self._make_simple_plugin_tree()
+
+        action = _build_action('some_action', hierarchy='foo/bar')
+        _build_action('some_action', hierarchy='foo/fizz')
+
+        _build_action('another_action', hierarchy='foo/bar')
+
+        expected = {('foo', 'bar'), }
+        self.assertEqual(expected, ways.api.get_action_hierarchies(action))
+
+    def test_get_action_hierarchies_from_function(self):
+        '''Use an Action function to find the hierachies that it can run on.'''
+        self._make_simple_plugin_tree()
+
+        def some_function():
+            '''Do some function.'''
+            print('Example function return')
+
+        _build_action('some_action', hierarchy='foo/fizz')
+
+        ways.api.add_action(some_function, name='something', hierarchy='foo/bar')
+        expected = {('foo', 'bar'), }
+        self.assertEqual(expected, ways.api.get_action_hierarchies(some_function))
+
+    def test_get_all_action_hierarchies(self):
+        '''Get every Action name and the hierarchies that can use it.'''
+        self._make_simple_plugin_tree()
+
+        _build_action('some_action', hierarchy='foo/bar')
+        _build_action('some_action', hierarchy='foo/fizz')
+
+        _build_action('another_action', hierarchy='foo/bar')
+
+        self.assertTrue(ways.api.get_all_action_hierarchies())
+
+
 class CustomPlugin(ways.api.Plugin):
 
     '''A Plugin.'''
@@ -765,7 +1135,7 @@ class CustomDescriptor(object):
 
     @classmethod
     def get_plugins(cls):
-        '''A list of plutins that this Descriptor creates and returns.'''
+        '''Get a plugin with an explicit assignment.'''
         return [(CustomPlugin(), 'master')]
 
     @classmethod
@@ -780,7 +1150,7 @@ class CustomDescriptor1(object):
 
     @classmethod
     def get_plugins(cls):
-        '''A list of plutins that this Descriptor creates and returns.'''
+        '''Get a plugin without an explicit assignment.'''
         return [CustomPlugin()]
 
     @classmethod
@@ -789,8 +1159,11 @@ class CustomDescriptor1(object):
         return {'assignment': 'master', 'foo': 'bar'}
 
 
-def _build_action(action, folders):
+def _build_action(action, folders=None, hierarchy='some/context'):
     '''Create an Action object and return it.'''
+    if folders is None:
+        folders = []
+
     class SomeAction(ways.api.Action):  # pylint: disable=unused-variable
 
         '''A subclass that will automatically be registered by Ways.
@@ -802,13 +1175,20 @@ def _build_action(action, folders):
         '''
 
         name = action
+        items = []
 
         @classmethod
         def get_hierarchy(cls):
-            return 'some/context'
+            return hierarchy
 
-        def __call__(self, shot=None):
+        def __call__(self, obj, folders):
             '''Do something.'''
             return folders
 
+    SomeAction.items = folders
     return SomeAction
+
+
+def _itemize_seralized_descriptor(descriptor):
+    '''set[str]: Break a Descriptor string to its parts.'''
+    return set(descriptor.split('&'))

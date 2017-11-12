@@ -444,28 +444,21 @@ def get_generic_job_config():
         globals: {}
         plugins:
             alpha_root:
-                findable: false
                 hierarchy: root
                 mapping: ''
                 uuid: 3d149cb8-a5fe-43bd-85b4-dcb08238e023
 
             # Job plugins
             all_plugin_linux:
-                findable: false
-                hidden: false
                 hierarchy: '{root}/linux'
                 mapping: ''
-                navigatable: true
                 platforms:
                     - linux
-                selectable: true
                 uuid: 817f0173-4a5c-42d6-a2a9-60935d26c368
                 uses:
                     - root
 
             all_plugin_windows:
-                findable: false
-                hidden: false
                 hierarchy: '{root}/windows'
                 mapping: '{DRIVE}\'
                 mapping_details:
@@ -474,16 +467,13 @@ def get_generic_job_config():
                             regex: '[zZ]:'
                             glob: 'Z:'
                         required: false
-                navigatable: true
                 platforms:
                     - windows
-                selectable: true
                 uuid: c4b20e19-7040-4526-a822-a662c9daf7bf
                 uses:
                     - root
 
             job_base_plugin_linux:
-                findable: true
                 hierarchy: '{root}/job'
                 mapping: '{root}/jobs/{JOB}'
                 mapping_details:
@@ -505,7 +495,6 @@ def get_generic_job_config():
                     - root/linux
 
             job_base_plugin_windows:
-                findable: true
                 hierarchy: '{root}/job'
                 mapping: '{root}\{JOB}'
                 mapping_details:
