@@ -417,7 +417,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         self.assertEqual(explicit_asset, autofound_asset)
 
     def test_mapping_details_parse(self):
-        '''Test that mapping_details gets its parse strings as expected.'''
+        '''Test that mapping_details gets its parse string as expected.'''
         self._make_complex_setup()
 
         context = ways.api.get_context('example/hierarchy')
