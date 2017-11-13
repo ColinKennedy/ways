@@ -250,6 +250,7 @@ class Asset(object):
         if real:
             return value
 
+        # Modify the value before it is returned to the user, if they say to
         before_return = check.force_itertype(
             details.get(name, dict()).get('before_return', []))
 
@@ -305,7 +306,7 @@ class Asset(object):
 
         Args:
             name (str): The token to get the value of.
-            parser (:obj:`ways.api.ContextParser`, optional):
+            parser (:class:`ways.api.ContextParser`, optional):
                 The parse that contains the information about our Context
                 and Asset.
 
@@ -379,8 +380,8 @@ class AssetFinder(compat.DirMixIn, object):
         '''Create the instance and store a Find and an Asset object.
 
         Args:
-            finder (<find.Find>): The Find object to get actions from.
-            asset (<resource.Asset>): The asset to pass into every function.
+            finder (:class:`ways.api.Find`): The object to get actions from.
+            asset (:class:`ways.api.Asset`): The object to pass to every function.
 
         '''
         super(AssetFinder, self).__init__()
@@ -433,7 +434,7 @@ def _expand_using_context(context, text, choices=None, default=__DEFAULT_OBJECT)
     '''Expand some text into a dictionary of information, using a Context.
 
     Args:
-        context (<ways.api.Context>):
+        context (:class:`ways.api.Context`):
             The Context to get parse text for and then use.
         text (str):
             The text to expand.
@@ -486,7 +487,7 @@ def _expand_using_parse_types(parse, text, choices=None, default=__DEFAULT_OBJEC
     or a regex pattern, for example.
 
     Args:
-        context (<ways.api.Context>):
+        context (:class:`ways.api.Context`):
             The Context to get parse text for and then use.
         text (str):
             The text to expand.
@@ -533,7 +534,7 @@ def _get_expand_choices():
     As long as the parse type can return a dict, given some text, it's valid.
 
     Returns:
-        <collections.OrderedDict[str: callable]:
+        <collections.OrderedDict>[str: callable]:
             The parse type and expansion function.
 
     '''
@@ -595,8 +596,10 @@ def _get_recursive_parents(token, parser):
     '''Get every known parent token for some token and those parent's parents.
 
     Args:
-        token (str): The token to start retrieving parent tokens from.
-        parser (ways.api.ContextParser): The parser to use to get parent tokens.
+        token (str):
+            The token to start retrieving parent tokens from.
+        parser (:class:`ways.api.ContextParser`):
+            The parser to use to get parent tokens.
 
     Returns:
         list[str]: The found parent tokens.
@@ -634,8 +637,10 @@ def get_asset(info, context=None, *args, **kwargs):
         info (dict[str] or str):
             The info to expand. If the input is a dict, it is passed through
             and returned. If it is a string, the string is parsed against the
-            given context.
-        context (:obj:`<sit.Context> or str or tuple[str]`, optional):
+            given context. Generally speaking, it's better to give a string that
+            is an exact or partial match to a Context's mapping than it is to
+            give a dict. This is doubly true if no context is given.
+        context (:class:`ways.api.Context` or str or tuple[str]`, optional):
             The Context to use for the asset. If a string is given, it is
             assumed to be the Context's hierarchy and a Context object
             is constructed. If nothing is given, the best possible Context
@@ -643,7 +648,7 @@ def get_asset(info, context=None, *args, **kwargs):
             Default is None.
         *args (list): Optional position variables to pass to our found
                       class's constructor.
-        **kwargs (list): Optional keyword variables to pass to our found
+        **kwargs (dict): Optional keyword variables to pass to our found
                          class's constructor.
 
     Raises:
@@ -777,7 +782,7 @@ def _get_missing_required_tokens(context, info):
     from the final output.
 
     Args:
-        context (<ways.api.Context>):
+        context (:class:`ways.api.Context`):
             The Context to use to get missing tokens.
         info (dict[str: str]):
             Token-value pairs that should match 1-to-1 with Context.
@@ -842,7 +847,7 @@ def _get_value(name, parser, info):
 
     Args:
         name (str): The token to get the value of.
-        parser (:obj:`ways.api.ContextParser`, optional):
+        parser (:class:`ways.api.ContextParser`, optional):
             The parse that contains the information about our Context
             and Asset.
         info (dict[str: str]):
@@ -864,7 +869,7 @@ def _get_value(name, parser, info):
         Args:
             token (str):
                 The token to get the value of, by looking at its parent(s).
-            parser (<ways.api.ContextParser>):
+            parser (:class:`ways.api.ContextParser`):
                 The parser associated with the Context associated
                 with this Asset.
             info (dict[str: str]):
@@ -1031,7 +1036,7 @@ def _get_value(name, parser, info):
         Args:
             token (str):
                 The token to get the value of by looking at its children.
-            parser (<ways.api.ContextParser>):
+            parser (:class:`ways.api.ContextParser`):
                 The parser associated with the Context associated
             info (dict[str: str]):
                 All of the token-value pairs to use to find a value.
@@ -1098,7 +1103,7 @@ def _find_context_using_info(obj):
         '''Check that every token in a Context has a vaild value.
 
         Args:
-            context (<ways.api.Context>):
+            context (:class:`ways.api.Context`):
                 The Context to check for valid token values.
             obj (dict[str: str]):
                 The token-value pairs for our Context to check if they're valid.
@@ -1127,7 +1132,7 @@ def _find_context_using_info(obj):
         '''Find how similar a given string is to a Context's mapping.
 
         Args:
-            context (<ways.api.Context>):
+            context (:class:`ways.api.Context`):
                 The context to get the mapping of and use for ranking.
             obj (str):
                 The string to compare to the given Context and rank.
@@ -1152,7 +1157,7 @@ def _find_context_using_info(obj):
         '''Find the Context that best matches a mapping.
 
         Args:
-            contexts (list[<ways.api.Context>]):
+            contexts (list[:class:`ways.api.Context`]):
                 The Context objects to consider.
             mapping (str):
                 The asset string that will be used to find the best Context.
@@ -1165,7 +1170,7 @@ def _find_context_using_info(obj):
                 one of them.
 
         Returns:
-            <ways.api.Context>: The best match.
+            :class:`ways.api.Context`: The best match.
 
         '''
         rankings = [get_ranking(context, mapping) for context in contexts]
@@ -1194,13 +1199,13 @@ def _find_context_using_info(obj):
         candidates and then get their information from the total Contexts.
 
         Args:
-            contexts (list[<ways.api.Context>]):
+            contexts (list[:class:`ways.api.Context`]):
                 The Context objects to get token information for.
-            pool (list[tuple[<ways.api.Context>, dict[str, str]]]):
+            pool (list[tuple[:class:`ways.api.Context`, dict[str, str]]]):
                 All of the known Contexts and their token info that Ways knows of.
 
         Returns:
-            pool (list[tuple[<ways.api.Context>, dict[str, str]]]):
+            pool (list[tuple[:class:`ways.api.Context`, dict[str, str]]]):
                 The original Context objects and its pool information.
 
         '''
@@ -1210,11 +1215,11 @@ def _find_context_using_info(obj):
         '''Filter out Contexts that expect different info that what is given.
 
         Args:
-            info (list[tuple[<ways.api.Context>, dict[str, str]]]):
+            info (list[tuple[:class:`ways.api.Context`, dict[str, str]]]):
                 All of the known Contexts and their token info that Ways knows of.
 
         Returns:
-            list[<ways.api.Context>]:
+            list[:class:`ways.api.Context`]:
                 The Context objects that are all compatible with their given info.
 
         '''
@@ -1245,9 +1250,9 @@ def _find_context_using_info(obj):
         is declared the "winner" because there was nothing wrong with it.
 
         Args:
-            contexts (list[<ways.api.Context>]):
+            contexts (list[:class:`ways.api.Context`]):
                 The tied Context objects to get a "best" Context of.
-            info (list[dict[<ways.api.Context>: dict[str, str]]]):
+            info (list[dict[:class:`ways.api.Context`: dict[str, str]]]):
                 All of the known Contexts and their token info that Ways knows of.
 
         Raises:
@@ -1340,7 +1345,7 @@ def register_asset_info(class_type, context, init=None, children=False):
     Args:
         class_type (classobj):
             The new class to use, instead.
-        context (str or <sit.Context>):
+            context (str or :class:`ways.api.Context`):
             The Context to apply our new class to.
         init (:obj:`callable`, optional):
             A function that will be used to create an instance of class_type.

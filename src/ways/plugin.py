@@ -194,18 +194,6 @@ class DataPlugin(Plugin):
             sources=self.sources,
             data=dict(self._info))
 
-        # return '{cls_}(sources={sources!r}, uuid={uid})'.format(
-        #     cls_=self.__class__.__name__,
-        #     sources=self.sources,
-        #     uid=self.get_uuid())
-
-    # def __str__(self):
-    #     '''str: A pretty-print of the plugin.'''
-    #     return '{cls_}(sources={sources!r}, uuid={uid})'.format(
-    #         cls_=self.__class__.__name__,
-    #         sources=self.sources,
-    #         uid=self.get_uuid())
-
 
 def get_assignment(obj):
     '''str: Get an object's assignment or fallback to ways.DEFAULT_ASSIGNMENT.'''

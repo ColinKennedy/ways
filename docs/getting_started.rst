@@ -39,7 +39,7 @@ Now that plugin_sheet.yml exists, lets add a "Hello World!" plugin to it.
 
 At this point, we've made our first plugin in our first Plugin Sheet.
 Now you can open a Python interpreter or import it into another file and use
-it, as a ways.api.Context.
+it as a ways.api.Context.
 
 Instantiate your new Context
 ----------------------------
@@ -94,14 +94,14 @@ same hierarchy.
         # Result: ['info1', 'info2', 3, 'bar', 'bar2']
 
 In the above example, we have a Context that initializes with some metadata,
-we add to the metadata, and then we retrieve it in another function without
-passing the Context into it. This works because there's only ever one instance
-of a Context object and you can add anything to its data.
+we add to the metadata, and then we call the same hierarchy in another
+function. The Context in "some_function" already has the data that was
+appended, earlier. You're allowed to write anything in a Context's data.
 
 There's a lot more to how Plugin objects are defined. Including Context
 inheritance, relative plugins, and OS-aware plugins. To know more, Check out
-TODO: Finish?
-`Creating a Plugin Sheet`.
+:doc:`plugin_basics` and :doc:`plugin_advanced`.
+
 
 Asset Objects
 -------------

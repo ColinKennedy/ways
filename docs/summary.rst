@@ -19,6 +19,8 @@ Adding more plugins will add to the existing Context.
 
 Plugin Sheets can be JSON, YAML, or Python files.
 
+.. _descriptor_summary:
+
 Descriptor Objects
 ------------------
 

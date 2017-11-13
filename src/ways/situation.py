@@ -29,7 +29,6 @@ import inspect
 import operator
 import platform
 import functools
-import itertools
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
@@ -69,8 +68,8 @@ class Context(object):
             assignment (str):
                 The category/grouping of the instance. Default: ''.
             connection
-                (:obj:`dict[str, callable[list[<ways.api.Plugin>]]]`,
-                 optional):
+                (:obj:`dict[str, callable[list[:class:`ways.api.Plugin`]]]`,
+                    optional):
                 Context objects are built out of Plugin objects that are defined
                 and retrieved at runtime. Since most Context objects are built
                 of more than one Plugin, we need to know how to merge
@@ -160,7 +159,7 @@ class Context(object):
                         in our recognized_platforms variable.
 
         Returns:
-            list[<pathfinder.plugin.Plugin>]: The found plugins.
+            list[:class:`ways.api.Plugin`]: The found plugins.
 
         '''
         plugins = self.get_all_plugins(
@@ -178,7 +177,7 @@ class Context(object):
         return output
 
     def get_action(self, name):
-        '''<ways.api.Action> or callable or NoneType: The Action object.'''
+        ''':class:`ways.api.Action` or callable or NoneType: The Action.'''
         action = ways.get_action(
             name=name, hierarchy=self.hierarchy, assignment=self.assignment)
 
@@ -191,7 +190,7 @@ class Context(object):
         return action
 
     def get_all_plugins(self, hierarchy='', assignment=''):
-        '''list[<ways.api.Plugin>]: The found plugins, if any.'''
+        '''list[:class:`ways.api.Plugin`]: The found plugins, if any.'''
         if not hierarchy:
             hierarchy = self.hierarchy
 
@@ -209,15 +208,15 @@ class Context(object):
         return self.hierarchy
 
     def get_parser(self):
-        '''<parse.ContextParser>: A parser copy that points to this Context.'''
+        ''':class:`ways.api.ContextParser`: A parser copy that points to this Context.'''
         return parse.ContextParser(self)
 
     def get_str(self, *args, **kwargs):
-        r'''Get the Context's mapping as filled-out text.
+        '''Get the Context's mapping as filled-out text.
 
         Args:
-            *args (list): Positional args to send to parse.ContextParser.get_str.
-            **kwargs (list): Keyword args to send to parse.ContextParser.get_str.
+            *args (list): Positional args to send to ways.api.ContextParser.get_str.
+            **kwargs (dict): Keyword args to send to ways.api.ContextParser.get_str.
 
         '''
         return parse.ContextParser(self).get_str(*args, **kwargs)
@@ -235,11 +234,7 @@ class Context(object):
             dict[str]: The information.
 
         '''
-        try:
-            function = self.connection['get_mapping_details']
-        except KeyError:
-            return dict()
-
+        function = self.connection['get_mapping_details']
         value = function(self.plugins)
 
         if not value:
@@ -263,7 +258,7 @@ class Context(object):
             set[str]: All of the tokens known to this Context.
 
         '''
-        tokens = set()
+        tokens = set(self.get_mapping_tokens())
         for _, info in six.iteritems(self.get_mapping_details()):
             mapping = info.get('mapping')
             tokens.update(self.get_mapping_tokens(mapping))
@@ -279,7 +274,7 @@ class Context(object):
         being run on a Linux machine.
 
         Args:
-            plugin (<ways.api.Plugin>): The plugin to check.
+            plugin (:class:`ways.api.Plugin`): The plugin to check.
 
         Raises:
             OSError:
@@ -289,7 +284,7 @@ class Context(object):
                 If the plugin's environment does not match this environment.
 
         Returns:
-            <ways.api.Plugin>: The plugin (completely unmodified).
+            :class:`ways.api.Plugin`: The plugin (completely unmodified).
 
         '''
         # These platforms are the what platform.system() could return
@@ -341,7 +336,7 @@ class Context(object):
             assignment (:obj:`str`, optional): The new assignment to get.
 
         Returns:
-            Context: The new Context object.
+            :class:`ways.api.Context`: The new Context object.
 
         '''
         return get_context(self.get_hierarchy(), assignment=assignment)
@@ -396,13 +391,16 @@ class Context(object):
         return self.connection['get_max_folder'](self.plugins)
 
     def get_platforms(self):
-        '''list[str]: The OSes that this Context runs on.'''
-        return self.connection['get_platforms'](self.plugins)
+        '''Get The OSes that this Context runs on.
 
-    # TODO : Might delete this one.
-    def get_skip_to(self):
-        '''str: The mapping to jump to.'''
-        return self.connection['get_skip_to'](self.plugins)
+        The recognized platforms for this method is anything that platform.system()
+        would return. (Examples: ['darwin', 'java', 'linux', 'windows']).
+
+        Returns:
+            list[str]: The platforms that this Context is allowed to run on.
+
+        '''
+        return self.connection['get_platforms'](self.plugins)
 
 
 __FACTORY = factory.AliasAssignmentFactory(Context)
@@ -413,7 +411,7 @@ def context_connection_info():
     '''Get a default description of how attributes combine in a Context object.
 
     Returns:
-        dict[str, callable[<ways.api.Plugin>]]:
+        dict[str, callable[:class:`ways.api.Plugin`]]:
             Functions used to resolve a number of Plugins into a single output.
 
     '''
@@ -444,7 +442,7 @@ def context_connection_info():
         so we'll intentionally lowercase our OSes, here.
 
         Args:
-            obj (<plugin.Plugin>): The plugin to get the platforms of.
+            obj (:class:`ways.api.Plugin`): The plugin to get the platforms of.
 
         Returns:
             str: The lowered platform name.
@@ -462,7 +460,8 @@ def context_connection_info():
         we must instead resolve the mapping into absolute again.
 
         Args:
-            plugins (list[<plugin.Plugin>]): The plugin to get the mapping of.
+            plugins (list[:class:`ways.api.Plugin`]):
+                The plugin to get the mapping of.
 
         Raises:
             RuntimeError: If there is no absolute plugin in our list of plugins,
@@ -477,7 +476,7 @@ def context_connection_info():
             '''Resolve a group of relative plugins into a single mapping.
 
             Args:
-                plugins (list[<ways.api.Plugin>]):
+                plugins (list[:class:`ways.api.Plugin`]):
                     The plugins to create a single mapping.
 
             Returns:
@@ -497,13 +496,20 @@ def context_connection_info():
 
             return appended_mapping
 
+        if not plugins:
+            raise RuntimeError(
+                'No plugins were found. If you are using a custom assignment, '
+                'make sure that the assignment is listed in WAYS_PRIORITY or it '
+                'may have been skipped.')
+
         try:
             latest_absolute_plugin = next(
                 plugin for plugin in reversed(plugins) if not plugin.get_uses())
         except StopIteration:
-            raise RuntimeError('This should not happen. Every plugin found '
-                               'was a relative plugin. No absolute (root) '
-                               'plugin was found.')
+            raise RuntimeError('This should not happen. Every plugin found was '
+                               'a relative plugin. No absolute (root) plugin '
+                               'was found.')
+
 
         abs_index = plugins.index(latest_absolute_plugin)
 
@@ -543,10 +549,12 @@ def context_connection_info():
         '''Get the max folder that this Context is allowed to move into.
 
         Args:
-            plugins (list[<plugin.Plugin>]): The plugin to get the max folder of.
+            plugins (list[:class:`ways.api.Plugin`]):
+                The plugin to get the max folder of.
 
         Returns:
-            str: The furthest up that this Context is allowed to move.
+            str:
+                The furthest up that this Context is allowed to move.
 
         '''
         def startswith_iterable(root, startswith):
@@ -630,7 +638,7 @@ def get_all_contexts():
         be retrieved from the Context flyweight cache.
 
     Returns:
-        list[<ways.api.Context>]: The Context objects defined in this system.
+        list[:class:`ways.api.Context`]: Every Context object found by Ways.
 
     '''
     contexts = []
@@ -670,7 +678,7 @@ def get_context(hierarchy,
         *args (list):
             If an object instance is found at the hierarchy/assignment,
             this gets passed to the instantiation of that object.
-        *kwargs (dict[str]):
+        **kwargs (dict[str]):
             If an object instance is found at the hierarchy/assignment,
             this gets passed to the instantiation of that object.
 
@@ -735,13 +743,7 @@ def register_context_alias(alias_hierarchy, old_hierarchy):
 
     '''
     old_hierarchy = common.split_hierarchy(old_hierarchy)
-
-    if alias_hierarchy.startswith(common.HIERARCHY_SEP):
-        pieces = itertools.chain(
-            [common.HIERARCHY_SEP], common.split_hierarchy(alias_hierarchy))
-        alias_hierarchy = tuple(item for item in pieces)
-    else:
-        alias_hierarchy = common.split_hierarchy(alias_hierarchy)
+    alias_hierarchy = common.split_hierarchy(alias_hierarchy)
 
     if old_hierarchy == alias_hierarchy:
         raise ValueError('Hierarchy: "{hier}" cannot be aliased to itself'

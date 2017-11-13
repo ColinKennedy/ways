@@ -5,18 +5,21 @@ Run these commands
 
 ::
 
-    set location=/some/folder/ways
-    git clone http://www.github.com/ColinKennedy/ways.git $location
-    cd $location
-    git submodule init
-    git submodule update --recursive
-    pip install docs/source/rtfd-requirements.txt
+    git clone http://www.github.com/ColinKennedy/ways.git
+    python ./ways/setup.py install
 
 Verify that your installation works by running the Ways demo
 
 ::
 
-    python ways.demo
+    python -m ways.demo
 
-That's it.
+Output:
 
+::
+
+    Hello, World!
+    Found object, "Context"
+    A Context was found, congrats, Ways was installed correctly!
+
+If you see those 3 lines, you're all set to begin.

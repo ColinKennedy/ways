@@ -12,7 +12,7 @@ import textwrap
 
 # IMPORT THIRD-PARTY LIBRARIES
 import git
-from six.moves import mock
+import six
 # pylint: disable=import-error,unused-import
 from six.moves.urllib import parse
 
@@ -21,6 +21,8 @@ import ways.api
 
 # IMPORT LOCAL LIBRARIES
 from . import common_test
+
+six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
 
 
 class DescriptorContextTestCase(common_test.ContextTestCase):
@@ -118,7 +120,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
     # def test_add_local_git_branch_descriptor(self):
     #     '''Gather plugins from a local git repository on a non-master branch.'''
 
-    @mock.patch('git.Repo.clone_from')
+    @six.moves.mock.patch('git.Repo.clone_from')  # pylint: disable=no-member
     def test_add_remote_git(self, clone_from_mock):
         '''Check that we can pull git plugins from an online repository.'''
         clone_from_mock.return_value = None
@@ -260,14 +262,33 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('2ff2/whatever')
         self.assertNotEqual(context, None)
 
-    # def test_add_local_git_branch_descriptor(self):
-    #     '''Gather plugins from a local git branch repository.'''
+    def test_add_search_path_env_var(self):
+        '''Add a Plugin Sheet file path that uses a environment variable.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                a_parse_plugin:
+                    hierarchy: 2ff2/whatever
+            ''')
 
-    # def test_add_remote_git_descriptor(self):
-    #     '''Gather plugins from a remote (web) git repository.'''
+        root = tempfile.mkdtemp()
+        self.temp_paths.append(root)
+        fake = os.path.join(root, '$JOB', 'example_plugin.yml')
+        real = os.path.expandvars(fake)
 
-    # def test_add_remote_git(self):
-    #     '''Gather plugins from a remote (web) git branch repository.'''
+        os.environ['JOB'] = 'foo'
+
+        os.makedirs(os.path.dirname(real))
+
+        with open(real, 'w') as file_:
+            file_.write(contents)
+
+        os.environ[ways.api.DESCRIPTORS_ENV_VAR] = fake
+
+        ways.api.init_plugins()
+
+        context = ways.api.get_context('2ff2/whatever')
+        self.assertNotEqual(context, None)
 
     def test_callable_descriptor(self):
         '''Use a callable function/method as a descriptor.'''
