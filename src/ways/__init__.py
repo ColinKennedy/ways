@@ -124,7 +124,7 @@ def get_actions_iter(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
             If assignment='', all plugins from every assignment is queried.
 
     Yields:
-        dict[str: <ways.api.Action>]:
+        dict[str: :class:`ways.api.Action`]:
             The actions for some hierarchy.
 
     '''
@@ -338,7 +338,7 @@ def add_plugin(plugin, assignment='master'):
     '''Add a plugin to Ways.
 
     Args:
-        plugin (<ways.api.Plugin>):
+        plugin (:class:`ways.api.Plugin`):
             The plugin to add.
         assignment (:obj:`str`, optional):
             The assignment of the plugin. Default: 'master'.

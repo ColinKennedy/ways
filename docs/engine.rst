@@ -1,5 +1,5 @@
 ways\.engine module
-------------------
+-------------------
 
 .. automodule:: ways.engine
     :members:

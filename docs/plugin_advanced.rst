@@ -455,7 +455,7 @@ depend on "job/shot/plates" now have a completely different mapping.
 
 
 Now consider this
-*****************
++++++++++++++++++
 
 If one project has their WAYS_DESCRIPTORS set to this:
 

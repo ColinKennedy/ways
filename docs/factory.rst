@@ -1,5 +1,5 @@
 ways\.factory module
-------------------
+--------------------
 
 .. automodule:: ways.factory
     :members:
