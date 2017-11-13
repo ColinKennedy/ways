@@ -76,7 +76,6 @@ from .descriptor import GitLocalDescriptor
 from .descriptor import GitRemoteDescriptor
 from .descriptor import serialize
 
-
 add_action_default = Find.add_to_defaults  # pylint: disable=invalid-name
 
 __all__ = [

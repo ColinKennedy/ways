@@ -4,9 +4,9 @@
 '''Test Ways to make sure that it works.'''
 
 # IMPORT STANDARD LIBRARIES
+import os
 import tempfile
 import textwrap
-import os
 
 # IMPORT WAYS LIBRARIES
 import ways.api
@@ -82,4 +82,3 @@ def _main():
 
 if __name__ == '__main__':
     main()
-
