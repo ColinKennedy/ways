@@ -1,5 +1,5 @@
-Advanced Context Topics
-=======================
+Advanced Plugin Topics
+======================
 
 Relative Plugins
 ----------------
@@ -44,7 +44,7 @@ under "uses", will create a separate Plugin object.
     {root} though, you get to define different places for the parent's data
     to be inserted, like this: "parent/{root}/library/{root}/hierarchy".
 
-"uses" has a few details that are important to know before starting.
+"uses" has a couple details that are important to know before starting.
 
 1. uses should never give a relative plugin its own hierarchy.
    For example, these setups are invalid:
@@ -70,11 +70,7 @@ under "uses", will create a separate Plugin object.
             uses:
                 - foo/bar
 
-2. uses can refer to hierarchy aliases as well as real hierarchies
-
-TODO I think I have a unittest for this already. Add its contents, here
-
-3. Relative plugins can be chained together, as long as one of the plugins
+2. Relative plugins can be chained together, as long as one of the plugins
    is tied to an absolute plugin.
 
 .. code-block :: yaml
@@ -134,6 +130,8 @@ Here is an example of how absolute plugins and relative plugins differ.
 |                 - fizz/buzz/pop/fizz        |                                                               |
 +---------------------------------------------+---------------------------------------------------------------+
 
+.. That table is dedication! You're welcome! :)
+
 Both examples create the same exact Plugins.
 
 So to compare the two examples - the relative plugin example took more lines
@@ -157,7 +155,7 @@ may have to consider supporting multiple operating systems.
 
 Say you have two paths that represent the same place on-disk in Windows and in
 Linux: /jobs/someJobName_123/library and
-Windows: \\NETWORK\jobs\someJobName_123\library.
+Windows: \\\\NETWORK\\jobs\\someJobName_123\\library.
 
 You might be tempted to write your plugins like this:
 
@@ -224,11 +222,11 @@ system OS is used.
 
     In our previous example, the relative plugin called "library" will make the
     appropriate Plugin object that matches the user's OS. If the OS is Windows,
-    the mapping for the plugin will convert "/" to "\".
+    the mapping for the plugin will convert "/" to "\\".
 
 
-Appending To Contexts
----------------------
+Appending To Plugins
+--------------------
 
 Say for example you have a plugin in another file that you want to add to. You
 have two options to do this, an absolute append or a relative append.
@@ -437,6 +435,7 @@ jobber.yml
 Now let's see this in a live environment
 
 ::
+
     # Both get_context versions do the same thing, because assignment='' by default
     context = ways.api.get_context('job/shot/plates/client', assignment='')
     context = ways.api.get_context('job/shot/plates/client')
@@ -445,9 +444,10 @@ Now let's see this in a live environment
 
 Before adding jobber.yml to our system, the mapping was
 "/jobs/{JOB}/{SCENE}/{SHOT}/library/graded/plates/clientinfo". Now, it's
-"/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo". This works because
-the "job_plugin" key in jobber.yml matches the same hierarchy as the "plates"
-key in master.yml.
+"/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo".
+
+This works because the "job_plugin" key in jobber.yml matches the same hierarchy
+as the "plates" key in master.yml.
 
 jobber.yml comes after master.yml and its assignment loads after, so it
 overwrote the hierarchy plugins in master.yml. All of the relative plugins that

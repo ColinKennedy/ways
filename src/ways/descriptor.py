@@ -120,7 +120,7 @@ class FileDescriptor(object):
                 instead.
 
         Returns:
-            list[<ways.api.Plugin>]: The plugins.
+            list[:class:`ways.api.Plugin`]: The plugins.
 
         '''
         if items is None:
@@ -186,7 +186,7 @@ class FileDescriptor(object):
                 The placement that this Plugin will go into.
 
         Returns:
-            list[<ways.api.DataPlugin>]:
+            list[:class:`ways.api.DataPlugin`]:
                 The generated plugins. It will make one Plugin object if
                 info.get('uses', []) is empty. If "uses" is not empty, it will
                 create one Plugin for each item in "uses".

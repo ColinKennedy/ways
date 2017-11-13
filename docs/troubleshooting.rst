@@ -10,8 +10,6 @@ multiple reasons. Luckily, Ways keeps track of Descriptor objects that it tries
 to load so you can review a live session to find out what kind of errors you
 have.
 
-TODO : Most of these examples need actual plugins shown, to prove that the code
-works. ADD THIS
 
 Descriptor Failed To Import
 +++++++++++++++++++++++++++
@@ -24,6 +22,7 @@ Take a simple Descriptor dict, for example.
 If we convert it to a URL-encoded string, it looks like this:
 
 ::
+
     from urllib import parse
 
     info = {
@@ -113,7 +112,7 @@ And finally, that becomes
 In this example, BadDescriptor is not callable and does not have a "get_plugins"
 method. Ways has no way of knowing how to get the plugins out of the Descriptor.
 
-See `descriptors` for details on how to best build Descriptor objects.
+See :ref:`descriptor_summary` for details on how to best build Descriptor objects.
 
 
 Loading Standalone Plugins
@@ -367,11 +366,10 @@ the unused Plugin list by taking the difference between the two.
 Checking Method Resolution
 **************************
 
-This section assumes that you've read `contexts`. It's important to know how
+This section assumes that you've read
+:doc:`plugin_basics`. It's important to know how
 Context objects resolve their plugins before starting to
 troubleshoot values that you may not expect.
-
-TODO make sure that the contexts page exists
 
 ::
 

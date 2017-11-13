@@ -1,7 +1,11 @@
 Common Patterns And Best Practices
 ==================================
 
-- Add a UUID to your plugin
+
+TODO:
+
+    - Add a UUID to your plugin
+    - Show filepath and database plugin examples
 
 Action Patterns
 ---------------

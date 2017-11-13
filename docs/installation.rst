@@ -14,12 +14,12 @@ Verify that your installation works by running the Ways demo
 
     python -m ways.demo
 
+Output:
+
 ::
 
-    Output:
     Hello, World!
     Found object, "Context"
     A Context was found, congrats, Ways was installed correctly!
 
-If you see this as your output, you're all set to begin.
-
+If you see those 3 lines, you're all set to begin.

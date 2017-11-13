@@ -38,9 +38,9 @@ def get_right_most_priority(plugins, method):
         explicit value is found.
 
     Args:
-        plugins (list[<ways.api.Plugin>]):
+        plugins (list[:class:`ways.api.Plugin`]):
             The plugins to get the the values from.
-        method (callable[<ways.api.Plugin>]):
+        method (callable[:class:`ways.api.Plugin`]):
             The callable function to use to call some value from a Plugin object.
 
     Raises:
@@ -127,9 +127,9 @@ def get_left_right_priority(plugins, method):
     '''Add all values of all plugins going from start to finish (left to right).
 
     Args:
-        plugins (list[<ways.api.Plugin>]):
+        plugins (list[:class:`ways.api.Plugin`]):
             The plugins to get the the values from.
-        method (callable[<ways.api.Plugin>]):
+        method (callable[:class:`ways.api.Plugin`]):
             The callable function to get some value from a Plugin object.
 
     Returns:
@@ -155,7 +155,7 @@ def get_intersection_priority(plugins, method):
         abstracted if necessary, later.
 
     Args:
-        plugins (list[<ways.api.Plugin>]):
+        plugins (list[:class:`ways.api.Plugin`]):
             The plugins to get the the intersected values from.
 
     Returns:

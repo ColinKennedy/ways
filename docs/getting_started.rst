@@ -100,7 +100,7 @@ appended, earlier. You're allowed to write anything in a Context's data.
 
 There's a lot more to how Plugin objects are defined. Including Context
 inheritance, relative plugins, and OS-aware plugins. To know more, Check out
-:doc:`plugin_basics` and :doc:`context_advanced`.
+:doc:`plugin_basics` and :doc:`plugin_advanced`.
 
 
 Asset Objects

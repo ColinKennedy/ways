@@ -80,7 +80,7 @@ class _Aktion(object):
                is called. Ghetto? Yes. Works well? You bet it does!
 
         Returns:
-            <ways.api.Context>:
+            :class:`ways.api.Context`:
                 The object that this instance will attach itself to.
 
         '''
@@ -105,7 +105,7 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
     '''Add a created action to this cache.
 
     Args:
-        action (<ways.api.Action>):
+        action (:class:`ways.api.Action`):
             The action to add. Action objects are objects that get passed
             a Context object and run a function.
         name (:obj:`str`, optional):

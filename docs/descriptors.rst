@@ -2,7 +2,7 @@ Descriptors
 ===========
 
 This section assumes that you've at least read through the Descriptor section
-in the `Summary` page.
+in the :ref:`descriptor_summary` page.
 
 Basic setup
 -----------
@@ -103,9 +103,9 @@ different ways to load Descriptors could technically be rewritten as URL strings
     export WAYS_DESCRIPTORS=/path/to/plugins/folder:/path/to/plugin.yml:/path/to/plugin.json:/path/to/plugin.py:/path/to/plugin/folder
     export WAYS_DESCRIPTORS=items=%2Ftmp%2Fto%2Fplugins%2Ffolder&create_using=ways.api.FolderDescriptor:items=%2Ftmp%2Fto%2Fplugin.yml&create_using=ways.api.FileDescriptor:items=%2Ftmp%2Fto%2Fplugin.json&create_using=ways.api.FileDescriptor:items=%2Ftmp%2Fto%2Fplugin.py&create_using=ways.api.FileDescriptor
 
-It should be pretty obvious that the former syntax is easier to read than the
-URL-encoding method. But the URL-encoding method is useful for whenever you need
-a custom Descriptor load behavior.
+It should be pretty obvious that the first line is easier to understand
+than the URL-encoding method. But the URL-encoding method is useful for
+whenever you need a custom Descriptor load behavior.
 
 Database Descriptors
 --------------------
@@ -189,6 +189,7 @@ are loaded.
         @classmethod
         def get_hierarchy(cls):
             return ('something', 'here')
+
 
     class CustomDescriptor(object):
         def get_plugins(self):

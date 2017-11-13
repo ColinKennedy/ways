@@ -39,7 +39,7 @@ API Details
 .. toctree::
     Descriptors <descriptors>
     Plugin Basics <plugin_basics>
-    Advanced Contexts <context_advanced>
+    Advanced Plugins <plugin_advanced>
     Troubleshooting <troubleshooting>
 
 Appendices

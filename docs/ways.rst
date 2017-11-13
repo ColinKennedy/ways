@@ -10,6 +10,15 @@ Module contents
     :undoc-members:
     :show-inheritance:
 
+Main Module
+-----------
+
+ways.api is where you should import from. All other modules add their public
+classes and functions into ways.api so it contains almost everything that you'd
+need to work.
+
+.. toctree::
+    ways.api <api>
 
 Inner Modules
 -------------
@@ -24,6 +33,8 @@ Inner Modules
     ways.connection <connection>
     ways.descriptor <descriptor>
     ways.dict_classes <dict_classes>
+    ways.engine <engine>
+    ways.factory <factory>
     ways.finder <finder>
     ways.parse <parse>
     ways.plugin <plugin>

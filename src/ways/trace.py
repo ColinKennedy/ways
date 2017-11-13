@@ -80,8 +80,10 @@ def trace_actions(obj, *args, **kwargs):
     '''Get actions that are assigned to the given object.
 
     Args:
-        obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.api.Context> or <ways.finder.Find>):
+        obj (:class:`ways.api.Action` or \
+             :class:`ways.api.AssetFinder` or \
+             :class:`ways.api.Context` or \
+             :class:`ways.api.Find`):
             The object to get the actions of.
         *args (list):
             Position args to pass to ways.get_actions.
@@ -89,7 +91,7 @@ def trace_actions(obj, *args, **kwargs):
             Keyword args to pass to ways.get_actions.
 
     Returns:
-        list[<ways.resource.Action> or callable]:
+        list[:class:`ways.api.Action` or callable]:
             The actions in the hierarchy.
 
     '''
@@ -101,9 +103,11 @@ def trace_action_names(obj, *args, **kwargs):
     '''Get the names of all actions available to a Ways object.
 
     Args:
-        obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.api.Context> or <ways.finder.Find>):
-            The object to get the actions of.
+        obj (:class:`ways.api.Action` or \
+             :class:`ways.api.AssetFinder` or \
+             :class:`ways.api.Context` or \
+             :class:`ways.api.Find`):
+            The object to get the action names of.
         *args (list):
             Position args to pass to ways.get_action_names.
         **kwargs (dict[str]):
@@ -121,15 +125,18 @@ def trace_actions_table(obj, *args, **kwargs):
     '''Find the names and objects of every action registered to Ways.
 
     Args:
-        obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.api.Context> or <ways.finder.Find>):
+        obj (:class:`ways.api.Action` or \
+             :class:`ways.api.AssetFinder` or \
+             :class:`ways.api.Context` or \
+             :class:`ways.api.Find`):
+            The object to get the available actions table of.
         *args (list):
             Position args to pass to ways.get_actions_info..
         **kwargs (dict[str]):
             Keyword args to pass to ways.get_action_info.
 
     Returns:
-        dict[str: <ways.resource.Action> or callable]:
+        dict[str, :class:`ways.api.Action` or callable]:
             The names and actions of an object.
 
     '''
@@ -175,7 +182,7 @@ def trace_all_plugin_results_info():
     2. If our plugin loaded and, if not, why.
 
     Returns:
-        <collections.OrderedDict>[str: dict[str]]:
+        :class:`collections.OrderedDict` [str, dict[str]]:
             The keys are absolute paths to valid Python files
             the values are dicts that contain information about what happened
             during the load.
@@ -198,7 +205,7 @@ def trace_context(obj):
         obj: Some Ways object instance.
 
     Returns:
-        <ways.api.Context> or NoneType: The found Context.
+        :class:`ways.api.Context` or NoneType: The found Context.
 
     '''
     # TODO : Remove this inner import
@@ -251,9 +258,11 @@ def trace_hierarchy(obj):
     '''Try to find a hierarchy for the given object.
 
     Args:
-        obj (<ways.resource.Action> or or <ways.resource.AssetFinder> or
-             <ways.api.Context> or <ways.finder.Find>):
-            The object to get the actions of.
+        obj (:class:`ways.api.Action` or \
+             :class:`ways.api.AssetFinder` or \
+             :class:`ways.api.Context` or \
+             :class:`ways.api.Find`):
+            The object to get the hierarchy of.
 
     Returns:
         tuple[str]: The hierarchy of some object.
@@ -324,7 +333,7 @@ def _trace_method_resolution(context, method, plugins=False):
     This function does that actual work of trace_method_resolution.
 
     Args:
-        context (<ways.api.Context>):
+        context (:class:`ways.api.Context`):
             Some Context to alter and get the items of back.
         method (callable):
             Some function on a Context object.
@@ -507,7 +516,7 @@ def get_all_hierarchy_trees(full=False):
             See examples for details. Default is False.
 
     Returns:
-        <collections.defaultdict[str]>: The entire hierarchy.
+        :class:`collections.defaultdict[str]`: The entire hierarchy.
 
     '''
     if not full:
@@ -578,7 +587,7 @@ def get_child_hierarchy_tree(hierarchy, full=False):
             See examples for details. Default is False.
 
     Returns:
-        <collections.defaultdict[str]>: The entire hierarchy.
+        :class:`collections.defaultdict[str]`: The entire hierarchy.
 
     '''
     def try_startswith(hierarchy, obj):

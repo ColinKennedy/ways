@@ -68,8 +68,8 @@ class Context(object):
             assignment (str):
                 The category/grouping of the instance. Default: ''.
             connection
-                (:obj:`dict[str, callable[list[<ways.api.Plugin>]]]`,
-                 optional):
+                (:obj:`dict[str, callable[list[:class:`ways.api.Plugin`]]]`,
+                    optional):
                 Context objects are built out of Plugin objects that are defined
                 and retrieved at runtime. Since most Context objects are built
                 of more than one Plugin, we need to know how to merge
@@ -159,7 +159,7 @@ class Context(object):
                         in our recognized_platforms variable.
 
         Returns:
-            list[<pathfinder.plugin.Plugin>]: The found plugins.
+            list[:class:`ways.api.Plugin`]: The found plugins.
 
         '''
         plugins = self.get_all_plugins(
@@ -177,7 +177,7 @@ class Context(object):
         return output
 
     def get_action(self, name):
-        '''<ways.api.Action> or callable or NoneType: The Action object.'''
+        ''':class:`ways.api.Action` or callable or NoneType: The Action.'''
         action = ways.get_action(
             name=name, hierarchy=self.hierarchy, assignment=self.assignment)
 
@@ -190,7 +190,7 @@ class Context(object):
         return action
 
     def get_all_plugins(self, hierarchy='', assignment=''):
-        '''list[<ways.api.Plugin>]: The found plugins, if any.'''
+        '''list[:class:`ways.api.Plugin`]: The found plugins, if any.'''
         if not hierarchy:
             hierarchy = self.hierarchy
 
@@ -208,15 +208,15 @@ class Context(object):
         return self.hierarchy
 
     def get_parser(self):
-        '''<parse.ContextParser>: A parser copy that points to this Context.'''
+        ''':class:`ways.api.ContextParser`: A parser copy that points to this Context.'''
         return parse.ContextParser(self)
 
     def get_str(self, *args, **kwargs):
-        r'''Get the Context's mapping as filled-out text.
+        '''Get the Context's mapping as filled-out text.
 
         Args:
-            *args (list): Positional args to send to parse.ContextParser.get_str.
-            **kwargs (list): Keyword args to send to parse.ContextParser.get_str.
+            *args (list): Positional args to send to ways.api.ContextParser.get_str.
+            **kwargs (dict): Keyword args to send to ways.api.ContextParser.get_str.
 
         '''
         return parse.ContextParser(self).get_str(*args, **kwargs)
@@ -274,7 +274,7 @@ class Context(object):
         being run on a Linux machine.
 
         Args:
-            plugin (<ways.api.Plugin>): The plugin to check.
+            plugin (:class:`ways.api.Plugin`): The plugin to check.
 
         Raises:
             OSError:
@@ -284,7 +284,7 @@ class Context(object):
                 If the plugin's environment does not match this environment.
 
         Returns:
-            <ways.api.Plugin>: The plugin (completely unmodified).
+            :class:`ways.api.Plugin`: The plugin (completely unmodified).
 
         '''
         # These platforms are the what platform.system() could return
@@ -336,7 +336,7 @@ class Context(object):
             assignment (:obj:`str`, optional): The new assignment to get.
 
         Returns:
-            Context: The new Context object.
+            :class:`ways.api.Context`: The new Context object.
 
         '''
         return get_context(self.get_hierarchy(), assignment=assignment)
@@ -411,7 +411,7 @@ def context_connection_info():
     '''Get a default description of how attributes combine in a Context object.
 
     Returns:
-        dict[str, callable[<ways.api.Plugin>]]:
+        dict[str, callable[:class:`ways.api.Plugin`]]:
             Functions used to resolve a number of Plugins into a single output.
 
     '''
@@ -442,7 +442,7 @@ def context_connection_info():
         so we'll intentionally lowercase our OSes, here.
 
         Args:
-            obj (<plugin.Plugin>): The plugin to get the platforms of.
+            obj (:class:`ways.api.Plugin`): The plugin to get the platforms of.
 
         Returns:
             str: The lowered platform name.
@@ -460,7 +460,8 @@ def context_connection_info():
         we must instead resolve the mapping into absolute again.
 
         Args:
-            plugins (list[<plugin.Plugin>]): The plugin to get the mapping of.
+            plugins (list[:class:`ways.api.Plugin`]):
+                The plugin to get the mapping of.
 
         Raises:
             RuntimeError: If there is no absolute plugin in our list of plugins,
@@ -475,7 +476,7 @@ def context_connection_info():
             '''Resolve a group of relative plugins into a single mapping.
 
             Args:
-                plugins (list[<ways.api.Plugin>]):
+                plugins (list[:class:`ways.api.Plugin`]):
                     The plugins to create a single mapping.
 
             Returns:
@@ -548,10 +549,12 @@ def context_connection_info():
         '''Get the max folder that this Context is allowed to move into.
 
         Args:
-            plugins (list[<plugin.Plugin>]): The plugin to get the max folder of.
+            plugins (list[:class:`ways.api.Plugin`]):
+                The plugin to get the max folder of.
 
         Returns:
-            str: The furthest up that this Context is allowed to move.
+            str:
+                The furthest up that this Context is allowed to move.
 
         '''
         def startswith_iterable(root, startswith):
@@ -635,7 +638,7 @@ def get_all_contexts():
         be retrieved from the Context flyweight cache.
 
     Returns:
-        list[<ways.api.Context>]: The Context objects defined in this system.
+        list[:class:`ways.api.Context`]: Every Context object found by Ways.
 
     '''
     contexts = []
@@ -675,7 +678,7 @@ def get_context(hierarchy,
         *args (list):
             If an object instance is found at the hierarchy/assignment,
             this gets passed to the instantiation of that object.
-        *kwargs (dict[str]):
+        **kwargs (dict[str]):
             If an object instance is found at the hierarchy/assignment,
             this gets passed to the instantiation of that object.
 

@@ -13,7 +13,6 @@ import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
-import six.moves
 
 # IMPORT WAYS LIBRARIES
 import ways
@@ -43,11 +42,11 @@ def _conform_plugins_with_assignments(plugins):
         >>> # Result: [(ways.api.Plugin(), 'master')]
 
     Args:
-        plugins (list[<ways.api.Plugin>]):
+        plugins (list[:class:`ways.api.Plugin`]):
             The plugins to change.
 
     Returns:
-        list[tuple[<ways.api.Plugin>, str]]:
+        list[tuple[:class:`ways.api.Plugin`, str]]:
             The original list of Plugin objects - but now including assignments.
 
     '''
@@ -75,7 +74,7 @@ def _resolve_descriptor(description):
             If it's a dict, the dictionary is used, as-is.
 
     Returns:
-        <ways.api.Descriptor> or NoneType:
+        :class:`ways.api.Descriptor` or NoneType:
             Some descriptor object that works with the given input.
 
     '''
@@ -270,7 +269,7 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
     '''Add a created action to Ways.
 
     Args:
-        action (<ways.api.Action>):
+        action (:class:`ways.api.Action`):
             The action to add. Action objects are objects that act
             on Context objects to gather some kind of information.
         name (:obj:`str`, optional):
@@ -335,7 +334,7 @@ def get_assignments(hierarchy):
 
 
 def get_all_plugins():
-    '''list[<pathfinder.plugin.Plugin>]: Every registered plugin.'''
+    '''list[:class:`ways.api.Plugin`]: Every registered plugin.'''
     return ways.PLUGIN_CACHE['all']
 
 

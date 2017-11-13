@@ -72,7 +72,7 @@ class Find(compat.DirMixIn, object):
         '''Create this object and store the given Context.
 
         Args:
-            context (<ways.api.Context>): The Context to wrap.
+            context (:class:`ways.api.Context`): The Context to wrap.
 
         '''
         super(Find, self).__init__()

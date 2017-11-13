@@ -37,7 +37,7 @@ class ContextParser(object):
         '''Create the parser and store our Context object.
 
         Args:
-            context (<situation.Context>): The Context to resolve and parse.
+            context (:class:`ways.api.Context`): The Context to resolve and parse.
 
         '''
         super(ContextParser, self).__init__()
