@@ -133,7 +133,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
         with self.assertRaises(ValueError):
             ways.api.get_context('s^ome/context')
 
-    def test_fails_from_unknown_assignment(self):
+    def test_fails_unknown_assignment(self):
         '''If Ways creates a Context with no plugins, error.
 
         As far as I've found as of this writing, this only happens due to
@@ -161,7 +161,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
         mapping = '/jobs/job_part_something'
 
         with self.assertRaises(RuntimeError):
-            asset = ways.api.get_asset(mapping, context='example/hierarchy')
+            ways.api.get_asset(mapping, context='example/hierarchy')
 
 #     def test_context_checkout_override_all2(self):
 #         context = ways.api.Context('/some/context')

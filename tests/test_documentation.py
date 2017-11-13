@@ -426,7 +426,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         expected_env_string = '/jobs/job_thing-something_123'
         self.assertEqual(expected_env_string, context.get_str(resolve_with=('env', 'regex')))
 
-        expected_regex_string = '/jobs/\w+_thing-\w+_\d{3}'
+        expected_regex_string = r'/jobs/\w+_thing-\w+_\d{3}'
         self.assertEqual(expected_regex_string, context.get_str(resolve_with='regex'))
         self.assertEqual(expected_regex_string, context.get_str(resolve_with=('regex', )))
 

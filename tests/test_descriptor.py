@@ -13,8 +13,6 @@ import textwrap
 # IMPORT THIRD-PARTY LIBRARIES
 import git
 import six
-six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
-from six.moves import mock
 # pylint: disable=import-error,unused-import
 from six.moves.urllib import parse
 
@@ -23,6 +21,8 @@ import ways.api
 
 # IMPORT LOCAL LIBRARIES
 from . import common_test
+
+six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
 
 
 class DescriptorContextTestCase(common_test.ContextTestCase):
@@ -120,7 +120,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
     # def test_add_local_git_branch_descriptor(self):
     #     '''Gather plugins from a local git repository on a non-master branch.'''
 
-    @mock.patch('git.Repo.clone_from')
+    @six.moves.mock.patch('git.Repo.clone_from')  # pylint: disable=no-member
     def test_add_remote_git(self, clone_from_mock):
         '''Check that we can pull git plugins from an online repository.'''
         clone_from_mock.return_value = None

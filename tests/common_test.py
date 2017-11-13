@@ -14,8 +14,6 @@ import unittest
 # IMPORT WAYS LIBRARIES
 import ways
 import ways.api
-
-# IMPORT 'LOCAL' LIBRARIES
 from ways import common
 from ways import situation as sit
 
