@@ -304,11 +304,7 @@ class FileDescriptor(object):
             plugin_info_file = ''
             last_item = None
 
-            # This is a bit hacky but just add an extra name to the path
-            # so that when os.path.dirname happens, we start with the current
-            # dir
-            #
-            path = os.path.join(path, 'asdfasdf')
+            path = os.path.join(path, '.unimportant_folder_that_will_be_removed')
 
             while last_item != path:
                 last_item = path

@@ -7,6 +7,13 @@ TODO:
     - Add a UUID to your plugin
     - Show filepath and database plugin examples
 
+.. _asset_swapping:
+
+Asset Swapping
+--------------
+
+TODO Write something about how to Swap the assets!
+
 Action Patterns
 ---------------
 

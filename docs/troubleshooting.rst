@@ -383,8 +383,16 @@ troubleshoot values that you may not expect.
     #          ('/jobs/foo/thing', DataPlugin('etc', 'etc', 'etc'))]
 
 
+trace_method_resolution works by taking the Context from its first plugin,
+running the given method, then uses the first 2 plugins and runs the given
+method again until every plugin that the Context sees has been run.
+
+That way, it's obvious which plugin was loaded at what point and that plugin's
+effect on the method.
+
+
 Working With Actions
-+++++++++++++++++++++
+++++++++++++++++++++
 
 Depending on what information you're working with, Actions can be queried in a
 few ways.

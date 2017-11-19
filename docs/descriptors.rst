@@ -1,8 +1,7 @@
 Descriptors
 ===========
 
-This section assumes that you've at least read through the Descriptor section
-in the :ref:`descriptor_summary` page.
+This section assumes that you've at least read through the :ref:`descriptor_summary` section.
 
 Basic setup
 -----------

@@ -1,14 +1,10 @@
 ways package
 ============
 
-
-Module contents
----------------
-
-.. automodule:: ways
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Ways is split into two main sections. "ways" and "ways.api". Of the two, 99% of
+all your work is going to use classes and functions out of "ways.api" but in
+the exceptional case where you need to do something special, You'd use the
+parent module's functions.
 
 Main Module
 -----------
@@ -41,6 +37,15 @@ Inner Modules
     ways.resource <resource>
     ways.situation <situation>
     ways.trace <trace>
+
+
+Module contents
+---------------
+
+.. automodule:: ways
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
 Subpackages

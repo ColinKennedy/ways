@@ -266,6 +266,9 @@ Pick the right one for the right job.
 Other than plugin platforms, there's one other way to affect the discovery and
 runtime of plugins in Ways: assignments.
 
+
+.. _assignments_basics:
+
 Using Assignments
 -----------------
 
@@ -432,7 +435,7 @@ jobber.yml
                 - job/shot
 
 
-Now let's see this in a live environment
+Now let's see this in a live Python environment
 
 ::
 
@@ -442,9 +445,10 @@ Now let's see this in a live environment
     context.get_mapping()
     # Result: "/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo"
 
-Before adding jobber.yml to our system, the mapping was
-"/jobs/{JOB}/{SCENE}/{SHOT}/library/graded/plates/clientinfo". Now, it's
-"/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo".
+Before adding jobber.yml to our system, the mapping for "job.shot/plates/client"
+was "/jobs/{JOB}/{SCENE}/{SHOT}/library/graded/plates/clientinfo".
+
+Now, it's "/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo".
 
 This works because the "job_plugin" key in jobber.yml matches the same hierarchy
 as the "plates" key in master.yml.

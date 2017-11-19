@@ -1,26 +1,11 @@
 Ways Documentation
 =========================
 
-Welcome to Ways, the one-for-all string abstraction toolkit.
-Though it was originally intended for abstracting file paths, Ways now
-abstracts any type of string. If the data you are working with can be
-represented as a string, Ways can use it.
+Welcome to Ways, an AMS toolkit for Python. For the tired programmer that has
+to deal with projects
 
+with expanding scope and
 
-The Full Feature List
----------------------
-
-- OS-aware Contexts
-- Basic built-in AMS
-- API Class injection
-- Context aliasing
-- Combinable Context objects
-- Persistent metadata storage
-- Context-aware Action hooks
-- Third-Party API support
-- Local/Remote plugin loading
-- Regex-enabled Context parsing
-- A pathlib-based, Context-aware Path class that seamlessly into this API
 
 For more information, read on
 
@@ -50,8 +35,14 @@ Appendices
 
 Modules
 -------
+
 .. toctree::
    :maxdepth: 4
 
    API Documentation <ways>
 
+Developers
+----------
+
+.. toctree::
+   Contributing <contributing>

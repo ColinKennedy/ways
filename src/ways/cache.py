@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''A set of functions that make working with the cache in Ways easier.'''
+'''A set of functions to register objects to Ways.'''
 
 
 # IMPORT STANDARD LIBRARIES

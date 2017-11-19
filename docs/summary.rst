@@ -54,8 +54,8 @@ default.
 Whenever a user tries to create a Context, the Context's Plugin objects are
 looked up as read-only data, combined, and then hooked into the Context.
 
-Context
--------
+Context Objects
+---------------
 
 Context objects are containers of metadata and Plugin information.
 
@@ -70,4 +70,17 @@ There's a ton of things that you can use Context objects to do but to keep
 this page short, the examples will stop here. Go to :doc:`getting_started`
 to try it for yourself.
 
+Asset Objects
+-------------
 
+TODO WRITE
+
+Action Objects
+--------------
+
+Actions are classes or functions that attach to a Context. So two Contexts
+could have two Actions called "do_some_action" and do completely different
+things. You define the Action, the Context that it's meant to act upon, and that's it.
+
+Head over to `getting_started` to learn about creating Descriptors, Contexts,
+Actions, and more.

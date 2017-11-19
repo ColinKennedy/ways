@@ -143,7 +143,6 @@ database). Asset objects have a small list of features that you'll learn in othe
 sections, like token validation (checking if tokens are optional or not),
 Context-expansion, recursive value parsing, and API hooks so that you
 can swap Asset objects for classes that you may have already written.
-TODO : Link to this?
 To find out more about that, check out `Asset Object Tricks`.
 
 Context Actions

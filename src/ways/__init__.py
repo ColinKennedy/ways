@@ -11,11 +11,6 @@ import collections
 import six
 
 # IMPORT LOCAL LIBRARIES
-# TODO : ugh this import is bad. FIXME
-#        It's only used so that we can clear our Context instances
-#        Find a better way to do this. Maybe store the instances here, too?
-#
-# pylint: disable=wrong-import-position
 from . import common
 from . import resource
 from . import situation as sit

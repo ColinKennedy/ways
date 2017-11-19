@@ -95,6 +95,7 @@ class Asset(object):
 
         self.info = info
         self.context = context
+        self.actions = AssetFinder(finder=find.Find(self.context), asset=self)
 
         missing_tokens = self.get_missing_required_tokens()
         if missing_tokens:
@@ -103,10 +104,6 @@ class Asset(object):
                 'Info is missing tokens, "{keys}"'.format(
                     info=self.info, context=self.context, keys=missing_tokens))
 
-    @property
-    def actions(self):
-        '''AssetFinder: The wrapped Find object.'''
-        return AssetFinder(finder=find.Find(self.context), asset=self)
 
     def get_missing_required_tokens(self):
         '''Find any token that still needs to be filled for our parser.
@@ -644,8 +641,9 @@ def get_asset(info, context=None, *args, **kwargs):
             The Context to use for the asset. If a string is given, it is
             assumed to be the Context's hierarchy and a Context object
             is constructed. If nothing is given, the best possible Context
-            is "found" and tried. This auto-find process is not guaranteed.
-            Default is None.
+            is "found" and tried. This auto-find process will try to find the
+            "best" match by looking at every known Context's mapping.
+            A match is not guaranteed. Default is None.
         *args (list): Optional position variables to pass to our found
                       class's constructor.
         **kwargs (dict): Optional keyword variables to pass to our found
@@ -1089,6 +1087,19 @@ def _find_context_using_info(obj):
 
     This function is meant to assist "get_asset" whenever a Context is not given.
 
+    It works first by getting every Context that could work with the given object.
+    Then, if more than one Context matches the given object, we attempt to
+    "break the tie" between all of the Contexts to get a clear winner. This is
+    done by looking at every Token defined in "mapping_details", to try to
+    find if the user's input matches each of the Tokens on the Context.
+
+    If obj is a string and the match Contexts have mappings, this function runs
+    much more quickly because Ways will sort the valid Contexts by how close
+    obj resembles the mapping. So the more "relevant" Contexts are tried before
+    lesser Contexts.
+
+    It's best to give a string whenever possible.
+
     Args:
         obj (dict[str: str] or str):
             The information used to get the Context.
@@ -1326,7 +1337,9 @@ def _find_context_using_info(obj):
         try:
             Asset(obj, context)
         except ValueError:
+            # The object was not valid input for the Asset. Just ignore it and move on
             continue
+
         valid_contexts.append(context)
 
     if len(valid_contexts) == 1:
