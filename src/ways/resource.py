@@ -1081,7 +1081,6 @@ def _get_value(name, parser, info):
     return get_value_from_children(name, parser, info)
 
 
-# pylint: disable=too-many-branches,too-many-locals
 def _find_context_using_info(obj):
     '''Use some Asset's info, get the best-possible Context.
 
@@ -1287,10 +1286,30 @@ def _find_context_using_info(obj):
             'Ways cannot decide which Contexts to use, "{contexts}".'
             ''.format(mapping=mapping, contexts=contexts))
 
+    def find_context_by_mapping(mapping, contexts):
+        try:
+            return get_best_context_by_rankings(contexts.keys(), mapping)
+        except ValueError as err:
+            # Try to break the tie, if we can
+            tied_contexts = err.args[-1]
+        return tiebreak(tied_contexts, contexts)
+
+    def filter_valid_contexts(info, contexts):
+        output = []
+        for context in six.iterkeys(contexts):
+            try:
+                Asset(info, context)
+            except ValueError:
+                # The object was not valid input for the Asset. Just ignore it and move on
+                continue
+
+            output.append(context)
+
+        return output
+
     mapping = ''
     contexts_ = sit.get_all_contexts()
-    contexts_with_info = dict()
-    contexts = []
+    contexts = collections.OrderedDict()
     if not isinstance(obj, collections.Mapping):
         mapping = obj
 
@@ -1307,8 +1326,7 @@ def _find_context_using_info(obj):
                 # expand_string raises an error if context.get_mapping is invalid
                 pass
             else:
-                contexts.append(context)
-                contexts_with_info[context] = expanded_info
+                contexts[context] = expanded_info
 
         if not contexts:
             raise ValueError('No plugins found had mappings. Cannot continue.')
@@ -1316,37 +1334,22 @@ def _find_context_using_info(obj):
         # Otherwise, if it is a mapping (i.e. a dict), we use all contexts
         for context in contexts_:
             if contains_all_tokens(context, obj):
-                contexts.append(context)
-                contexts_with_info[context] = obj
+                contexts[context] = obj
 
     # We'll find the Context we're searching for faster if we sort the more
     # likely candidates to the front. But we can only do that if obj is a string
     #
-    # In this example, we use a Levenshtein sort to figure out the "best" Context
-    #
     if mapping:
-        try:
-            return get_best_context_by_rankings(contexts, mapping)
-        except ValueError as err:
-            # Try to break the tie, if we can
-            tied_contexts = err.args[-1]
-            return tiebreak(tied_contexts, contexts_with_info)
+        return find_context_by_mapping(mapping, contexts)
 
-    valid_contexts = []
-    for context in contexts:
-        try:
-            Asset(obj, context)
-        except ValueError:
-            # The object was not valid input for the Asset. Just ignore it and move on
-            continue
-
-        valid_contexts.append(context)
+    # Otherwise, lets just try to find the best-guess
+    valid_contexts = filter_valid_contexts(obj, contexts)
 
     if len(valid_contexts) == 1:
         return valid_contexts[0]
 
-    # Try to break the tie, if we can
-    return tiebreak(valid_contexts, contexts_with_info)
+    # More than one Context was valid. Try to find one clear winner, if we can
+    return tiebreak(valid_contexts, contexts)
 
 
 def register_asset_info(class_type, context, init=None, children=False):

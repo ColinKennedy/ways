@@ -22,8 +22,6 @@ import collections
 # IMPORT THIRD-PARTY LIBRARIES
 import six
 import yamlordereddictloader
-# pylint: disable=import-error,ungrouped-imports
-from six.moves.urllib import parse
 
 # IMPORT LOCAL LIBRARIES
 from . import common
@@ -716,4 +714,4 @@ def serialize(obj):
 
     '''
     # pylint: disable=redundant-keyword-arg
-    return parse.urlencode(obj, True)
+    return six.moves.urllib.parse.urlencode(obj, doseq=True)

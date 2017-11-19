@@ -7,7 +7,7 @@
 import collections
 
 
-class ReadOnlyDict(collections.Mapping):
+class ReadOnlyDict(collections.Mapping, object):
 
     '''A dictionary whose items can be set to read-only, if need be.'''
 
@@ -25,7 +25,7 @@ class ReadOnlyDict(collections.Mapping):
                 it is set to read-only. Default is False.
 
         '''
-        super(ReadOnlyDict, self).__init__()  # pylint: disable=no-member
+        super(ReadOnlyDict, self).__init__()
 
         self._data = data
         self.settable = settable

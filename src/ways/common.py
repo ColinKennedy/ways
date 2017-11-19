@@ -74,10 +74,8 @@ def expand_string(format_string, obj):
 
     '''
     if '}{' in format_string:
-        # pylint: disable=bad-format-string
         raise ValueError('format_string: "{temp_}" was invalid. Curly braces, '
-                         '"}{" cannot be used, back to back.'
-                         ''.format(temp_=format_string))
+                         'cannot be used, back to back.'.format(temp_=format_string))
 
     info = dict()
 
