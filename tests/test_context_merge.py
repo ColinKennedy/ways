@@ -220,8 +220,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         mocap_context = ways.api.get_context('maya_project/mocap/something')
         self.assertEqual(mocap_context, None)
 
-    # pylint: disable=invalid-name
-    def test_merge_context_self_referring_context_fail(self):
+    def test_cyclic_context_fail(self):
         '''Keep a plugin from registering if it 'uses' itself.
 
         If a plugin refers to itself, it will cause a recursive loop.
@@ -249,8 +248,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         mocap_context = ways.api.get_context('mocap')
         self.assertEqual(mocap_context, None)
 
-    # pylint: disable=invalid-name
-    def test_merge_context_into_merged_context(self):
+    def test_merge_context_recursive(self):
         '''Make sure that a Context can merge with another merged Context.'''
         contents = textwrap.dedent(
             r'''
@@ -407,8 +405,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('foo/bar')
         self.assertEqual(context.data[key], value)
 
-    # pylint: disable=invalid-name
-    def test_relative_plugin_append_from_assignment(self):
+    def test_relative_plugin_append4(self):
         '''Append/Replace a relative plugin even when assignments differ.'''
         key = 'something'
         value = 'here'
@@ -431,8 +428,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('foo/bar')
         self.assertEqual(context.data[key], value)
 
-    # pylint: disable=invalid-name
-    def test_relative_plugin_append_from_assignment2(self):
+    def test_relative_plugin_append5(self):
         '''Same as the previous test, but more thorough.'''
         key = 'something'
         value = 'here'
@@ -461,8 +457,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         mapping = '/some/thing/else'
         self.assertEqual(mapping, context.get_mapping())
 
-    # pylint: disable=invalid-name
-    def test_relative_plugin_append_from_assignment3(self):
+    def test_relative_plugin_append6(self):
         '''Same as the previous tests, but more thorough.'''
         contents = textwrap.dedent(
             '''

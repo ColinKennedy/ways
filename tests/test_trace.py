@@ -12,7 +12,6 @@ whatever other purpose). Or some other reportive info that we want to know.
 
 
 # IMPORT STANDARD LIBRARIES
-# pylint: disable=invalid-name
 import os
 import tempfile
 import textwrap
@@ -25,27 +24,8 @@ from ways import common
 # IMPORT LOCAL LIBRARIES
 from . import common_test
 
-# TODO : The types of plugin-trace tests that we need to make sure works
-#
-# - defined in file
-# - defined out of file
-# - defined out of file - imported from another file
-# - explicitly registered
-# - explicitly registered function
-#
-# TODO : Also test for loaded descriptors
-# TODO : Have a way to test which descriptor loaded which plugins?
-# TODO : Get plugin by UUID
-# TODO : Get all plugin UUIDs
-# TODO : Make these tests lighter by only defining actions once in a single
-#        function and just reuse it, instead of relying on ActionRegistry to do
-#        it for you
-# TODO : Get parse order
-# TODO : Possibly make a set parse order function
 
-
-# pylint: disable=too-few-public-methods
-class Common(common_test.ContextTestCase):
+class Common(common_test.ContextTestCase):  # pylint: disable=too-few-public-methods
 
     '''Just a class that has a couple setup methods that subclasses need.'''
 
@@ -369,7 +349,7 @@ class FailureTestCase(common_test.ContextTestCase):
         self.assertEqual(action, None)
 
         # We should at least see some information about this PluginSheet
-        results = ways.api.trace_all_plugin_results_info()
+        results = ways.api.trace_all_load_results()['plugins']
         self.assertTrue(temp_file in results)
         info = results.get(temp_file, dict())
         self.assertEqual(info.get('status'), common.FAILURE_KEY)
@@ -420,7 +400,7 @@ class FailureTestCase(common_test.ContextTestCase):
         action = ways.get_action(name, hierarchy=hierarchy)
         self.assertNotEqual(action, None)
         # But main() fails, so the plugin is a registered failure
-        results = ways.api.trace_all_plugin_results_info()
+        results = ways.api.trace_all_load_results()['plugins']
         self.assertTrue('some_unique_uuid' in results)
         info = results.get('some_unique_uuid', dict())
         self.assertEqual(info.get('status'), common.FAILURE_KEY)

@@ -263,3 +263,19 @@ def conform_decode(info):
     change_list_to_string(WAYS_UUID_KEY, output)
 
     return output
+
+
+def encode(obj):
+    '''Make the given descriptor information into a standard URL encoding.
+
+    Args:
+        obj (dict[str]): The Descriptor information to serialize.
+        This is normally something like
+        {'create_using': ways.api.FolderDescriptor}.
+
+    Returns:
+        str: The output encoding.
+
+    '''
+    # pylint: disable=redundant-keyword-arg
+    return six.moves.urllib.parse.urlencode(obj, doseq=True)

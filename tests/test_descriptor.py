@@ -13,8 +13,6 @@ import textwrap
 # IMPORT THIRD-PARTY LIBRARIES
 import git
 import six
-# pylint: disable=import-error,unused-import
-from six.moves.urllib import parse
 
 # IMPORT WAYS LIBRARIES
 import ways.api
@@ -65,7 +63,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
         return ways.api.get_context('ztt/whatever')
 
@@ -102,7 +100,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
         context = ways.api.get_context('ztt/whatever')
         self.assertNotEqual(context, None)
@@ -160,7 +158,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         # Make a GitRemoteDescriptor class without specifying a path
@@ -171,7 +169,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
@@ -193,7 +191,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
@@ -222,7 +220,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
@@ -329,7 +327,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('foo/bar')
@@ -385,7 +383,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('foo/bar', assignment='job')
@@ -406,7 +404,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
 
         self.assertEqual(ways.api.add_descriptor(serialized_info), None)
 
@@ -454,7 +452,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         self.assertEqual(ways.api.add_descriptor(serialized_info), None)
 
     def test_not_callable_failure(self):
@@ -497,7 +495,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         self.assertEqual(ways.api.add_descriptor(serialized_info), None)
 
     def test_bad_resolution(self):
@@ -507,5 +505,5 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         self.assertEqual(ways.api.add_descriptor(serialized_info), None)

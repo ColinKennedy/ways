@@ -218,7 +218,7 @@ class FindCommanderTestCase(common_test.ContextTestCase):
 
     def test_wrap_command_with_find(self):
         '''Call Action objects using a basic Find class.'''
-        class SomeAssetAction(ways.api.Action):  # pylint: disable=unused-variable
+        class SomeAssetAction(ways.api.Action):
 
             '''Some example asset action.'''
 
@@ -276,6 +276,7 @@ class FindCommanderTestCase(common_test.ContextTestCase):
         # Build our finder
         find = ways.api.Find(context)
         self.assertEqual(find.get_assets(), expected_asset_files)
+        self.assertEqual(SomeAssetAction, find.get_assets.func.__class__)
 
     def test_action_not_found(self):
         '''Test to make sure that Actions that are not found return None.'''

@@ -28,14 +28,15 @@ from .trace import trace_actions_table
 from .trace import get_child_hierarchies
 from .trace import get_action_hierarchies
 from .trace import get_all_hierarchy_trees
+from .trace import trace_all_load_results
 from .trace import trace_method_resolution
 from .trace import get_child_hierarchy_tree
 from .trace import trace_all_plugin_results
 from .trace import get_all_action_hierarchies
 from .trace import trace_all_descriptor_results
-from .trace import trace_all_plugin_results_info
-from .trace import trace_all_descriptor_results_info
 # High-use classes and functions
+from .common import decode
+from .common import encode
 from .common import PLUGINS_ENV_VAR
 from .common import LOAD_FAILURE_KEY
 from .common import NOT_CALLABLE_KEY
@@ -74,11 +75,13 @@ from .descriptor import FileDescriptor
 from .descriptor import FolderDescriptor
 from .descriptor import GitLocalDescriptor
 from .descriptor import GitRemoteDescriptor
-from .descriptor import serialize
 
 add_action_default = Find.add_to_defaults  # pylint: disable=invalid-name
 
 __all__ = [
+    'decode',
+    'encode',
+
     'DESCRIPTORS_ENV_VAR',
     'PLATFORM_ENV_VAR',
     'PLATFORMS_ENV_VAR',
@@ -114,10 +117,8 @@ __all__ = [
     'Action',
     'add_action',
 
-    'trace_all_plugin_results',
-    'trace_all_descriptor_results',
-    'trace_all_descriptor_results_info',
-    'trace_all_plugin_results_info',
+    'trace_all_load_results',
+
     'trace_actions',
     'trace_action_names',
     'trace_method_resolution',
@@ -140,8 +141,6 @@ __all__ = [
     'GitLocalDescriptor',
     'GitRemoteDescriptor',
     'PLUGIN_INFO_FILE_NAME',
-
-    'serialize',
 
     'ContextParser',
 

@@ -76,7 +76,7 @@ def startswith(base, leaf):
     return True
 
 
-def trace_actions(obj, *args, **kwargs):  # noqa: D301
+def trace_actions(obj, *args, **kwargs):
     '''Get actions that are assigned to the given object.
 
     Args:
@@ -99,7 +99,7 @@ def trace_actions(obj, *args, **kwargs):  # noqa: D301
     return ways.get_actions(hierarchy, *args, **kwargs)
 
 
-def trace_action_names(obj, *args, **kwargs):  # noqa: D301
+def trace_action_names(obj, *args, **kwargs):
     '''Get the names of all actions available to a Ways object.
 
     Args:
@@ -121,7 +121,7 @@ def trace_action_names(obj, *args, **kwargs):  # noqa: D301
     return ways.get_action_names(hierarchy, *args, **kwargs)
 
 
-def trace_actions_table(obj, *args, **kwargs):  # noqa: D301
+def trace_actions_table(obj, *args, **kwargs):
     '''Find the names and objects of every action registered to Ways.
 
     Args:
@@ -149,48 +149,37 @@ def trace_all_descriptor_results():
     return ways.DESCRIPTOR_LOAD_RESULTS
 
 
-def trace_all_descriptor_results_info():  # pylint: disable=invalid-name
-    '''Get the UUIDs and load results of every Descriptor.
-
-    If the UUID for a Descriptor cannot be found,
-    Ways will automatically assign it a UUID.
-
-    Returns:
-        <collections.OrderedDict>[str: dict[str]]: The load results.
-
-    '''
-    info = collections.OrderedDict()
-    for result in trace_all_descriptor_results():
-        info[_get_ways_uuid_from_descriptor(result)] = result
-
-    return info
-
-
 def trace_all_plugin_results():
     '''list[dict[str]]: The results of each plugin's load results.'''
     return ways.PLUGIN_LOAD_RESULTS
 
 
-def trace_all_plugin_results_info():
-    '''Get the load-results for each plugin that Ways found.
+def trace_all_load_results():
+    '''Get the load results of every plugin and descriptor.
 
-    Not all plugins that we try to load will. (maybe the file has a syntax
-    error or something).
+    If the UUID for a Descriptor cannot be found,
+    Ways will automatically assign it a UUID.
 
     Using this function we can check
     1. What plugins that Ways found and tried to load.
     2. If our plugin loaded and, if not, why.
 
     Returns:
-        :class:`collections.OrderedDict` [str, dict[str]]:
-            The keys are absolute paths to valid Python files
-            the values are dicts that contain information about what happened
-            during the load.
+        dict[str, :class:`collections.OrderedDict` [str, dict[str]]]:
+            The main dictionary has two keys, "descriptors" and "plugins".
+            Each key has an OrderedDict that contains the UUID of each
+            Descriptor and plugin and their objects.
 
     '''
-    info = collections.OrderedDict()
+    info = dict()
+
+    info['descriptors'] = collections.OrderedDict()
+    for result in trace_all_descriptor_results():
+        info['descriptors'][_get_ways_uuid_from_descriptor(result)] = result
+
+    info['plugins'] = collections.OrderedDict()
     for result in trace_all_plugin_results():
-        info[_get_ways_uuid_from_plugin(result)] = result
+        info['plugins'][_get_ways_uuid_from_plugin(result)] = result
 
     return info
 
@@ -379,9 +368,9 @@ def __default_hook(obj):
     return obj
 
 
-def __default_predicate(obj):  # pylint: disable=unused-argument
+def __default_predicate(obj):
     '''Return True.'''
-    return True
+    return bool(obj)
 
 
 def _get_hierarchy_tree(

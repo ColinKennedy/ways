@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# pylint: disable=invalid-name,too-many-lines
+# pylint: disable=invalid-name
 '''Test the basic methods of the Asset class, in a variety of Contexts.'''
 
 # IMPORT STANDARD LIBRARIES
@@ -21,10 +21,6 @@ from . import common_test
 class AssetCreateTestCase(common_test.ContextTestCase):
 
     '''The main test for the Asset class.'''
-
-    # def test_create_asset_from_dict(self):
-    #     '''Create an Asset class, using only a dictionary.'''
-    #     pass
 
     def test_create_asset_from_string(self):
         '''Create an Asset class, using only a string.'''
@@ -99,15 +95,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
 
         self.assertNotEqual(asset, None)
 
-    # def test_create_asset_from_dot_string(self):
-    #     '''Create an Asset class from an alternate string syntax.'''
 
-#     def test_asset_get_value_of_token(self):
-#         '''Get the string of some token in an Asset.'''
-#         pass
-
-
-# pylint: disable=too-many-public-methods
 class AssetMethodTestCase(common_test.ContextTestCase):
 
     '''Test the methods on a ways.api.Asset object.'''
@@ -504,7 +492,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         where the scene Context.actions.get_shots did not return the right values.
 
         '''
-        class JobSceneShotPlugin(ways.api.Action):  # pylint: disable=unused-variable
+        class JobSceneShotPlugin(ways.api.Action):
 
             '''A generic Action that returns Asset objects.'''
 
@@ -627,6 +615,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
             if os.path.isdir(shot_path):
                 created_shots.append(shot)
 
+        self.assertTrue(JobSceneShotPlugin.name in dir(scene.actions))
         self.assertEqual(len(created_shots), 2)
         self.assertTrue(all((isinstance(shot, ways.api.Asset) for shot in created_shots)))
 
@@ -748,286 +737,6 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         scene = scene.get_value('SCENE', real=True)
         self.assertEqual(name, scene)
 
-    def test_find_context_string(self):
-        '''Get a Context/Asset automatically, using a string.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                version_plugin:
-                    hierarchy: job/versioned_asset
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        versioned = '/tmp/foo/ttt/8'
-
-        asset = ways.api.get_asset(versioned)
-        self.assertNotEqual(None, asset)
-        self.assertEqual(('job', 'versioned_asset'), asset.context.get_hierarchy())
-
-    def test_find_context_string_tied(self):
-        '''Resolve a tie between two Contexts.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                version_plugin:
-                    hierarchy: job/library
-                    mapping: '/tmp/{JOB}/library'
-                another_plugin:
-                    hierarchy: job/config
-                    mapping: '/tmp/{JOB}/config'
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        self.assertNotEqual(None, ways.api.get_asset('/tmp/foo/library'))
-
-    def test_find_context_child_tokens_failure(self):
-        '''Raise an exception because all Contexts return bad parse values.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                version_plugin:
-                    hierarchy: job/library
-                    mapping: '/tmp/{JOB}/{SCENE}/library'
-                    mapping_details:
-                        SCENE:
-                            mapping: '{SCENE_PREFIX}_{SCENE_SUFFIX}'
-                        SCENE_SUFFIX:
-                            parse:
-                                regex: '[a-z]+'
-                another_plugin:
-                    hierarchy: job/config
-                    mapping: '/tmp/{JOB}/{SCENE}/config'
-                    mapping_details:
-                        SCENE:
-                            mapping: '{SCENE_PREFIX}_{SCENE_SUFFIX}'
-                        SCENE_SUFFIX:
-                            parse:
-                                regex: '[a-z]+'
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        info = {
-            'JOB': 'foo',
-            'SCENE_PREFIX': 'something',
-            'SCENE_SUFFIX': '0010',
-        }
-
-        with self.assertRaises(ValueError):
-            ways.api.get_asset(info)
-
-    def test_find_context_child_tokens(self):
-        '''Get a Context from an Asset that only has child tokens defined.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                version_plugin:
-                    hierarchy: job/library
-                    mapping: '/tmp/{JOB}/{SCENE}/library'
-                    mapping_details:
-                        SCENE:
-                            mapping: '{SCENE_PREFIX}_{SCENE_SUFFIX}'
-                        SCENE_SUFFIX:
-                            parse:
-                                regex: '\d+'
-                another_plugin:
-                    hierarchy: job/config
-                    mapping: '/tmp/{JOB}/{SCENE}/config'
-                    mapping_details:
-                        SCENE:
-                            mapping: '{SCENE_PREFIX}_{SCENE_SUFFIX}'
-                        SCENE_SUFFIX:
-                            parse:
-                                regex: '[a-z]+'
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        info = {
-            'JOB_NAME': 'foo',
-            'JOB_ID': '6',
-            'SCENE_PREFIX': 'something',
-            'SCENE_SUFFIX': '0010',
-        }
-        self.assertNotEqual(None, ways.api.get_asset(info))
-
-    def test_find_context_string_tied_fails(self):
-        '''Raise an error if Ways cannot decide the best Context.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                version_plugin:
-                    hierarchy: job/versioned_asset
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-                another_plugin:
-                    hierarchy: something/completely/different
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        versioned = '/tmp/foo/ttt/8'
-
-        with self.assertRaises(ValueError):
-            ways.api.get_asset(versioned)
-
-    def test_find_context_string_tie_break(self):
-        '''Use a parser to break a tie between two Contexts.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                some_plugin:
-                    hierarchy: foo/bar
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-                    mapping_details:
-                        ASSET_VERSION:
-                            parse:
-                                regex: tttt
-                version_plugin:
-                    hierarchy: job/versioned_asset
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-                    mapping_details:
-                        ASSET_VERSION:
-                            parse:
-                                regex: \d+
-                another_plugin:
-                    hierarchy: something/completely/different
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-                    mapping_details:
-                        ASSET_VERSION:
-                            parse:
-                                regex: '[a-z]+'
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        self.assertNotEqual(None, ways.api.get_asset('/tmp/foo/ttt/8'))
-
-    def test_find_context_from_dict(self):
-        '''Get the correct Context/Asset even if only a dict was given.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                version_plugin:
-                    hierarchy: job/versioned_asset
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        versioned = {
-            'JOB': 'foo',
-            'SOMETHING': 'ttt',
-            'ASSET_VERSION': '8',
-        }
-
-        self.assertNotEqual(None, ways.api.get_asset(versioned))
-
-    def test_find_context_tie(self):
-        '''Raise an error if Ways cannot decide the best Context.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                version_plugin:
-                    hierarchy: job/versioned_asset
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-                another_plugin:
-                    hierarchy: something/completely/different
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        versioned = {
-            'JOB': 'foo',
-            'SOMETHING': 'ttt',
-            'ASSET_VERSION': '8',
-        }
-
-        with self.assertRaises(ValueError):
-            ways.api.get_asset(versioned)
-
-    def test_find_context_tie_break_dict(self):
-        '''Get the correct Context/Asset when two Contexts have the same mapping.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                some_plugin:
-                    hierarchy: foo/bar
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-                    mapping_details:
-                        ASSET_VERSION:
-                            parse:
-                                regex: tttt
-                version_plugin:
-                    hierarchy: job/versioned_asset
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-                    mapping_details:
-                        ASSET_VERSION:
-                            parse:
-                                regex: \d+
-                another_plugin:
-                    hierarchy: something/completely/different
-                    mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
-                    mapping_details:
-                        ASSET_VERSION:
-                            parse:
-                                regex: '[a-z]+'
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        versioned = {
-            'JOB': 'foo',
-            'SOMETHING': 'ttt',
-            'ASSET_VERSION': '8',
-        }
-
-        self.assertNotEqual(None, ways.api.get_asset(versioned))
-
-    def test_find_context_fails_no_mapping_string(self):
-        '''If no Context could be found that has a mapping, raise Exception.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                version_plugin:
-                    hierarchy: job/versioned_asset
-                another_plugin:
-                    hierarchy: job/vvvv
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        versioned = '/tmp/thing'
-
-        with self.assertRaises(ValueError):
-            ways.api.get_asset(versioned)
-
-    def test_find_context_fails_no_mapping(self):
-        '''If no Context could be found that has a mapping, raise Exception.'''
-        contents = textwrap.dedent(
-            r'''
-            plugins:
-                version_plugin:
-                    hierarchy: job/versioned_asset
-                another_plugin:
-                    hierarchy: job/vvvv
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents)
-
-        versioned = {
-            'JOB': 'foo',
-            'SOMETHING': 'ttt',
-            'ASSET_VERSION': '8',
-        }
-
-        with self.assertRaises(ValueError):
-            ways.api.get_asset(versioned)
-
 
 class AssetRegistrationTestCase(common_test.ContextTestCase):
 
@@ -1077,9 +786,9 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         '''Create an Asset class that is created with a non-default init.'''
         asset_class = _get_asset_class()
 
-        # pylint: disable=unused-argument
         def a_custom_init_function(info, context, *args, **kwargs):
             '''Purposefully ignore the context that gets passed.'''
+            del context
             return asset_class(info, *args, **kwargs)
 
         contents = textwrap.dedent(

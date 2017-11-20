@@ -698,20 +698,3 @@ def find_loader(path):
     raise NotImplementedError(
         'Path: "{path}" has no implementation. Expected one of "{opt}".'
         ''.format(path=path, opt=extensions))
-
-
-# TODO : Move this to common.py
-def serialize(obj):
-    '''Make the given descriptor information into a standard URL encoding.
-
-    Args:
-        obj (dict[str]): The Descriptor information to serialize.
-        This is normally something like
-        {'create_using': ways.api.FolderDescriptor}.
-
-    Returns:
-        str: The output encoding.
-
-    '''
-    # pylint: disable=redundant-keyword-arg
-    return six.moves.urllib.parse.urlencode(obj, doseq=True)

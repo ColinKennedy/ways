@@ -146,7 +146,6 @@ def make_folder_plugin(ending='.yml', contents=None, folder=''):
 
 def create_action(text, hierarchy=('a', )):
     '''Create some action with a name and hierarchy.'''
-    # pylint: disable=W0612
     class ActionObj(ways.api.Action):
 
         '''Some action.'''
@@ -159,6 +158,8 @@ def create_action(text, hierarchy=('a', )):
 
         def __call__(self, *args, **kwargs):
             return True
+
+    return ActionObj
 
 
 def create_plugin(hierarchy=('a', ),
@@ -174,7 +175,6 @@ def create_plugin(hierarchy=('a', ),
     if data is None:
         data = dict()
 
-    # pylint: disable=W0612
     class PluginObj(ways.api.Plugin):
 
         '''A generic Plugin.'''
@@ -197,3 +197,33 @@ def create_plugin(hierarchy=('a', ),
             return platforms
 
     return PluginObj
+
+
+def build_action(action, folders=None, hierarchy='some/context'):
+    '''Create an Action object and return it.'''
+    if folders is None:
+        folders = []
+
+    class SomeAction(ways.api.Action):
+
+        '''A subclass that will automatically be registered by Ways.
+
+        The name of the class (SomeAction) can be anything but the name
+        property must be correct. Also, get_hierarchy must match the Context
+        hierarchy that this action will apply to.
+
+        '''
+
+        name = action
+        items = []
+
+        @classmethod
+        def get_hierarchy(cls):
+            return hierarchy
+
+        def __call__(self, obj, folders):
+            '''Do something.'''
+            return folders
+
+    SomeAction.items = folders
+    return SomeAction
