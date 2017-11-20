@@ -423,10 +423,10 @@ instead.
             super(MyAssetClass, self).__init__()
             # ... more code ...
 
-    ways.api.register_asset_info(MyAssetClass, context='some/hierarchy')
+    ways.api.register_asset_class(MyAssetClass, context='some/hierarchy')
 
 Now when you run "get_asset", the function will return MyAssetClass.
-For more information on register_asset_info, check out :ref:`asset_swapping`.
+For more information on register_asset_class, check out :ref:`asset_swapping`.
 
 
 Dealing With Revised Projects

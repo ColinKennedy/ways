@@ -1351,7 +1351,7 @@ def _find_context_using_info(obj):
     return tiebreak(valid_contexts, contexts)
 
 
-def register_asset_info(class_type, context, init=None, children=False):
+def register_asset_class(class_type, context, init=None, children=False):
     '''Change get_asset to return a different class, instead of an Asset.
 
     The Asset class is useful but it may be too basic for some people's purposes.

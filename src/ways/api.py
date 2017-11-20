@@ -56,7 +56,7 @@ from .base.resource import AssetFinder
 from .base.resource import get_asset
 from .base.resource import get_asset_info
 from .base.resource import get_asset_class
-from .base.resource import register_asset_info
+from .base.resource import register_asset_class
 from .base.resource import reset_asset_classes
 from .base.commander import Action
 from .base.commander import add_action
@@ -111,7 +111,7 @@ __all__ = [
     'get_asset',
     'get_asset_class',
     'get_asset_info',
-    'register_asset_info',
+    'register_asset_class',
     'reset_asset_classes',
 
     'Action',

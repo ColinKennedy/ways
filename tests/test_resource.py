@@ -773,7 +773,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         # Register a new class type for our Context
         context = ways.api.get_context('some/thing/context')
-        ways.api.register_asset_info(asset_class, context)
+        ways.api.register_asset_class(asset_class, context)
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context')
@@ -814,7 +814,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         # Register a new class type for our Context
         context = ways.api.get_context('some/thing/context')
-        ways.api.register_asset_info(
+        ways.api.register_asset_class(
             asset_class, context, init=a_custom_init_function)
 
         # Get back our new class type
@@ -858,7 +858,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         asset_is_default_asset_type = isinstance(asset, ways.api.Asset)
 
         # Register a new class type for our Context
-        ways.api.register_asset_info(asset_class, 'some/thing/context', children=True)
+        ways.api.register_asset_class(asset_class, 'some/thing/context', children=True)
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context/inner')
