@@ -54,5 +54,4 @@ Subpackages
 .. toctree::
 
     ways.core
-    ways.retro
 
