@@ -1,0 +1,4 @@
+.projections.json
+*.pyc
+__pycache__
+*.ropeproject
