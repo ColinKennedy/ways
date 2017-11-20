@@ -10,8 +10,8 @@ import itertools
 import collections
 
 # IMPORT LOCAL LIBRARIES
-from . import engine
-from .core import check
+from ..parsing import engine
+from ..core import check
 
 ENCLOSURE_TOKEN_REGEX = r'(\{[^\{\}]+\})'
 RESERVED_ENV_VAR_PARSE_TYPES = ('env', 'environment', 'env_vars')

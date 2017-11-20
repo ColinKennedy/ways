@@ -19,7 +19,7 @@ import collections
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import common
+from ..helper import common
 
 
 class _AssignmentFactory(object):

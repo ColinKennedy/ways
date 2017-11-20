@@ -12,8 +12,8 @@ import collections
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import common
-from .core import compat
+from ..core import compat
+from ..helper import common
 
 # TODO : In general, I regret the name of this module. FIXME
 

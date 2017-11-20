@@ -35,7 +35,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
             import os
 
             # IMPORT THIRD-PARTY LIBRARIES
-            from ways import cache
+            from ways.base import cache
             import ways.api
 
 
@@ -110,9 +110,8 @@ class AutoloadTestCase(common_test.ContextTestCase):
         ways.api.init_plugins()
 
         path = '/jobs/some_job/some_kind/of/real_folders'
-        self.assertFalse(
-            isinstance(ways.api.get_asset(info=path, context='some/thing2/context'),
-                       ways.api.Asset))
+        asset = ways.api.get_asset(info=path, context='some/thing2/context')
+        self.assertFalse(isinstance(asset, ways.api.Asset))
 
     def test_plugins_from_env_folder(self):
         '''Mimic a user adding plugin folders to a pathfinder env var.'''

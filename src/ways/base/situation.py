@@ -39,12 +39,12 @@ from six import moves
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import parse
-from . import common
+from ..parsing import parse
+from ..helper import common
 from . import finder as find
 from . import factory
 from . import connection as conn
-from .core import pathrip
+from ..core import pathrip
 
 
 class Context(object):

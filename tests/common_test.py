@@ -14,8 +14,8 @@ import unittest
 # IMPORT WAYS LIBRARIES
 import ways
 import ways.api
-from ways import common
-from ways import situation as sit
+from ways.helper import common
+from ways.base import situation as sit
 
 _SYS_PATH = list(sys.path)
 _ORIGINAL_ENVIRON = os.environ.copy()

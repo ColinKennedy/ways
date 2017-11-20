@@ -11,7 +11,6 @@ import textwrap
 
 # IMPORT THIRD-PARTY LIBRARIES
 import ways.api
-from ways import descriptor
 
 # IMPORT LOCAL LIBRARIES
 from .. import common_test

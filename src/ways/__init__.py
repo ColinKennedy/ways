@@ -11,9 +11,9 @@ import collections
 import six
 
 # IMPORT LOCAL LIBRARIES
-from . import common
-from . import resource
-from . import situation as sit
+from .base import resource
+from .base import situation as sit
+from .helper import common
 
 __version__ = "0.1.0b1"
 

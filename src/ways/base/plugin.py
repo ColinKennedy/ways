@@ -13,8 +13,8 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import common
-from .core import check
+from ..core import check
+from ..helper import common
 
 
 class PluginRegistry(type):

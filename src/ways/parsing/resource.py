@@ -24,7 +24,6 @@ Attributes:
 
 '''
 
-
 # IMPORT STANDARD LIBRARIES
 # scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
 import os
@@ -41,11 +40,11 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import pylev
+from ..helper import pylev
 from . import trace
 from . import common
-from . import finder as find
-from . import situation as sit
+from ..base import finder as find
+from .base import situation as sit
 from .core import check
 from .core import compat
 

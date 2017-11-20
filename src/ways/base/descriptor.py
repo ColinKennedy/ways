@@ -24,11 +24,11 @@ import six
 import yamlordereddictloader
 
 # IMPORT LOCAL LIBRARIES
-from . import common
+from ..helper import common
 from . import plugin as plug
+from ..core import check
 from . import situation as sit
-from . import dict_classes
-from .core import check
+from ..helper import dict_classes
 
 GLOBALS_KEY = 'globals'
 PLUGIN_INFO_FILE_NAME = '.ways_plugin_info'

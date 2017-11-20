@@ -9,8 +9,8 @@ import textwrap
 
 # IMPORT THIRD-PARTY LIBRARIES
 import ways.api
-from ways import cache
-from ways import common
+from ways.base import cache
+from ways.helper import common
 
 # IMPORT LOCAL LIBRARIES
 from .. import common_test

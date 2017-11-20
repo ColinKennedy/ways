@@ -19,7 +19,7 @@ import itertools
 import six
 
 # IMPORT LOCAL LIBRARIES
-from .core import check
+from ..core import check
 
 HIERARCHY_SEP = '/'
 DEFAULT_ASSIGNMENT = 'master'
@@ -61,6 +61,7 @@ def expand_string(format_string, obj):
         >>> format_string = '{SHOT}_{ID}'
         >>> expand_string(format_string, shot)
         ... {'SHOT': 'NAME', 'ID': '010'}
+
 
     Args:
         format_string (str): The Python-format style string to use to split it.

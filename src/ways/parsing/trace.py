@@ -17,8 +17,8 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import common
-from .core import loop
+from ..helper import common
+from ..core import loop
 
 # TODO : Maybe move this to find.py and then move the path class out
 
@@ -198,7 +198,7 @@ def trace_context(obj):
 
     '''
     # TODO : Remove this inner import
-    from . import situation as sit
+    from ..base import situation as sit
 
     if isinstance(obj, sit.Context):
         # Is it a Context already? If so, return it

@@ -677,8 +677,8 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                     mapping_details:
                         SCENE:
                             before_return:
-                                - ways.common.get_platforms
-                                - ways.trace.trace_assignment
+                                - ways.helper.common.get_platforms
+                                - ways.parsing.trace.trace_assignment
                 shot_plugin:
                     hierarchy: job/scene/shot
                     mapping: '/tmp/{JOB}/{SCENE}/{SHOT}'

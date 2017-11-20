@@ -18,7 +18,7 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import common
+from ..helper import common
 
 
 def _conform_plugins_with_assignments(plugins):
