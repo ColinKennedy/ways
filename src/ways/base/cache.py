@@ -62,7 +62,7 @@ def _conform_plugins_with_assignments(plugins):
     return plugins
 
 
-def _resolve_descriptor(description):
+def resolve_descriptor(description):
     '''Build a descriptor object from different types of user input.
 
     Args:
@@ -212,7 +212,7 @@ def add_descriptor(description, update=True):
     info = {'item': description}
 
     try:
-        final_descriptor = _resolve_descriptor(description)
+        final_descriptor = resolve_descriptor(description)
     except ValueError:
         _, _, traceback_ = sys.exc_info()
         info.update(

@@ -410,7 +410,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
 
         self.assertEqual(
             ways.api.RESOLUTION_FAILURE_KEY,
-            ways.api.trace_all_descriptor_results()[0]['reason']
+            list(ways.api.trace_all_load_results()['descriptors'].values())[0]['reason']
         )
 
     def test_no_callable_method(self):

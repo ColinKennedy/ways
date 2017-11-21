@@ -105,7 +105,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('example')
         self.assertNotEqual(None, context)
 
-    def test_regular_vs_autofind_context(self):
+    def test_regular_vs_autofind(self):
         '''Defining a Context should create the same result as auto-find.'''
         self._make_complex_setup()
 

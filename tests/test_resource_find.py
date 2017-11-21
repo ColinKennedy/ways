@@ -17,7 +17,7 @@ class FindContextTestCase(common_test.ContextTestCase):
 
     '''Test for whenever the user tries to get Ways objects without a Context.'''
 
-    def test_find_context_string(self):
+    def test_string(self):
         '''Get a Context/Asset automatically, using a string.'''
         contents = textwrap.dedent(
             r'''
@@ -35,7 +35,7 @@ class FindContextTestCase(common_test.ContextTestCase):
         self.assertNotEqual(None, asset)
         self.assertEqual(('job', 'versioned_asset'), asset.context.get_hierarchy())
 
-    def test_find_context_string_tied(self):
+    def test_string_tied(self):
         '''Resolve a tie between two Contexts.'''
         contents = textwrap.dedent(
             r'''
@@ -52,7 +52,7 @@ class FindContextTestCase(common_test.ContextTestCase):
 
         self.assertNotEqual(None, ways.api.get_asset('/tmp/foo/library'))
 
-    def test_find_context_child_tokens_failure(self):
+    def test_child_tokens_failure(self):
         '''Raise an exception because all Contexts return bad parse values.'''
         contents = textwrap.dedent(
             r'''
@@ -88,7 +88,7 @@ class FindContextTestCase(common_test.ContextTestCase):
         with self.assertRaises(ValueError):
             ways.api.get_asset(info)
 
-    def test_find_context_child_tokens(self):
+    def test_child_tokens(self):
         '''Get a Context from an Asset that only has child tokens defined.'''
         contents = textwrap.dedent(
             r'''
@@ -123,7 +123,7 @@ class FindContextTestCase(common_test.ContextTestCase):
         }
         self.assertNotEqual(None, ways.api.get_asset(info))
 
-    def test_find_context_string_tied_fails(self):
+    def test_string_tied_fails(self):
         '''Raise an error if Ways cannot decide the best Context.'''
         contents = textwrap.dedent(
             r'''
@@ -143,7 +143,7 @@ class FindContextTestCase(common_test.ContextTestCase):
         with self.assertRaises(ValueError):
             ways.api.get_asset(versioned)
 
-    def test_find_context_string_tie_break(self):
+    def test_string_tie_break(self):
         '''Use a parser to break a tie between two Contexts.'''
         contents = textwrap.dedent(
             r'''
@@ -175,7 +175,7 @@ class FindContextTestCase(common_test.ContextTestCase):
 
         self.assertNotEqual(None, ways.api.get_asset('/tmp/foo/ttt/8'))
 
-    def test_find_context_from_dict(self):
+    def test_from_dict(self):
         '''Get the correct Context/Asset even if only a dict was given.'''
         contents = textwrap.dedent(
             r'''
@@ -195,7 +195,7 @@ class FindContextTestCase(common_test.ContextTestCase):
 
         self.assertNotEqual(None, ways.api.get_asset(versioned))
 
-    def test_find_context_tie(self):
+    def test_tie(self):
         '''Raise an error if Ways cannot decide the best Context.'''
         contents = textwrap.dedent(
             r'''
@@ -219,7 +219,7 @@ class FindContextTestCase(common_test.ContextTestCase):
         with self.assertRaises(ValueError):
             ways.api.get_asset(versioned)
 
-    def test_find_context_tie_break_dict(self):
+    def test_tie_break_dict(self):
         '''Get the correct Context/Asset when two Contexts have the same mapping.'''
         contents = textwrap.dedent(
             r'''
@@ -257,7 +257,7 @@ class FindContextTestCase(common_test.ContextTestCase):
 
         self.assertNotEqual(None, ways.api.get_asset(versioned))
 
-    def test_find_context_fails_no_mapping_string(self):
+    def test_fails_no_mapping_string(self):
         '''If no Context could be found that has a mapping, raise Exception.'''
         contents = textwrap.dedent(
             r'''
@@ -275,7 +275,7 @@ class FindContextTestCase(common_test.ContextTestCase):
         with self.assertRaises(ValueError):
             ways.api.get_asset(versioned)
 
-    def test_find_context_fails_no_mapping(self):
+    def test_fails_no_mapping(self):
         '''If no Context could be found that has a mapping, raise Exception.'''
         contents = textwrap.dedent(
             r'''

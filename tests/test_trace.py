@@ -158,6 +158,11 @@ class TraceTestCase(Common):
             actions = ways.api.trace_actions_table(obj)
             self.assertTrue(actions)
 
+
+class TraceHierarchyTestCase(Common):
+
+    '''Check that all hierarchy-related trace functions work correctly.'''
+
     def test_get_all_hierarchies(self):
         '''Define a bunch of plugins and then get their hierarchies.'''
         hierarchies = {
@@ -197,7 +202,7 @@ class TraceTestCase(Common):
         self.assertEqual(expected_children,
                          set(ways.api.get_child_hierarchies(('foo', 'bar'))))
 
-    def test_get_all_hierarchies_as_dict_full(self):
+    def test_as_dict_full(self):
         '''Print all of the hierarhies as a big dictionary.'''
         _setup_hierarchies()
 
@@ -220,7 +225,7 @@ class TraceTestCase(Common):
 
         self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=True))
 
-    def test_get_all_hierarchies_as_dict_part(self):
+    def test_as_dict_part(self):
         '''Print all of the hierarhies as a big dictionary.'''
         _setup_hierarchies()
 
@@ -243,7 +248,7 @@ class TraceTestCase(Common):
 
         self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=False))
 
-    def test_get_child_hierarchies_as_dict_full(self):
+    def test_child_as_dict_full(self):
         '''Print all of the hierarhies at the given hierarchy.'''
         _setup_hierarchies()
 
@@ -256,7 +261,7 @@ class TraceTestCase(Common):
 
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=True))
 
-    def test_get_child_hierarchies_as_dict_part(self):
+    def test_child_as_dict_part(self):
         '''Print all of the hierarhies at the given hierarchy.'''
         _setup_hierarchies()
 

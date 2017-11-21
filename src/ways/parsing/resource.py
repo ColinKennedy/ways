@@ -659,7 +659,7 @@ def get_asset(info, context=None, *args, **kwargs):
 
     try:
         return init(info, context, *args, **kwargs)
-    except Exception as err:
+    except Exception:
         return
 
 
@@ -1164,7 +1164,7 @@ def _find_context_using_info(obj):
                 with are both valid, given the user's information.
 
         Returns:
-            <ways.api.Context>: The "winner" Context.
+            :class:`ways.api.Context`: The "winner" Context.
 
         '''
         tied_info = get_context_info_from_pool(contexts, info)
@@ -1180,14 +1180,42 @@ def _find_context_using_info(obj):
             ''.format(mapping=mapping, contexts=contexts))
 
     def find_context_by_mapping(mapping, contexts):
+        '''Get the correct Context by matching the user's mapping.
+
+        As the function implies, at least one Context given must have a mapping
+        and that mapping should match the Context.
+
+        Args:
+            mapping (str): The mapping that is expected to match the Contexts.
+            contexts (list[:class:`ways.api.Context`]): The Contexts to match with.
+
+        Returns:
+            :class:`ways.api.Context`: The "winner" Context.
+
+        '''
         try:
-            return get_best_context_by_rankings(contexts.keys(), mapping)
+            return get_best_context_by_rankings(list(contexts.keys()), mapping)
         except ValueError as err:
             # Try to break the tie, if we can
             tied_contexts = err.args[-1]
         return tiebreak(tied_contexts, contexts)
 
     def filter_valid_contexts(info, contexts):
+        '''Use the given information to find the correct Context.
+
+        This function is very basic. All it does it tries to build an Asset,
+        using the given Context information. If the Asset successfully
+        instantiates, it's assumed that the info was correct.
+
+        Args:
+            info (dict[str, str]): The information to try to get a Context of.
+            contexts (list[:class:`ways.api.Context`]): The Contexts to match.
+
+        Returns:
+            list[:class:`ways.api.Context`]: The Contexts that make valid Assets,
+                                             when given some info.
+
+        '''
         output = []
         for context in six.iterkeys(contexts):
             try:

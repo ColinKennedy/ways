@@ -96,7 +96,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
 
         self.assertEqual(
             ways.api.RESOLUTION_FAILURE_KEY,
-            ways.api.trace_all_descriptor_results()[0]['reason'])
+            list(ways.api.trace_all_load_results()['descriptors'].values())[0]['reason'])
 
     def test_not_callable_failure(self):
         '''Create a Descriptor not-callable error matching what the docs.'''
@@ -158,7 +158,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
 
         self.assertEqual(
             ways.api.IMPORT_FAILURE_KEY,
-            ways.api.trace_all_plugin_results()[0]['reason'])
+            list(ways.api.trace_all_load_results()['plugins'].values())[0]['reason'])
 
     def test_plugin_main_failure(self):
         '''Try to load a Plugin but stop because the main function is broken.'''
@@ -188,6 +188,88 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         self.assertEqual(
             ways.api.LOAD_FAILURE_KEY,
             ways.api.trace_all_load_results()['plugins'][uuid_]['reason'])
+
+    def test_method_resolution_001(self):
+        '''Find out the way a method "resolves" its plugins.'''
+        self._make_simple_plugin_tree()
+
+        context = ways.api.get_context('foo/bar')
+        expected = ['/jobs', '/jobs/foo/thing']
+        self.assertEqual(expected, ways.api.trace_method_resolution(context.get_mapping))
+
+        # This check is to make sure that trace_method_resolution didn't
+        # break the original functionality of the Context
+        #
+        self.assertEqual(expected[-1], context.get_mapping())
+
+    def test_method_resolution_002(self):
+        '''Find out the way a method "resolves" its plugins.'''
+        self._make_simple_plugin_tree()
+
+        context = ways.api.get_context('foo/bar')
+        expected = [('/jobs', context.plugins[0]),
+                    ('/jobs/foo/thing', context.plugins[1])]
+        self.assertEqual(
+            expected, ways.api.trace_method_resolution(context.get_mapping, plugins=True))
+
+        # This check is to make sure that trace_method_resolution didn't
+        # break the original functionality of the Context
+        #
+        self.assertEqual(expected[-1][0], context.get_mapping())
+
+
+class HierarchyTestCase(TroubleshootingTestCase):
+
+    '''Gather tests related to hierachies in a single class.'''
+
+    def test_get_action_hierarchies(self):
+        '''Get the hierarchies that an Action name is attached to.'''
+        self._make_simple_plugin_tree()
+
+        common_test.build_action('some_action', hierarchy='foo/bar')
+        common_test.build_action('some_action', hierarchy='foo/fizz')
+
+        common_test.build_action('another_action', hierarchy='foo/bar')
+
+        expected = {('foo', 'bar'), ('foo', 'fizz')}
+        self.assertEqual(expected, ways.api.get_action_hierarchies('some_action'))
+
+    def test_action_from_class(self):
+        '''Use an Action class to find the hierachies that it can run on.'''
+        self._make_simple_plugin_tree()
+
+        action = common_test.build_action('some_action', hierarchy='foo/bar')
+        common_test.build_action('some_action', hierarchy='foo/fizz')
+
+        common_test.build_action('another_action', hierarchy='foo/bar')
+
+        expected = {('foo', 'bar'), }
+        self.assertEqual(expected, ways.api.get_action_hierarchies(action))
+
+    def test_action_from_function(self):
+        '''Use an Action function to find the hierachies that it can run on.'''
+        self._make_simple_plugin_tree()
+
+        def some_function():
+            '''Do some function.'''
+            print('Example function return')
+
+        common_test.build_action('some_action', hierarchy='foo/fizz')
+
+        ways.api.add_action(some_function, name='something', hierarchy='foo/bar')
+        expected = {('foo', 'bar'), }
+        self.assertEqual(expected, ways.api.get_action_hierarchies(some_function))
+
+    def test_get_all_action_hierarchies(self):
+        '''Get every Action name and the hierarchies that can use it.'''
+        self._make_simple_plugin_tree()
+
+        common_test.build_action('some_action', hierarchy='foo/bar')
+        common_test.build_action('some_action', hierarchy='foo/fizz')
+
+        common_test.build_action('another_action', hierarchy='foo/bar')
+
+        self.assertTrue(ways.api.get_all_action_hierarchies())
 
     def test_get_all_hierarchies(self):
         '''Get all of the hierarchies that Ways is allowed to use.'''
@@ -224,7 +306,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
 
         self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=True))
 
-    def test_get_all_hierarchies_concise(self):
+    def test_hierarchies_concise(self):
         '''Get all of the hierarchies that Ways is allowed to use as a tree.'''
         self._make_simple_plugin_tree()
 
@@ -249,7 +331,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
 
         self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=False))
 
-    def test_get_child_hierarchies(self):
+    def test_child_hierarchies(self):
         '''Get the Ways hierarchy starting at a certain point.'''
         # '''Get some children. Wait, that didn't come out right.'''
         self._make_simple_plugin_tree()
@@ -265,7 +347,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         self.assertEqual(expected, ways.api.get_child_hierarchies(context))
         self.assertEqual(expected, ways.api.get_child_hierarchies(asset))
 
-    def test_get_child_hierarchy_tree_full(self):
+    def test_child_hierarchy_full(self):
         '''Get the Ways hierarchy starting at a certain point.'''
         self._make_simple_plugin_tree()
 
@@ -286,7 +368,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(context, full=True))
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(asset, full=True))
 
-    def test_get_child_hierarchy_tree_concise(self):
+    def test_child_hierarchy_concise(self):
         '''Get the Ways hierarchy starting at a certain point.'''
         self._make_simple_plugin_tree()
 
@@ -307,82 +389,6 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(context, full=False))
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(asset, full=False))
 
-    def test_trace_method_resolution_plugins_off(self):
-        '''Find out the way a method "resolves" its plugins.'''
-        self._make_simple_plugin_tree()
-
-        context = ways.api.get_context('foo/bar')
-        expected = ['/jobs', '/jobs/foo/thing']
-        self.assertEqual(expected, ways.api.trace_method_resolution(context.get_mapping))
-
-        # This check is to make sure that trace_method_resolution didn't
-        # break the original functionality of the Context
-        #
-        self.assertEqual(expected[-1], context.get_mapping())
-
-    def test_trace_method_resolution_plugins_on(self):
-        '''Find out the way a method "resolves" its plugins.'''
-        self._make_simple_plugin_tree()
-
-        context = ways.api.get_context('foo/bar')
-        expected = [('/jobs', context.plugins[0]),
-                    ('/jobs/foo/thing', context.plugins[1])]
-        self.assertEqual(
-            expected, ways.api.trace_method_resolution(context.get_mapping, plugins=True))
-
-        # This check is to make sure that trace_method_resolution didn't
-        # break the original functionality of the Context
-        #
-        self.assertEqual(expected[-1][0], context.get_mapping())
-
-    def test_get_action_hierarchies(self):
-        '''Get the hierarchies that an Action name is attached to.'''
-        self._make_simple_plugin_tree()
-
-        common_test.build_action('some_action', hierarchy='foo/bar')
-        common_test.build_action('some_action', hierarchy='foo/fizz')
-
-        common_test.build_action('another_action', hierarchy='foo/bar')
-
-        expected = {('foo', 'bar'), ('foo', 'fizz')}
-        self.assertEqual(expected, ways.api.get_action_hierarchies('some_action'))
-
-    def test_get_action_hierarchies_from_class(self):
-        '''Use an Action class to find the hierachies that it can run on.'''
-        self._make_simple_plugin_tree()
-
-        action = common_test.build_action('some_action', hierarchy='foo/bar')
-        common_test.build_action('some_action', hierarchy='foo/fizz')
-
-        common_test.build_action('another_action', hierarchy='foo/bar')
-
-        expected = {('foo', 'bar'), }
-        self.assertEqual(expected, ways.api.get_action_hierarchies(action))
-
-    def test_get_action_hierarchies_from_function(self):
-        '''Use an Action function to find the hierachies that it can run on.'''
-        self._make_simple_plugin_tree()
-
-        def some_function():
-            '''Do some function.'''
-            print('Example function return')
-
-        common_test.build_action('some_action', hierarchy='foo/fizz')
-
-        ways.api.add_action(some_function, name='something', hierarchy='foo/bar')
-        expected = {('foo', 'bar'), }
-        self.assertEqual(expected, ways.api.get_action_hierarchies(some_function))
-
-    def test_get_all_action_hierarchies(self):
-        '''Get every Action name and the hierarchies that can use it.'''
-        self._make_simple_plugin_tree()
-
-        common_test.build_action('some_action', hierarchy='foo/bar')
-        common_test.build_action('some_action', hierarchy='foo/fizz')
-
-        common_test.build_action('another_action', hierarchy='foo/bar')
-
-        self.assertTrue(ways.api.get_all_action_hierarchies())
 
 
 def _itemize_seralized_descriptor(descriptor):

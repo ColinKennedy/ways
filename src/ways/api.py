@@ -48,9 +48,7 @@ from .parsing.trace import trace_all_load_results
 from .parsing.trace import get_all_hierarchy_trees
 from .parsing.trace import trace_method_resolution
 from .parsing.trace import get_child_hierarchy_tree
-from .parsing.trace import trace_all_plugin_results
 from .parsing.trace import get_all_action_hierarchies
-from .parsing.trace import trace_all_descriptor_results
 from .base.commander import Action
 from .base.commander import add_action
 from .base.situation import Context

@@ -4,8 +4,6 @@
 '''Test for the "getting_started.rst" documentation page.'''
 
 # IMPORT STANDARD LIBRARIES
-import os
-import tempfile
 import textwrap
 
 # IMPORT WAYS LIBRARIES

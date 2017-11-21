@@ -76,7 +76,7 @@ def startswith(base, leaf):
     return True
 
 
-def trace_actions(obj, *args, **kwargs):
+def trace_actions(obj, *args, **kwargs):  # noqa: D301
     '''Get actions that are assigned to the given object.
 
     Args:
@@ -99,7 +99,7 @@ def trace_actions(obj, *args, **kwargs):
     return ways.get_actions(hierarchy, *args, **kwargs)
 
 
-def trace_action_names(obj, *args, **kwargs):
+def trace_action_names(obj, *args, **kwargs):  # noqa: D301
     '''Get the names of all actions available to a Ways object.
 
     Args:
@@ -121,7 +121,7 @@ def trace_action_names(obj, *args, **kwargs):
     return ways.get_action_names(hierarchy, *args, **kwargs)
 
 
-def trace_actions_table(obj, *args, **kwargs):
+def trace_actions_table(obj, *args, **kwargs):  # noqa: D301
     '''Find the names and objects of every action registered to Ways.
 
     Args:

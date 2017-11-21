@@ -108,7 +108,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('fizz/buzz/foo')
         self.assertNotEqual(None, context)
 
-    def test_compare_relative_and_absolutes(self):
+    def test_compare_rel_and_abs(self):
         '''Create a setup for absolute and relative that make the same result.'''
         contents = textwrap.dedent(
             '''
@@ -190,7 +190,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
 
         self.assertEqual(absolute_info, relative_info)
 
-    def test_absolute_and_relative_os_plugins(self):
+    def test_abs_and_rel_os_plugins(self):
         '''An absolute and relative setup that also have specific platforms.'''
         contents = textwrap.dedent(
             r'''
@@ -254,7 +254,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
 
         self.assertEqual(absolute_info, relative_info)
 
-    def test_absolute_and_relative_append(self):
+    def test_abs_and_rel_append(self):
         '''Append to another plugin using the absolute and relative syntax.'''
         key = 'some_data'
         value = 8

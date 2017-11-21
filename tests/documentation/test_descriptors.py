@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''All Descriptor-related tests.'''
+
 # IMPORT STANDARD LIBRARIES
 import os
 import sys
@@ -37,7 +39,7 @@ class DescriptorsTestCase(common_test.ContextTestCase):
                      '&uuid=some_unique_string-we-can_search_for-later' \
                      ''.format(root=root)
 
-        obj = cache._resolve_descriptor(descriptor)
+        obj = cache.resolve_descriptor(descriptor)
         self.assertTrue(isinstance(obj, ways.api.GitLocalDescriptor))
         self.assertEqual(obj.path, root)
         self.assertEqual(obj.items, [resolved_path])
@@ -92,8 +94,8 @@ class DescriptorsTestCase(common_test.ContextTestCase):
             # Check to make sure the inspected encoding is OK
             details = common.conform_decode(ways.api.decode(encoding))
             self.assertEqual(info, details)
-            desc1 = cache._resolve_descriptor(info)
-            desc2 = cache._resolve_descriptor(encoding)
+            desc1 = cache.resolve_descriptor(info)
+            desc2 = cache.resolve_descriptor(encoding)
             self.assertEqual(desc1, desc2)
             self.assertTrue(isinstance(desc1, class_item))
             self.assertTrue(isinstance(desc2, class_item))
@@ -126,7 +128,7 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         os.environ['WAYS_DESCRIPTORS'] = info
         ways.clear()
         ways.api.init_plugins()
-        descriptor = cache._resolve_descriptor(info)
+        descriptor = cache.resolve_descriptor(info)
         self.assertEqual(1, len(descriptor))
 
 
