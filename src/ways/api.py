@@ -51,13 +51,13 @@ from .helper.common import ENVIRONMENT_FAILURE_KEY
 # TODO : rename Find class into "Finder"
 from .base.finder import Find
 from .base.plugin import Plugin
-from .base.resource import Asset
-from .base.resource import AssetFinder
-from .base.resource import get_asset
-from .base.resource import get_asset_info
-from .base.resource import get_asset_class
-from .base.resource import register_asset_class
-from .base.resource import reset_asset_classes
+from .parsing.resource import Asset
+from .parsing.resource import AssetFinder
+from .parsing.resource import get_asset
+from .parsing.registry import get_asset_info
+from .parsing.registry import get_asset_class
+from .parsing.registry import register_asset_class
+from .parsing.registry import reset_asset_classes
 from .base.commander import Action
 from .base.commander import add_action
 from .base.situation import Context

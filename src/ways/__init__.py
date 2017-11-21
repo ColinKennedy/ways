@@ -11,7 +11,7 @@ import collections
 import six
 
 # IMPORT LOCAL LIBRARIES
-from .base import resource
+from .parsing import registry
 from .base import situation as sit
 from .helper import common
 
@@ -371,7 +371,7 @@ def clear():
     del DESCRIPTORS[:]
     sit.clear_aliases()
     sit.clear_contexts()
-    resource.reset_asset_classes()
+    registry.reset_asset_classes()
 
 
 if __name__ == '__main__':

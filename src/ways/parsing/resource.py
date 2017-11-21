@@ -7,21 +7,6 @@
 They are necessary because Context objects are flyweights and, because of that,
 cannot carry instance data.
 
-Attributes:
-    ASSET_FACTORY (dict[tuple[str]: dict[str]]:
-        This dict should not be changed directly. You should use
-        the functions in this module, instead.
-
-        It is a global dictionary that stores classes that are meant to swap
-        for an Asset object. ASSET_FACTORY's key is the hierarchy of the Context
-        and its value is another dict, which looks like this:
-
-        'class': The class to swap for.
-        'init': A custom inititialization function for the class (if needed).
-        'children': If True, the class is used for all hierarchies that build
-        off of the given hierarchy. If False, the class is only added to the
-        given hierarchy.
-
 '''
 
 # IMPORT STANDARD LIBRARIES
@@ -42,14 +27,14 @@ import ways
 # IMPORT LOCAL LIBRARIES
 from ..helper import pylev
 from . import trace
-from . import common
+from . import registry
+from ..helper import common
 from ..base import finder as find
-from .base import situation as sit
-from .core import check
-from .core import compat
+from ..base import situation as sit
+from ..core import check
+from ..core import compat
 
 __DEFAULT_OBJECT = object()
-ASSET_FACTORY = dict()
 
 
 class Asset(object):
@@ -667,106 +652,15 @@ def get_asset(info, context=None, *args, **kwargs):
     info = expand_info(info, context=context)
     hierarchy = context.get_hierarchy()
 
-    _, init = get_asset_info(hierarchy)
+    _, init = registry.get_asset_info(hierarchy)
+
+    if not init:
+        init = registry.make_default_init(Asset)
 
     try:
         return init(info, context, *args, **kwargs)
-    except Exception:
+    except Exception as err:
         return
-
-
-def get_asset_class(hierarchy):
-    '''Get the class that is registered for a Context hierarchy.'''
-    return get_asset_info(hierarchy)[0]
-
-
-def get_asset_info(hierarchy):
-    '''Get the class and initialization function for a Context hierarchy.
-
-    Args:
-        hierarchy (tuple[str] or str):
-            The hierarchy to get the asset information of.
-
-    Returns:
-        tuple[classobj, callable]:
-            The class type and the function that is used to instantiate it.
-
-    '''
-    class_type = Asset  # Asset is our fallback if no other type was defined.
-    init = functools.partial(make_default_init, class_type)
-
-    # Try to find a class type from one of our parent hierarchies
-    for index in reversed(range(len(hierarchy) + 1)):
-        hierarchy_piece = tuple(hierarchy[:index])
-
-        hierarchy_info = ASSET_FACTORY.get(hierarchy_piece, dict())
-
-        try:
-            class_type_ = ASSET_FACTORY[hierarchy_piece]['class']
-            init_ = ASSET_FACTORY[hierarchy_piece]['init']
-        except KeyError:
-            continue
-
-        if hierarchy_piece == hierarchy or hierarchy_info.get('children', False):
-            class_type = class_type_
-            init = init_
-            break
-
-    return (class_type, init)
-
-
-def expand_info(info, context=None):
-    '''Get parsed information, using the given Context.
-
-    Note:
-        This function requires regex in order to parse.
-
-    Todo:
-        Maybe I can abstract the parser to use different parse options, like I
-        did in get_value_from_parent. And then if that doesn't work, I can
-        add the option to "register" a particular parser.
-
-    Args:
-        info (dict[str] or str):
-            The info to expand. If the input is a dict, it is passed through
-            and returned. If it is a string, the string is parsed against the
-            given context.
-        context (:obj:`<sit.Context>`, optional):
-            The Context that will be used to parse info.
-            If no Context is given, the Context is automatically found.
-            Default is None.
-
-    Raises:
-        NotImplementedError:
-            If context is None. There's no auto-find-context option yet.
-
-    Returns:
-        dict[str]: The asset info.
-
-    '''
-    # Is already a dict
-    if isinstance(info, dict):
-        return info
-
-    # Context is probably a string like '/jobs/jobName/here'. If that's the case
-    # then we'll expand it into a dict by using a Context's mapping.
-    #
-    # i.e. path is '/jobs/jobName/here'
-    #      context mapping is '/jobs/{JOB}/here'
-    #      Result: {'JOB': 'jobName'}
-    #
-    try:
-        return _expand_using_context(context, info, default=dict())
-    except AttributeError:
-        pass
-
-    # Is it an iterable-pair object that we can make into a dict?
-    # i.e. (('some': 'thing'), ) -> {'some': 'thing'}
-    #
-    try:
-        return dict(info)
-    except TypeError:
-        return dict()
 
 
 def _get_missing_required_tokens(context, info):
@@ -1351,60 +1245,55 @@ def _find_context_using_info(obj):
     return tiebreak(valid_contexts, contexts)
 
 
-def register_asset_class(class_type, context, init=None, children=False):
-    '''Change get_asset to return a different class, instead of an Asset.
+def expand_info(info, context=None):
+    '''Get parsed information, using the given Context.
 
-    The Asset class is useful but it may be too basic for some people's purposes.
-    If you have an existing class that you'd like to use with Ways,
+    Note:
+        This function requires regex in order to parse.
 
-    Args:
-        class_type (classobj):
-            The new class to use, instead.
-            context (str or :class:`ways.api.Context`):
-            The Context to apply our new class to.
-        init (:obj:`callable`, optional):
-            A function that will be used to create an instance of class_type.
-            This variable is useful if you need to customize your class_type's
-            __init__ in a way that isn't normal (A common example: If you want
-            to create a class_type that does not pass context into its __init__,
-            you can use this variable to catch and handle that).
-        children (:obj:`bool`, optional):
-            If True, this new class_type will be applied to child hierarchies
-            as well as the given Context's hierarchy. If False, it will only be
-            applied for this Context. Default is False.
-
-    '''
-    if init is None:
-        init = functools.partial(make_default_init, class_type)
-
-    context = sit.get_context(context, force=True)
-
-    ASSET_FACTORY[context.get_hierarchy()] = dict()
-    ASSET_FACTORY[context.get_hierarchy()]['class'] = class_type
-    ASSET_FACTORY[context.get_hierarchy()]['init'] = init
-    ASSET_FACTORY[context.get_hierarchy()]['children'] = children
-
-
-def make_default_init(class_type, *args, **kwargs):
-    '''Just make the class type, normally.'''
-    return class_type(*args, **kwargs)
-
-
-def reset_asset_classes(hierarchies=tuple()):
-    '''Clear out the class(es) that is registered under a given hierarchy.
+    Todo:
+        Maybe I can abstract the parser to use different parse options, like I
+        did in get_value_from_parent. And then if that doesn't work, I can
+        add the option to "register" a particular parser.
 
     Args:
-        hierarchies (iter[tuple[str]]):
-            All of the hierarchies to remove custom Asset classes for.
-            If nothing is given, all hierarchies will be cleared.
+        info (dict[str] or str):
+            The info to expand. If the input is a dict, it is passed through
+            and returned. If it is a string, the string is parsed against the
+            given context.
+        context (:obj:`<sit.Context>`, optional):
+            The Context that will be used to parse info.
+            If no Context is given, the Context is automatically found.
+            Default is None.
+
+    Raises:
+        NotImplementedError:
+            If context is None. There's no auto-find-context option yet.
+
+    Returns:
+        dict[str]: The asset info.
 
     '''
-    if not hierarchies:
-        hierarchies = ASSET_FACTORY.keys()
+    # Is already a dict
+    if isinstance(info, dict):
+        return info
 
-    for key in hierarchies:
-        if key not in ASSET_FACTORY:
-            continue
+    # Context is probably a string like '/jobs/jobName/here'. If that's the case
+    # then we'll expand it into a dict by using a Context's mapping.
+    #
+    # i.e. path is '/jobs/jobName/here'
+    #      context mapping is '/jobs/{JOB}/here'
+    #      Result: {'JOB': 'jobName'}
+    #
+    try:
+        return _expand_using_context(context, info, default=dict())
+    except AttributeError:
+        pass
 
-        # Reset the key
-        ASSET_FACTORY[key] = ASSET_FACTORY[key].__class__()
+    # Is it an iterable-pair object that we can make into a dict?
+    # i.e. (('some': 'thing'), ) -> {'some': 'thing'}
+    #
+    try:
+        return dict(info)
+    except TypeError:
+        return dict()
