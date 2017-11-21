@@ -15,8 +15,8 @@ import six
 
 # IMPORT LOCAL LIBRARIES
 from . import cache
-from ..helper import common
 from . import situation as sit
+from ..helper import common
 
 
 class ActionRegistry(type):

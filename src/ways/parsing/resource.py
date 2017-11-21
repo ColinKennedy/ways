@@ -25,14 +25,14 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from ..helper import pylev
 from . import trace
 from . import registry
-from ..helper import common
 from ..base import finder as find
 from ..base import situation as sit
 from ..core import check
 from ..core import compat
+from ..helper import pylev
+from ..helper import common
 
 __DEFAULT_OBJECT = object()
 

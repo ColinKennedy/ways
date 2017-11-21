@@ -17,8 +17,8 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from ..helper import common
 from ..core import loop
+from ..helper import common
 
 # TODO : Maybe move this to find.py and then move the path class out
 

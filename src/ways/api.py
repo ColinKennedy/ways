@@ -16,27 +16,10 @@ from .base.cache import init_plugins
 from .base.cache import add_descriptor
 from .base.cache import add_search_path
 from .base.cache import get_all_plugins
-from .parsing.parse import ContextParser
-# Lower-level debug functions
-from .parsing.trace import trace_actions
-from .parsing.trace import trace_context
-from .parsing.trace import trace_hierarchy
-from .parsing.trace import trace_assignment
-from .parsing.trace import trace_action_names
-from .parsing.trace import get_all_hierarchies
-from .parsing.trace import trace_actions_table
-from .parsing.trace import get_child_hierarchies
-from .parsing.trace import get_action_hierarchies
-from .parsing.trace import get_all_hierarchy_trees
-from .parsing.trace import trace_all_load_results
-from .parsing.trace import trace_method_resolution
-from .parsing.trace import get_child_hierarchy_tree
-from .parsing.trace import trace_all_plugin_results
-from .parsing.trace import get_all_action_hierarchies
-from .parsing.trace import trace_all_descriptor_results
+# TODO : rename Find class into "Finder"
+from .base.finder import Find
+from .base.plugin import Plugin
 # High-use classes and functions
-from .helper.common import decode
-from .helper.common import encode
 from .helper.common import PLUGINS_ENV_VAR
 from .helper.common import LOAD_FAILURE_KEY
 from .helper.common import NOT_CALLABLE_KEY
@@ -48,16 +31,26 @@ from .helper.common import IMPORT_FAILURE_KEY
 from .helper.common import DESCRIPTORS_ENV_VAR
 from .helper.common import RESOLUTION_FAILURE_KEY
 from .helper.common import ENVIRONMENT_FAILURE_KEY
-# TODO : rename Find class into "Finder"
-from .base.finder import Find
-from .base.plugin import Plugin
-from .parsing.resource import Asset
-from .parsing.resource import AssetFinder
-from .parsing.resource import get_asset
-from .parsing.registry import get_asset_info
-from .parsing.registry import get_asset_class
-from .parsing.registry import register_asset_class
-from .parsing.registry import reset_asset_classes
+from .helper.common import decode
+from .helper.common import encode
+from .parsing.parse import ContextParser
+# Lower-level debug functions
+from .parsing.trace import trace_actions
+from .parsing.trace import trace_context
+from .parsing.trace import trace_hierarchy
+from .parsing.trace import trace_assignment
+from .parsing.trace import trace_action_names
+from .parsing.trace import get_all_hierarchies
+from .parsing.trace import trace_actions_table
+from .parsing.trace import get_child_hierarchies
+from .parsing.trace import get_action_hierarchies
+from .parsing.trace import trace_all_load_results
+from .parsing.trace import get_all_hierarchy_trees
+from .parsing.trace import trace_method_resolution
+from .parsing.trace import get_child_hierarchy_tree
+from .parsing.trace import trace_all_plugin_results
+from .parsing.trace import get_all_action_hierarchies
+from .parsing.trace import trace_all_descriptor_results
 from .base.commander import Action
 from .base.commander import add_action
 from .base.situation import Context
@@ -75,6 +68,13 @@ from .base.descriptor import FileDescriptor
 from .base.descriptor import FolderDescriptor
 from .base.descriptor import GitLocalDescriptor
 from .base.descriptor import GitRemoteDescriptor
+from .parsing.registry import get_asset_info
+from .parsing.registry import get_asset_class
+from .parsing.registry import reset_asset_classes
+from .parsing.registry import register_asset_class
+from .parsing.resource import Asset
+from .parsing.resource import AssetFinder
+from .parsing.resource import get_asset
 
 add_action_default = Find.add_to_defaults  # pylint: disable=invalid-name
 

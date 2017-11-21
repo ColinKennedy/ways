@@ -24,10 +24,10 @@ import six
 import yamlordereddictloader
 
 # IMPORT LOCAL LIBRARIES
-from ..helper import common
 from . import plugin as plug
-from ..core import check
 from . import situation as sit
+from ..core import check
+from ..helper import common
 from ..helper import dict_classes
 
 GLOBALS_KEY = 'globals'

@@ -7,7 +7,7 @@ import sys
 import tempfile
 import textwrap
 
-# IMPORT THIRD-PARTY LIBRARIES
+# IMPORT WAYS LIBRARIES
 import ways.api
 from ways.base import cache
 from ways.helper import common

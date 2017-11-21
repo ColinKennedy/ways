@@ -296,4 +296,3 @@ class FindContextTestCase(common_test.ContextTestCase):
 
         with self.assertRaises(ValueError):
             ways.api.get_asset(versioned)
-

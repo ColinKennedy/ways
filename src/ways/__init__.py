@@ -11,9 +11,9 @@ import collections
 import six
 
 # IMPORT LOCAL LIBRARIES
-from .parsing import registry
 from .base import situation as sit
 from .helper import common
+from .parsing import registry
 
 __version__ = "0.1.0b1"
 

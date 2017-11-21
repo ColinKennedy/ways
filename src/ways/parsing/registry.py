@@ -24,7 +24,7 @@ Attributes:
 # IMPORT STANDARD LIBRARIES
 import functools
 
-# IMPORT STANDARD LIBRARIES
+# IMPORT LOCAL LIBRARIES
 from ..base import situation as sit
 
 ASSET_FACTORY = dict()
