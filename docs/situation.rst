@@ -1,7 +1,7 @@
-ways\.situation module
+ways\.base\.situation module
 ----------------------
 
-.. automodule:: ways.situation
+.. automodule:: ways.base.situation
     :members:
     :undoc-members:
     :show-inheritance:

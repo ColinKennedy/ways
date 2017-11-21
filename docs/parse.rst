@@ -1,7 +1,7 @@
-ways\.parse module
+ways\.parsing\.parse module
 ------------------
 
-.. automodule:: ways.parse
+.. automodule:: ways.parsing.parse
     :members:
     :undoc-members:
     :show-inheritance:

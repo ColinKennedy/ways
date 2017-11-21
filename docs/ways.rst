@@ -23,21 +23,23 @@ Inner Modules
     :maxdepth: 2
 
     ways.api <api>
-    ways.cache <cache>
-    ways.commander <commander>
-    ways.common <common>
-    ways.connection <connection>
-    ways.descriptor <descriptor>
-    ways.dict_classes <dict_classes>
-    ways.engine <engine>
-    ways.factory <factory>
-    ways.finder <finder>
-    ways.parse <parse>
-    ways.plugin <plugin>
-    ways.resource <resource>
-    ways.situation <situation>
-    ways.trace <trace>
+    ways.base.cache <cache>
+    ways.base.commander <commander>
+    ways.base.connection <connection>
+    ways.base.descriptor <descriptor>
+    ways.base.factory <factory>
+    ways.base.finder <finder>
+    ways.base.plugin <plugin>
+    ways.base.situation <situation>
 
+    ways.helper.common <common>
+    ways.helper.dict_classes <dict_classes>
+
+    ways.parsing.engine <engine>
+    ways.parsing.parse <parse>
+    ways.parsing.registry <registry>
+    ways.parsing.resource <resource>
+    ways.parsing.trace <trace>
 
 Module contents
 ---------------

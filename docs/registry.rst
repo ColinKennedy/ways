@@ -1,8 +1,7 @@
-ways\.base\.cache module
+ways\.parsing\.registry module
 ------------------
 
-.. automodule:: ways.base.cache
+.. automodule:: ways.parsing.registry
     :members:
     :undoc-members:
     :show-inheritance:
-

@@ -1,7 +1,7 @@
-ways\.connection module
+ways\.base\.connection module
 -----------------------
 
-.. automodule:: ways.connection
+.. automodule:: ways.base.connection
     :members:
     :undoc-members:
     :show-inheritance:

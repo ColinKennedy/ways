@@ -1,7 +1,7 @@
-ways\.factory module
+ways\.base\.factory module
 --------------------
 
-.. automodule:: ways.factory
+.. automodule:: ways.base.factory
     :members:
     :undoc-members:
     :show-inheritance:

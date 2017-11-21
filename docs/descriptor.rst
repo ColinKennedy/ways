@@ -1,7 +1,7 @@
-ways\.descriptor module
+ways\.base\.descriptor module
 -----------------------
 
-.. automodule:: ways.descriptor
+.. automodule:: ways.base.descriptor
     :members:
     :undoc-members:
     :show-inheritance:
