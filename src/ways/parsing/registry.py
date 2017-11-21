@@ -2,24 +2,24 @@
 # -*- coding: utf-8 -*-
 
 
-# '''
+'''Responsible for giving users the ability to swap Assets with other objects.
 
-# Attributes:
-#     ASSET_FACTORY (dict[tuple[str]: dict[str]]:
-#         This dict should not be changed directly. You should use
-#         the functions in this module, instead.
+Attributes:
+    ASSET_FACTORY (dict[tuple[str]: dict[str]]:
+        This dict should not be changed directly. You should use
+        the functions in this module, instead.
 
-#         It is a global dictionary that stores classes that are meant to swap
-#         for an Asset object. ASSET_FACTORY's key is the hierarchy of the Context
-#         and its value is another dict, which looks like this:
+        It is a global dictionary that stores classes that are meant to swap
+        for an Asset object. ASSET_FACTORY's key is the hierarchy of the Context
+        and its value is another dict, which looks like this:
 
-#         'class': The class to swap for.
-#         'init': A custom inititialization function for the class (if needed).
-#         'children': If True, the class is used for all hierarchies that build
-#         off of the given hierarchy. If False, the class is only added to the
-#         given hierarchy.
+        'class': The class to swap for.
+        'init': A custom inititialization function for the class (if needed).
+        'children': If True, the class is used for all hierarchies that build
+        off of the given hierarchy. If False, the class is only added to the
+        given hierarchy.
 
-# '''
+'''
 
 # IMPORT STANDARD LIBRARIES
 import functools
