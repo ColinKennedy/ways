@@ -41,8 +41,8 @@ At this point, we've made our first plugin in our first Plugin Sheet.
 Now you can open a Python interpreter or import it into another file and use
 it as a ways.api.Context.
 
-Instantiate your new Context
-----------------------------
+Create your new Context
+-----------------------
 
 ::
 

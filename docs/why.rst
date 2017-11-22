@@ -87,17 +87,16 @@ communicate between different APIs.
 Mixing Ways with other APIs
 ---------------------------
 
-Many examples in this and other pages are for writing tools for filepaths. This
-is just to keep the examples easy to understand. The truth is, in practice,
-if you're using Ways to deal just with filepaths, it won't provide that many
-benefits over just querying values from a database.
+Many examples in this and other pages use Ways to describe filepaths. This
+isn't a requirement for Ways, it's just to keep examples simple. The truth is,
+in practice, if you're using Ways to deal just with filepaths, it won't provide
+that many benefits over just querying values from a database.
 
 But Ways doesn't need to represent paths on disk, Ways can represent anything
 as long as it can be broken down into a string.
 
-A common situation that comes up in the VFX industry is that tools frequently
-need to be written that deals with a filesystem, a database, and some third-party
-Python API at once.
+A common situation that comes up in the VFX industry is that tools communicate
+with a filesystem, a database, and some third-party Python API at once.
 
 For example, say an artist published a new version of a texture on a job's
 database and we wanted to republish a 3D model with those new textures.
@@ -126,7 +125,7 @@ used in Maya)
     # Now use the database to lookup the published versions of the texture
     asset = texture.actions.get_database_asset()
 
-    # Get the path of the published texture, add it to our local disk, and set it
+    # Get the path of the published texture and add it to the local disk
     version = asset.actions.get_latest_version()
     path = version.actions.get_filepath()
 
@@ -148,16 +147,29 @@ used in Maya)
             continue
 
         if rig.actions.contains(texture):
-            rig.actions.publish()  # Add back to the database
+            rig.actions.publish(convert_to='geometry_cache')  # Publish the new version
 
 
-These sort of API mixtures are possible because Contexts have a very clearly
-defined hierarchy. In the below example, different hierarchies and mapping are
-used to describe a database Context, filepath Context, and a Maya-Node Context.
+These sort of API mixtures are possible because of the "hierarchy" line
+mentioned earlier. Contexts know about themselves and the Contexts above
+and below them because of a hierarchy that you have full control over.
 
 .. code-block :: yaml
 
     plugins:
+        database_root:
+            # get_database_asset, under the hood, fills in the info in mapping
+            # and then returns another Ways Asset with its own set of Actions.
+            #
+            hierarchy: db/asset
+            mapping: db.{SHOT}.{ASSET_NAME}
+
+        # filepath-related plugin
+        textures_output:
+            hierarchy: job/shot/textures/release
+            # This filepath lets us know where to publish the next version to
+            mapping: "{JOB}/{SCENE}/{SHOT}/releases/{ASSET}_v{VERSION}/{texture}"
+
         # Maya plugins
         node_object:
             hierarchy: dcc/maya
@@ -169,25 +181,13 @@ used to describe a database Context, filepath Context, and a Maya-Node Context.
 
         # Texture-related nodes
         file_node:
-            hierarchy: "{root}/nodes/file"
+            hierarchy: "{root}/nodes/File"
             uses:
                 - dcc/maya
 
-        database_root:
-            # get_database_asset, under the hood, fills in the info in mapping
-            # and then returns another Ways Asset with its own set of Actions.
-            #
-            hierarchy: db/asset
-            mapping: db.{SHOT}.{ASSET_NAME}
-
 The above example only works with Maya "File" nodes. If we wanted to support
-other Maya nodes, it'd be as simple adding a plugin for that node under the
-"# Texture-related nodes" section and then adding an Action for the hierarchy
-called "set_path".
-
-The best way to use Ways, in my experience, is to let Ways "suggest" filepaths
-while exporting data from your tools, publish to a database with the same
-paths, and then use the database to query those published paths when needed.
+other Maya texture-related nodes, all we'd have to do is add them to this
+Plugin Sheet and then implement a "set_path" Action for them.
 
 String Querying
 ---------------
@@ -230,7 +230,7 @@ Start by making a Plugin Sheet. We'll call this Plugin Sheet "plugin_sheet.yml".
             hierarchy: job/shot/discipline
             mapping: /jobs/{JOB}/{SCENE}/{SHOT}/{DISCIPLINE}
 
-Add "plugin_sheet.yml", to your WAYS_DESCRIPTORS environment variable.
+Add the path to "plugin_sheet.yml", to your WAYS_DESCRIPTORS environment variable.
 
 ::
 
@@ -290,8 +290,7 @@ Here we're writing code for Windows and Linux.
     print(info2['JOB'])
     # Result on Windows: 'someJobName_123'
 
-This can be done with Ways, too.
-
+This can be done with Ways, too, with a slight modification of the Plugin Sheet.
 
 .. code-block :: yaml
 
@@ -345,8 +344,7 @@ Lets add some more complexity - Now our project needs to be able to query the
 
 Using "split('-')" is definitely not ideal because we're forcing a specific
 convention on the code that would need to be enforced in any other tool. But we
-don't have much of a choice. It's either that, use regex or another text
-parser.
+don't have much of a choice. It's either that, use regex or some other text parser.
 
 To make it easier for other tools to follow the same convention, we could
 make "-" a global variable or read in from a config file. That will help but,
@@ -409,10 +407,8 @@ Adding Existing AMS
 -------------------
 
 Most likely, Ways is not the first AMS solution you've tried. Chances are, you
-have your own AMS that you'd ideally like to keep using. Plugins/Contexts are a
-very core part of how Ways works but the return value of "get_asset" can be
-anything. You can just as well add your AMS objects to Ways and use those,
-instead.
+have your own AMS that you'd ideally like to keep using. Ways has some support
+to be able to integrate existing classes into its hierarchies.
 
 ::
 
@@ -523,7 +519,7 @@ different naming convention than your tool expected.
 You can't rely on your database to get information from these paths because
 neither paths have actually been published yet - just rendered to disk.
 
-TODO Write a fix for this "situation"
+TODO Write a fix for this "situation" (the non-Ways solution)
 
 In Ways, the same situation can be solved by just writing a new plugin
 
@@ -574,15 +570,16 @@ When no context is given to "get_asset", Ways will guess the "best"
 possible Context for whatever information you do give it. If the information
 was a string like in our example and the string matches a Context's mapping,
 this guess will always be correct. So even though all we have is a path to some
-sequence on disk, Ways gets the right Context and the right Asset for us and we
-don't have to care about the path's structure and just "publish" like normal.
+sequence on disk, Ways gets the right Context and the right Asset for us,
+letting us publish like normal, no problem.
 
-Both plugins, "sequence_bit" and "houdini_rendered_plugin" share the same root
-hierarchy, "job/shot/element". That root hierarchy has a "publish" action
-defined so its child hierarchies also get the same Action.
+Both plugins, "sequence_bit" and "houdini_rendered_plugin" share the same
+hierarchy, "job/shot/element". That hierarchy has a "publish" Action
+defined so all hierachies that use "job/shot/element" also get the "publish" Action.
 
-Our new edit was only 5 extra lines in the config file and nothing else needed
-to be changed to support that other developer's tools.
+The procedural method of solving this problem got overly complicated and
+difficult to read and maintain. In Ways, the change was 5 extra lines in the
+config file to support that other developer's tools.
 
 
 Split Deployment
