@@ -9,6 +9,8 @@
 import os
 import imp
 import sys
+import inspect
+import functools
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
@@ -125,24 +127,29 @@ def resolve_descriptor(description):
         #
         reserved_keys = ('create_using', common.WAYS_UUID_KEY)
 
-        descriptor_class = description.get(
+        descriptor_obj = description.get(
             'create_using', descriptor.FolderDescriptor)
         actual_description = {key: value for key, value
                               in description.items() if key not in reserved_keys}
 
         try:
-            descriptor_class = common.import_object(descriptor_class)
+            descriptor_obj = common.import_object(descriptor_obj)
         except (AttributeError, ImportError):
             pass
 
+        # Pass functions directly without calling them
+        if inspect.isfunction(descriptor_obj):
+            return descriptor_obj
+
+        # If it's a class, instantiate it with the args given
         try:
-            return try_load(descriptor_class, actual_description)
+            return try_load(descriptor_obj, actual_description)
         except Exception:
             # TODO : LOG the err
             raise ValueError('Found object, "{cls_}" could not be called. '
                              'Please make sure it is on the PYTHONPATH and '
                              'there are no errors in the class/function.'
-                             ''.format(cls_=descriptor_class))
+                             ''.format(cls_=descriptor_obj))
 
     final_descriptor = None
     for choice_strategy in (get_description_info,
@@ -209,6 +216,19 @@ def add_descriptor(description, update=True):
             Default is True.
 
     '''
+    def return_item(obj):
+        '''Return the given object back.'''
+        return obj
+
+    def is_iterable_of_plugins(descriptor):
+        '''bool: If the user gave a direct list of Plugins.'''
+        try:
+            iter(descriptor)
+        except TypeError:
+            return False
+
+        return all((node for node in descriptor if isinstance(node, ways.api.Plugin)))
+
     info = {'item': description}
 
     try:
@@ -234,30 +254,45 @@ def add_descriptor(description, update=True):
         pass
 
     if not callable(final_descriptor):
+        if not is_iterable_of_plugins(final_descriptor):
+            # If this is a list of Plugin objects, then lets pass it through
+            _, _, traceback_ = sys.exc_info()
+            final_descriptor = functools.partial(return_item, final_descriptor)
+            info.update(
+                {
+                    'status': common.FAILURE_KEY,
+                    'reason': common.NOT_CALLABLE_KEY,
+                    'traceback': traceback_,
+                    'description': final_descriptor,
+                }
+            )
+            ways.DESCRIPTOR_LOAD_RESULTS.append(info)
+            # TODO : logging?
+            print('Description: "{desc}" created a descriptor that cannot '
+                  'load plugins.'.format(desc=description))
+            return
+
         _, _, traceback_ = sys.exc_info()
+        final_descriptor = functools.partial(return_item, final_descriptor)
         info.update(
             {
-                'status': common.FAILURE_KEY,
+                'status': common.SUCCESS_KEY,
                 'reason': common.NOT_CALLABLE_KEY,
                 'traceback': traceback_,
                 'description': final_descriptor,
             }
         )
         ways.DESCRIPTOR_LOAD_RESULTS.append(info)
-        # TODO : logging?
-        print('Description: "{desc}" created a descriptor that cannot '
-              'load plugins.'.format(desc=description))
-        return
-
-    ways.DESCRIPTORS.append(final_descriptor)
-
-    info.update(
-        {
-            'status': common.SUCCESS_KEY,
-            'description': final_descriptor,
-        }
-    )
-    ways.DESCRIPTOR_LOAD_RESULTS.append(info)
+        ways.DESCRIPTORS.append(final_descriptor)
+    else:
+        info.update(
+            {
+                'status': common.SUCCESS_KEY,
+                'description': final_descriptor,
+            }
+        )
+        ways.DESCRIPTORS.append(final_descriptor)
+        ways.DESCRIPTOR_LOAD_RESULTS.append(info)
 
     if update:
         update_plugins()
