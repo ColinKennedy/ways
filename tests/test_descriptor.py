@@ -20,8 +20,6 @@ import ways.api
 # IMPORT LOCAL LIBRARIES
 from . import common_test
 
-six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
-
 
 class DescriptorContextTestCase(common_test.ContextTestCase):
 

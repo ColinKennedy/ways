@@ -12,7 +12,6 @@ import textwrap
 # IMPORT WAYS LIBRARIES
 import ways.api
 from ways.base import cache
-from ways.helper import common
 
 # IMPORT LOCAL LIBRARIES
 from .. import common_test

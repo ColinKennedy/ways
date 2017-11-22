@@ -265,4 +265,4 @@ def encode(obj):
 
     '''
     # pylint: disable=redundant-keyword-arg
-    return six.moves.urllib.parse.urlencode(obj, True)
+    return six.moves.urllib.parse.urlencode(obj, doseq=True)

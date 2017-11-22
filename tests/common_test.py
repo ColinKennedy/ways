@@ -7,31 +7,12 @@
 import os
 import sys
 import json
-imported = False
-
-try:
-    import io
-except ImportError:
-    imported = True
-    pass
-
-if not imported:
-    try:
-        import cStringIO as io
-        imported = True
-    except ImportError:
-        pass
-
-if not imported:
-    try:
-        import StringIO as io
-        imported = True
-    except ImportError:
-        pass
-
 import shutil
 import tempfile
 import unittest
+
+# IMPORT THIRD-PARTY LIBRARIES
+from six.moves import io
 
 # IMPORT WAYS LIBRARIES
 import ways
@@ -114,12 +95,28 @@ class ContextTestCase(unittest.TestCase):
 
 
 class Capturing(list):
+
+    '''a Python context that silences lines written to stdout.'''
+
+    def __init__(self):
+        '''Create a handle for stringio and for stdout.'''
+        super(Capturing, self).__init__()
+        self._stdout = []
+        self._stringio = None
+
     def __enter__(self):
+        '''Start capturing stdout by piping sys.stdout to a temporary list.'''
         self._stdout = sys.stdout
         sys.stdout = self._stringio = io.StringIO()
         return self
 
     def __exit__(self, *args):
+        '''Store the lines captured from stdout onto this instance.
+
+        Also, restore the old pipe to stdout so that we can print to
+        the terminal again.
+
+        '''
         self.extend(self._stringio.getvalue().splitlines())
         del self._stringio
         sys.stdout = self._stdout
