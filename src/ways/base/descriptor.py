@@ -423,7 +423,7 @@ class GitLocalDescriptor(FolderDescriptor):
                 items_.append(item)
                 continue
 
-            item_ = os.path.normpath(os.path.join(path, item))
+            item_ = os.path.normpath(os.path.join(self.path, item))
             if not os.path.exists(item_):
                 raise IOError(
                     'File/Folder: "{}" is relative but no absolute path could '

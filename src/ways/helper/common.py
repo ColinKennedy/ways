@@ -248,22 +248,8 @@ def conform_decode(info):
     TODO: Remove this function by cleaning the input from urlencode.
 
     '''
-    output = dict(info)
-
-    def change_list_to_string(key, obj):
-        '''Change key/list pairs that are meant to be strings.'''
-        try:
-            value = obj[key]
-        except KeyError:
-            pass
-        else:
-            if check.is_itertype(value):
-                output[key] = value[0]
-
-    change_list_to_string('create_using', output)
-    change_list_to_string(WAYS_UUID_KEY, output)
-
-    return output
+    return {key: value[0] if len(value) == 1 else value
+            for key, value in six.iteritems(info)}
 
 
 def encode(obj):
@@ -279,4 +265,4 @@ def encode(obj):
 
     '''
     # pylint: disable=redundant-keyword-arg
-    return six.moves.urllib.parse.urlencode(obj, doseq=True)
+    return six.moves.urllib.parse.urlencode(obj, True)

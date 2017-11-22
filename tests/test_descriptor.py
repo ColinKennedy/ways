@@ -153,18 +153,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
             'create_using': 'ways.api.GitRemoteDescriptor',
             'url': 'https://github.com/Mock/url.git',  # Not a real URL
             'path': git_repo_location,
-            'items': ('plugins', ),
-        }
-
-        # Create an example serialized descriptor that describes our local repo
-        serialized_info = ways.api.encode(descriptor_info)
-        ways.api.add_descriptor(serialized_info)
-
-        # Make a GitRemoteDescriptor class without specifying a path
-        descriptor_info = {
-            'create_using': 'ways.api.GitRemoteDescriptor',
-            'url': 'https://github.com/Mock/url.git',  # Not a real URL
-            'items': ('plugins', ),
+            'items': ['plugins'],
         }
 
         # Create an example serialized descriptor that describes our local repo
@@ -191,7 +180,9 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
 
         # Create an example serialized descriptor that describes our local repo
         serialized_info = ways.api.encode(descriptor_info)
-        ways.api.add_descriptor(serialized_info)
+
+        with common_test.Capturing():
+            ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
         self.assertNotEqual(context, None)

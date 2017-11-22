@@ -61,7 +61,7 @@ when our cache unpacks this descriptor string, the result is a dict
         'create_using': 'ways.api.GitLocalDescriptor',
         'uuid': 'some_unique_string-we-can_search_for-later',
         'path': '/some/path/on/disk',
-        'items': ('plugins', ),
+        'items': ['plugins'],
     }
 
 "create_using" and "uuid" are the only reserved key in our dict for all custom

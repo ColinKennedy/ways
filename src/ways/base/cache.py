@@ -99,11 +99,12 @@ def resolve_descriptor(description):
     def get_description_info(description):
         '''Build a descriptor from an encoded URI.'''
         if not isinstance(description, six.string_types):
-            return None
+            return
 
-        description = six.moves.urllib.parse.parse_qs(description)
+        description = common.decode(description)
+
         if not description:
-            return None
+            return
 
         # Make sure that single-item elements are actually single-items
         # Sometimes dicts come in like this, for example:
@@ -111,8 +112,7 @@ def resolve_descriptor(description):
         #     'create_using': ['ways.api.GitLocalDescriptor']
         # }
         #
-        description['create_using'] = \
-            description.get('create_using', ['ways.api.FolderDescriptor'])[0]
+        description.setdefault('create_using', ['ways.api.FolderDescriptor'])
 
         return get_description_from_dict(description)
 

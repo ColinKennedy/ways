@@ -48,22 +48,22 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         '''Change the begining example strings to URL encoded strings.'''
         folder_info = {
             'create_using': 'ways.api.FolderDescriptor',
-            'items': ['/tmp/to/plugins/folder'],
+            'items': '/tmp/to/plugins/folder',
         }
 
         yml_info = {
             'create_using': 'ways.api.FileDescriptor',
-            'items': ['/tmp/to/plugin.yml'],
+            'items': '/tmp/to/plugin.yml',
         }
 
         json_info = {
             'create_using': 'ways.api.FileDescriptor',
-            'items': ['/tmp/to/plugin.json'],
+            'items': '/tmp/to/plugin.json',
         }
 
         py_info = {
             'create_using': 'ways.api.FileDescriptor',
-            'items': ['/tmp/to/plugin.py'],
+            'items': '/tmp/to/plugin.py',
         }
 
         composite = [
@@ -92,7 +92,7 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         # TODO : nose!
         for info, encoding, class_item in composite:
             # Check to make sure the inspected encoding is OK
-            details = common.conform_decode(ways.api.decode(encoding))
+            details = ways.api.decode(encoding)
             self.assertEqual(info, details)
             desc1 = cache.resolve_descriptor(info)
             desc2 = cache.resolve_descriptor(encoding)
