@@ -64,8 +64,9 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         output = _itemize_seralized_descriptor(ways.api.encode(info))
         self.assertEqual(descriptor_string, output)
 
-        # Add the Descriptor
-        ways.api.init_plugins()
+        with common_test.Capturing():
+            # Add the Descriptor
+            ways.api.init_plugins()
 
         self.assertEqual(
             ways.api.RESOLUTION_FAILURE_KEY,
@@ -91,8 +92,9 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         output = _itemize_seralized_descriptor(ways.api.encode(info))
         self.assertEqual(descriptor_string, output)
 
-        # Add the Descriptor
-        ways.api.init_plugins()
+        with common_test.Capturing():
+            # Add the Descriptor
+            ways.api.init_plugins()
 
         self.assertEqual(
             ways.api.RESOLUTION_FAILURE_KEY,
@@ -146,7 +148,11 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         serialized_info_ = _itemize_seralized_descriptor(serialized_info)
 
         self.assertEqual(expected_encoded_string, serialized_info_)
-        self.assertEqual(ways.api.add_descriptor(serialized_info), None)
+
+        with common_test.Capturing():
+            added_descriptor = ways.api.add_descriptor(serialized_info)
+
+        self.assertEqual(added_descriptor, None)
         self.assertEqual(ways.api.NOT_CALLABLE_KEY,
                          ways.api.trace_all_load_results()['descriptors'][uuid_]['reason'])
 
@@ -154,7 +160,8 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         '''Try to load a Plugin that doesn't exist and report an error.'''
         os.environ['WAYS_PLUGINS'] = '/some/path/that/doesnt/exist.py'
 
-        ways.api.init_plugins()
+        with common_test.Capturing():
+            ways.api.init_plugins()
 
         self.assertEqual(
             ways.api.IMPORT_FAILURE_KEY,
@@ -183,7 +190,8 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
 
         os.environ['WAYS_PLUGINS'] = path
 
-        ways.api.init_plugins()
+        with common_test.Capturing():
+            ways.api.init_plugins()
 
         self.assertEqual(
             ways.api.LOAD_FAILURE_KEY,
@@ -388,7 +396,6 @@ class HierarchyTestCase(TroubleshootingTestCase):
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(hierarchy, full=False))
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(context, full=False))
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(asset, full=False))
-
 
 
 def _itemize_seralized_descriptor(descriptor):

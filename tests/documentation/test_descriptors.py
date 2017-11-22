@@ -114,8 +114,13 @@ class DescriptorsTestCase(common_test.ContextTestCase):
             '''
             import ways.api
 
+            class ExamplePlugin(ways.api.Plugin):
+                @classmethod
+                def get_hierarchy(cls):
+                    return 'some/thing'
+
             def some_function(*args, **kwargs):
-                return [ways.api.Plugin()]
+                return [ExamplePlugin()]
             '''
         )
 
@@ -129,7 +134,7 @@ class DescriptorsTestCase(common_test.ContextTestCase):
         ways.clear()
         ways.api.init_plugins()
         descriptor = cache.resolve_descriptor(info)
-        self.assertEqual(1, len(descriptor))
+        self.assertNotEqual(None, descriptor)
 
 
 class CustomPlugin(ways.api.Plugin):

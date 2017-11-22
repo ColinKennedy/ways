@@ -7,6 +7,28 @@
 import os
 import sys
 import json
+imported = False
+
+try:
+    import io
+except ImportError:
+    imported = True
+    pass
+
+if not imported:
+    try:
+        import cStringIO as io
+        imported = True
+    except ImportError:
+        pass
+
+if not imported:
+    try:
+        import StringIO as io
+        imported = True
+    except ImportError:
+        pass
+
 import shutil
 import tempfile
 import unittest
@@ -89,6 +111,18 @@ class ContextTestCase(unittest.TestCase):
                 os.environ[key] = _ORIGINAL_ENVIRON[key]
             else:
                 del os.environ[key]
+
+
+class Capturing(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = io.StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio
+        sys.stdout = self._stdout
 
 
 def make_plugin_folder(
