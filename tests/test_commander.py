@@ -5,7 +5,6 @@
 
 # IMPORT STANDARD LIBRARIES
 import os
-import glob
 import textwrap
 
 # IMPORT WAYS LIBRARIES

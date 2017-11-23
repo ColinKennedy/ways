@@ -6,7 +6,6 @@
 
 # IMPORT STANDARD LIBRARIES
 import os
-import re
 import glob
 import tempfile
 import textwrap
@@ -506,13 +505,10 @@ class AssetMethodTestCase(common_test.ContextTestCase):
             def __call__(self, shot, *args, **kwargs):
                 context = ways.api.get_context('job/scene/shot')
                 shot_glob = context.get_str(resolve_with=('glob', ), groups=kwargs)
-                # shot_glob = shot_glob.replace('\\\\', '\\')  # Fix slashes or Windows
-                regex = re.escape(context.get_str(resolve_with=('regex', )))
-                shot_regex = re.compile(regex)
 
                 shots = []
-                for shot in glob.glob(shot_glob):
-                    shots.append(shot)
+                for shot_ in glob.glob(shot_glob):
+                    shots.append(shot_)
 
                 return [ways.api.get_asset(path, context='job/scene/shot')
                         for path in shots]

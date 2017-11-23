@@ -45,7 +45,7 @@ from . import connection as conn
 from ..core import pathrip
 from ..helper import common
 from ..parsing import parse
-from ..parsing import trace
+from ..parsing import tracehelper
 
 
 class Context(object):
@@ -384,6 +384,7 @@ class Context(object):
         return self.connection['get_groups'](self.plugins)
 
     def is_path(self):
+        '''bool: If the user indicated that the given mapping is a filepath.'''
         for plugin in self.plugins:
             try:
                 if plugin.is_path():
@@ -602,7 +603,7 @@ def context_connection_info():
             return True
 
         def _get_mapping(plugin):
-            mappings = trace.trace_method_resolution(context.get_mapping, plugins=True)
+            mappings = tracehelper.trace_method_resolution(context.get_mapping, plugins=True)
             for mapping, plugin_ in mappings:
                 if plugin_ == plugin:
                     return mapping

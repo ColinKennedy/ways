@@ -128,14 +128,14 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         os.environ['JOB'] = 'job_thing-something_123'
 
         if platform.system() == 'Windows':
-            expected_env_string = 'C:\\Users\\\w+\\jobs\\job_thing-something_123'
+            expected_env_string = r'C:\\Users\\\w+\\jobs\\job_thing-something_123'
         else:
             expected_env_string = '/jobs/job_thing-something_123'
 
         self.assertEqual(expected_env_string, context.get_str(resolve_with=('env', 'regex')))
 
         if platform.system() == 'Windows':
-            expected_regex_string = 'C:\\Users\\\w+\\jobs\\\w+_thing-\w+_\d{3}'
+            expected_regex_string = r'C:\\Users\\\w+\\jobs\\\w+_thing-\w+_\d{3}'
         else:
             expected_regex_string = r'/jobs/\w+_thing-\w+_\d{3}'
 
@@ -147,7 +147,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         self._make_complex_setup()
 
         if platform.system() == 'Windows':
-            mapping = 'C:\\Users\\username\\jobs\\job_thing-something_123'
+            mapping = r'C:\\Users\\username\\jobs\\job_thing-something_123'
         else:
             mapping = '/jobs/job_thing-something_123'
 

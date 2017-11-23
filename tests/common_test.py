@@ -84,7 +84,7 @@ class ContextTestCase(unittest.TestCase):
             if os.path.isdir(item):
                 try:
                     shutil.rmtree(item)
-                except WindowsError:
+                except WindowsError:  # pylint: disable=undefined-variable
                     pass
             elif os.path.isfile(item):
                 os.remove(item)

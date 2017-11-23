@@ -5,8 +5,8 @@
 
 # IMPORT STANDARD LIBRARIES
 import os
-import textwrap
 import platform
+import textwrap
 
 # IMPORT WAYS LIBRARIES
 import ways.api

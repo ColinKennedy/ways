@@ -46,7 +46,6 @@ from .parsing.trace import get_child_hierarchies
 from .parsing.trace import get_action_hierarchies
 from .parsing.trace import trace_all_load_results
 from .parsing.trace import get_all_hierarchy_trees
-from .parsing.trace import trace_method_resolution
 from .parsing.trace import get_child_hierarchy_tree
 from .parsing.trace import get_all_action_hierarchies
 from .base.commander import Action
@@ -73,6 +72,7 @@ from .parsing.registry import register_asset_class
 from .parsing.resource import Asset
 from .parsing.resource import AssetFinder
 from .parsing.resource import get_asset
+from .parsing.tracehelper import trace_method_resolution
 
 add_action_default = Find.add_to_defaults  # pylint: disable=invalid-name
 

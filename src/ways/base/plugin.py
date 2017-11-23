@@ -136,7 +136,7 @@ class DataPlugin(Plugin):
         return ('hierarchy', )
 
     def is_path(self):
-        '''bool: If the user indicated that the given mapping is a filepathj.'''
+        '''bool: If the user indicated that the given mapping is a filepath.'''
         try:
             return self._info['path']
         except KeyError:
