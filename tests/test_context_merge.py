@@ -6,6 +6,7 @@
 # IMPORT STANDARD LIBRARIES
 import os
 import textwrap
+import platform
 
 # IMPORT WAYS LIBRARIES
 import ways.api
@@ -50,8 +51,18 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                     platforms:
                         - linux
                         - darwin
-                    max_folder: /jobs/{JOB}/shots
                     uuid: base_thing
+                linux_base:
+                    hierarchy: maya_project
+                    max_folder: /jobs/{JOB}/shots
+                    platforms:
+                        - linux
+                        - darwin
+                windows_base:
+                    hierarchy: maya_project
+                    max_folder: Z:\jobs\{JOB}\shots
+                    platforms:
+                        - windows
                 some_plugin_name:
                     hierarchy: maya_project
                     mapping: /jobs/{JOB}/shots/sh01/maya
@@ -66,6 +77,23 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - linux
                         - darwin
                     uuid: another_plugin_extension
+                window_plugin:
+                    mapping: Z:\jobs\{JOB}\shots\sh01\maya
+                    mapping_details:
+                        JOB:
+                            mapping: '{JOB_NAME}_{JOB_ID}'
+                            parse:
+                                regex: .+
+                        JOB_NAME:
+                            parse:
+                                regex: \w+
+                        JOB_ID:
+                            parse:
+                                regex: \d+
+                    hierarchy: maya_project
+                    platforms:
+                        - windows
+                    uuid: a_window_plugin
                 incompatible_plugin:
                     mapping: Z:\jobs\{JOB}\shots\sh01\houdini
                     mapping_details:
@@ -104,25 +132,18 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                 relative_plugin1:
                     hierarchy: '{root}/mocap'
                     mapping: '{root}/scenes/mocap'
-                    platforms:
-                        - linux
-                        - windows
-                        - darwin
+                    path: true
                     uses:
                         - maya_project
                         - houdini_project
                     uuid: some_relative_plugin1
                 relative_plugin2:
                     hierarchy: 'animation'
-                    mapping: 'scenes/animation'
-                    platforms:
-                        - linux
-                        - windows
-                        - darwin
+                    mapping: '{root}/scenes/animation'
+                    path: true
                     uses:
                         - maya_project
                         - houdini_project
-                    max_folder: /./scenes
                     uuid: some_relative_plugin2
             ''')
 
@@ -137,10 +158,18 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         self.assertEqual(animation_context.get_hierarchy(), ('maya_project', 'animation'))
         self.assertEqual(mocap_context.get_hierarchy(), ('houdini_project', 'mocap'))
 
-        self.assertEqual(animation_context.get_mapping(),
-                         '/jobs/{JOB}/shots/sh01/mayascenes/animation')
-        self.assertEqual(mocap_context.get_mapping(),
-                         '/jobs/{JOB}/shots/sh01/houdini/scenes/mocap')
+        if platform.system() == 'Windows':
+            animation_mapping = r'Z:\jobs\{JOB}\shots\sh01\maya\scenes\animation'
+        else:
+            animation_mapping = '/jobs/{JOB}/shots/sh01/maya/scenes/animation'
+
+        if platform.system() == 'Windows':
+            mocap_mapping = r'Z:\jobs\{JOB}\shots\sh01\houdini\scenes\mocap'
+        else:
+            mocap_mapping = '/jobs/{JOB}/shots/sh01/houdini/scenes/mocap'
+
+        self.assertEqual(animation_context.get_mapping(), animation_mapping)
+        self.assertEqual(mocap_context.get_mapping(), mocap_mapping)
 
         expected_mapping_details = {
             'JOB': {
@@ -165,9 +194,12 @@ class ContextMergeTestCase(common_test.ContextTestCase):
         self.assertEqual(mocap_context.get_mapping_details(),
                          expected_mapping_details)
 
-        expected_animation_max_folder = '/jobs/{JOB}/shots/sh01/maya/scenes'
-        self.assertEqual(expected_animation_max_folder,
-                         animation_context.get_max_folder())
+        if platform.system() == 'Windows':
+            expected_max_folder = r'Z:\jobs\{JOB}\shots'
+        else:
+            expected_max_folder = '/jobs/{JOB}/shots'
+
+        self.assertEqual(expected_max_folder, animation_context.get_max_folder())
 
     def test_001_merge_fail_bad_maps(self):
         '''Two Context objects that have conflicting maps should not merge.'''
@@ -257,6 +289,20 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                 base_plugin:
                     hierarchy: maya_project
                     mapping: /jobs/{JOB}/shots/sh01/maya
+                    platforms:
+                        - linux
+                        - darwin
+                    max_folder: /jobs/{JOB}/shots
+
+                base_plugin_windows:
+                    hierarchy: maya_project
+                    mapping: 'Z:\{JOB}'
+                    path: true
+                    platforms:
+                        - windows
+
+                base_details:
+                    hierarchy: maya_project
                     mapping_details:
                         JOB:
                             mapping: '{JOB_NAME}_{JOB_ID}'
@@ -268,10 +314,6 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         JOB_ID:
                             parse:
                                 regex: \d+
-                    platforms:
-                        - linux
-                        - darwin
-                    max_folder: /jobs/{JOB}/shots
                 relative_plugin1:
                     hierarchy: '{root}/mocap'
                     mapping: '{root}/scenes/mocap'
@@ -301,8 +343,13 @@ class ContextMergeTestCase(common_test.ContextTestCase):
 
         self.assertEqual(mocap_context.get_hierarchy(),
                          ('maya_project', 'mocap', 'something'))
-        self.assertEqual(mocap_context.get_mapping(),
-                         '/jobs/{JOB}/shots/sh01/maya/scenes/mocap/some/folders')
+
+        if platform.system() == 'Windows':
+            mapping = r'Z:\{JOB}\scenes\mocap\some\folders'
+        else:
+            mapping = '/jobs/{JOB}/shots/sh01/maya/scenes/mocap/some/folders'
+
+        self.assertEqual(mocap_context.get_mapping(), mapping)
 
         expected_mapping_details = {
             'JOB': {

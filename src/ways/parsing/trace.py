@@ -355,10 +355,24 @@ def _trace_method_resolution(context, method, plugins=False):
         context.get_all_plugins = \
             functools.partial(substitute_return, all_plugins[:index])
 
+        known_exceptions = (
+            # If you're using OS-specific plugins and the very first plugin
+            # is incompatible, it'll cause errors with certain methods
+            #
+            # This behavior should not stop this function from running because
+            # the next plugin after might be fine. Just return None for errors
+            #
+            RuntimeError,
+        )
+        try:
+            result = method()
+        except RuntimeError:
+            result = None
+
         if plugins:
-            results.append((method(), all_plugins[index - 1]))
+            results.append((result, all_plugins[index - 1]))
         else:
-            results.append(method())
+            results.append(result)
 
     return results
 

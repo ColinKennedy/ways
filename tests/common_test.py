@@ -82,7 +82,10 @@ class ContextTestCase(unittest.TestCase):
         # Delete temp folders and files
         for item in self.temp_paths:
             if os.path.isdir(item):
-                shutil.rmtree(item)
+                try:
+                    shutil.rmtree(item)
+                except WindowsError:
+                    pass
             elif os.path.isfile(item):
                 os.remove(item)
 

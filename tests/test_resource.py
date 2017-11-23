@@ -8,7 +8,7 @@
 import os
 import re
 import glob
-import platform
+import tempfile
 import textwrap
 
 # IMPORT WAYS LIBRARIES
@@ -503,39 +503,35 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                 '''Get a hierarchy for this job/scene Action.'''
                 return ('job', 'scene')
 
-            def __call__(self, *args, **kwargs):
+            def __call__(self, shot, *args, **kwargs):
                 context = ways.api.get_context('job/scene/shot')
                 shot_glob = context.get_str(resolve_with=('glob', ), groups=kwargs)
-                shot_glob = shot_glob.replace('\\\\', '\\')  # Fix slashes or Windows
-                shots = []
-                shot_regex = re.compile(context.get_str(resolve_with=('regex', )))
+                # shot_glob = shot_glob.replace('\\\\', '\\')  # Fix slashes or Windows
+                regex = re.escape(context.get_str(resolve_with=('regex', )))
+                shot_regex = re.compile(regex)
 
+                shots = []
                 for shot in glob.glob(shot_glob):
-                    if shot_regex.match(shot) is not None:
-                        shots.append(shot)
+                    shots.append(shot)
 
                 return [ways.api.get_asset(path, context='job/scene/shot')
                         for path in shots]
 
-        def make_fake_job_and_scenes():
+        def make_fake_job_and_scenes(prefix):
             '''Create some fake job(s) and scene(s).'''
-            prefixes = {
-                'linux': '/tmp',
-                'windows': r'C:\temp',
-            }
-
-            prefix = prefixes[platform.system().lower()]
             paths_to_create = [
-                os.path.join(prefix, 'anotherJobName_24391231', 'whatever', 'SH_0010'),
-                os.path.join(prefix, 'anotherJobName_24391231', 'SOMETHING', 'SH_0010'),
-                os.path.join(prefix, 'anotherJobName_24391231', 'SOMETHING', 'SH_0020'),
-                os.path.join(prefix, 'anotherJobName_24391231', 'config', 'SH_0010'),
+                os.path.join('anotherJobName_24391231', 'whatever', 'SH_0010'),
+                os.path.join('anotherJobName_24391231', 'SOMETHING', 'SH_0010'),
+                os.path.join('anotherJobName_24391231', 'SOMETHING', 'SH_0020'),
+                os.path.join('anotherJobName_24391231', 'config', 'SH_0010'),
             ]
-            paths_to_create = [path.format(prefix=prefix) for path in paths_to_create]
+            paths_to_create = [os.path.join(prefix, path) for path in paths_to_create]
 
             for path in paths_to_create:
                 if not os.path.isdir(path):
                     os.makedirs(path)
+
+        tempdir = tempfile.gettempdir()
 
         # Define our Contexts
         contents = textwrap.dedent(
@@ -543,61 +539,76 @@ class AssetMethodTestCase(common_test.ContextTestCase):
             plugins:
                 a_parse_plugin:
                     hierarchy: job
-                    mapping: /tmp/{JOB}
+                    mapping: '{temproot}/{{JOB}}'
+                    platforms:
+                        - linux
+                        - darwin
+                    uuid: TODO_need_a_uuid
+
+                windows_parse_plugin:
+                    hierarchy: job
+                    mapping: '{temproot}\{{JOB}}'
+                    platforms:
+                        - windows
+                    uuid: TODO_need_a_uuid
+
+                a_parse_details_plugin:
+                    hierarchy: job
                     mapping_details:
                         JOB:
-                            mapping: '{JOB_NAME}_{JOB_ID}'
+                            mapping: '{{JOB_NAME}}_{{JOB_ID}}'
                             parse:
                                 glob: '*'
                         JOB_NAME:
                             casing: snakecase
                             parse:
-                                regex: '[a-z]{3,}[a-zA-Z]{3,}'
+                                regex: '[a-z]{{3,}}[a-zA-Z]{{3,}}'
                                 glob: '*'
                         JOB_ID:
                             parse:
-                                regex: '\d{3,}'
+                                regex: '\d{{3,}}'
                                 glob: '*'
                     uuid: 4b3dc3bc-fd9b-40ff-8175-26a5b9223fc7
 
                 scene_base_plugin:
-                    hierarchy: '{root}/scene'
-                    mapping: '{root}/{SCENE}'
+                    hierarchy: '{{root}}/scene'
+                    mapping: '{{root}}/{{SCENE}}'
                     mapping_details:
                         SCENE:
                             casing: capscase
                             parse:
-                                regex: '[A-Z]{5,}'
+                                regex: '[A-Z]{{5,}}'
                                 glob: '*'
+                    path: true
                     uses:
                         - job
                     uuid: 040a5511-aa53-42ae-9bc3-eb332841616e
 
                 shot_base_plugin:
-                    hierarchy: '{root}/shot'
-                    mapping: '{root}/{SHOT_NAME}'
+                    hierarchy: '{{root}}/shot'
+                    mapping: '{{root}}/{{SHOT_NAME}}'
                     mapping_details:
                         SHOT_NAME:
                             casing: capscase
-                            mapping: '{SHOT_PREFIX}_{SHOT_NUMBER}'
+                            mapping: '{{SHOT_PREFIX}}_{{SHOT_NUMBER}}'
                             parse:
-                                regex: '[A-Z]{2,}_0[0-9]{3}'
+                                regex: '[A-Z]{{2,}}_0[0-9]{{3}}'
                                 glob: '*'
                         SHOT_PREFIX:
                             parse:
-                                regex: '[A-Z]{2,}'
+                                regex: '[A-Z]{{2,}}'
                         SHOT_NUMBER:
                             parse:
-                                regex: '0[0-9]{4}'
+                                regex: '0[0-9]{{4}}'
                     uuid: b9bc2279-14bc-4461-9805-cf0b8969c715
                     uses:
                         - job/scene
-            ''')
+            ''').format(temproot=tempdir)
 
         self._make_plugin_folder_with_plugin2(contents=contents)
 
         # Set up our fake environment
-        make_fake_job_and_scenes()
+        make_fake_job_and_scenes(tempdir)
 
         info = {
             'JOB': 'anotherJobName_24391231',

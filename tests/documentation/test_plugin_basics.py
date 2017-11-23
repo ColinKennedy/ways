@@ -5,6 +5,7 @@
 
 # IMPORT STANDARD LIBRARIES
 import os
+import platform
 import textwrap
 
 # IMPORT WAYS LIBRARIES
@@ -109,7 +110,10 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         '''Defining a Context should create the same result as auto-find.'''
         self._make_complex_setup()
 
-        mapping = '/jobs/job_part_something'
+        if platform.system() == 'Windows':
+            mapping = r'C:\Users\some_user\jobs\job_part_something'
+        else:
+            mapping = '/jobs/job_part_something'
 
         explicit_asset = ways.api.get_asset(mapping, context='example/hierarchy')
         autofound_asset = ways.api.get_asset(mapping)
@@ -123,10 +127,18 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('example/hierarchy')
         os.environ['JOB'] = 'job_thing-something_123'
 
-        expected_env_string = '/jobs/job_thing-something_123'
+        if platform.system() == 'Windows':
+            expected_env_string = 'C:\\Users\\\w+\\jobs\\job_thing-something_123'
+        else:
+            expected_env_string = '/jobs/job_thing-something_123'
+
         self.assertEqual(expected_env_string, context.get_str(resolve_with=('env', 'regex')))
 
-        expected_regex_string = r'/jobs/\w+_thing-\w+_\d{3}'
+        if platform.system() == 'Windows':
+            expected_regex_string = 'C:\\Users\\\w+\\jobs\\\w+_thing-\w+_\d{3}'
+        else:
+            expected_regex_string = r'/jobs/\w+_thing-\w+_\d{3}'
+
         self.assertEqual(expected_regex_string, context.get_str(resolve_with='regex'))
         self.assertEqual(expected_regex_string, context.get_str(resolve_with=('regex', )))
 
@@ -134,7 +146,10 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         '''Test that mapping_details Parent-/Child-Search works correctly.'''
         self._make_complex_setup()
 
-        mapping = '/jobs/job_thing-something_123'
+        if platform.system() == 'Windows':
+            mapping = 'C:\\Users\\username\\jobs\\job_thing-something_123'
+        else:
+            mapping = '/jobs/job_thing-something_123'
 
         asset = ways.api.get_asset(mapping, context='example/hierarchy')
         expected = 'thing-something'

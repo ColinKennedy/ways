@@ -45,6 +45,7 @@ from . import connection as conn
 from ..core import pathrip
 from ..helper import common
 from ..parsing import parse
+from ..parsing import trace
 
 
 class Context(object):
@@ -293,10 +294,10 @@ class Context(object):
         except KeyError:
             recognized_platforms = {'darwin', 'java', 'linux', 'windows'}
 
-        system_platform = platform.system().lower()
-        current_platform = os.getenv(common.PLATFORM_ENV_VAR, system_platform)
+        current_platform = get_current_platform()
 
         if current_platform not in recognized_platforms:
+            system_platform = platform.system().lower()
             raise OSError(
                 'Found platform: "{platform_}" was invalid. Options were, '
                 '"{opt}". Detected system platform was: "{d_plat}".'
@@ -382,13 +383,32 @@ class Context(object):
         '''tuple[str]: The groups that this Context belongs to.'''
         return self.connection['get_groups'](self.plugins)
 
+    def is_path(self):
+        for plugin in self.plugins:
+            try:
+                if plugin.is_path():
+                    return True
+            except AttributeError:
+                pass
+
+        return False
+
     def get_mapping(self):
         '''str: The mapping that describes this Context.'''
-        return self.connection['get_mapping'](self.plugins)
+        mapping = self.connection['get_mapping'](self.plugins)
+
+        if self.is_path():
+            # TODO : Make a good function here to check if a \ is "escaped"
+            # TODO : Add something to auto-convert / to \\
+            #
+            if get_current_platform().lower() == 'windows':
+                mapping = mapping.replace('/', '\\')
+                mapping = mapping.replace(r'\\', r'\\\\')
+        return mapping
 
     def get_max_folder(self):
         '''str: The highest mapping point that this Context lives in.'''
-        return self.connection['get_max_folder'](self.plugins)
+        return self.connection['get_max_folder'](self.plugins, self)
 
     def get_platforms(self):
         '''Get The OSes that this Context runs on.
@@ -545,7 +565,7 @@ def context_connection_info():
 
         return resolved_mapping
 
-    def get_max_folder(plugins):
+    def get_max_folder(plugins, context):
         '''Get the max folder that this Context is allowed to move into.
 
         Args:
@@ -581,10 +601,18 @@ def context_connection_info():
                     return False
             return True
 
-        max_folders = []
-        for plugin in _get_latest_plugins(plugins):
-            plugin_max_folder = plugin.get_max_folder()
+        def _get_mapping(plugin):
+            mappings = trace.trace_method_resolution(context.get_mapping, plugins=True)
+            for mapping, plugin_ in mappings:
+                if plugin_ == plugin:
+                    return mapping
+            return ''
 
+        max_folders = []
+        for plugin in plugins:
+            plugin_max_folder = plugin.get_max_folder()
+            if not plugin_max_folder:
+                continue
             if not max_folders:
                 max_folders.append(plugin_max_folder)
                 continue
@@ -605,7 +633,12 @@ def context_connection_info():
                 max_folders.append(plugin_max_folder)
 
         # Normalize and return our absolute max-folder path
-        return os.path.normpath(''.join(max_folders))
+        joined = ''.join(max_folders)
+
+        if not joined:
+            return ''
+
+        return os.path.normpath(joined)
 
     return {
         'get_groups': functools.partial(
@@ -696,6 +729,19 @@ def get_context(hierarchy,
         follow_alias=follow_alias,
         force=force,
         *args, **kwargs)
+
+
+def get_current_platform():
+    '''Get the user-defined platform for Ways.
+
+    If WAYS_PLATFORM is not defined, the user's system OS is returned instead.
+
+    Returns:
+        str: The platform.
+
+    '''
+    system_platform = platform.system().lower()
+    return os.getenv(common.PLATFORM_ENV_VAR, system_platform)
 
 
 def register_context_alias(alias_hierarchy, old_hierarchy):

@@ -135,6 +135,13 @@ class DataPlugin(Plugin):
         '''tuple[str]: Keys that must be set in our Plugin.'''
         return ('hierarchy', )
 
+    def is_path(self):
+        '''bool: If the user indicated that the given mapping is a filepathj.'''
+        try:
+            return self._info['path']
+        except KeyError:
+            return False
+
     def get_assignment(self):
         '''str: Where this Plugin lives in Ways, along with its hierarchy.'''
         return self.assignment
@@ -173,7 +180,7 @@ class DataPlugin(Plugin):
 
     def get_max_folder(self):
         '''str: The furthest location up that this plugin can navigate to.'''
-        return self._info.get('max_folder', self.get_mapping())
+        return self._info.get('max_folder', '')
 
     def get_platforms(self):
         '''tuple[str]: The platforms that this Plugin is allowed to run on.'''
