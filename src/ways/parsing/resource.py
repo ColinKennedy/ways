@@ -451,6 +451,7 @@ def _expand_using_context(context, text, choices=None, default=__DEFAULT_OBJECT)
     for key in order:
         getter = pattern_getter.get(key, lambda: None)
         pattern = getter()
+
         if pattern:
             value = _expand_using_parse_types(
                 parse=pattern, text=text, choices=choices, default=default)
@@ -515,7 +516,7 @@ def _get_expand_choices():
     As long as the parse type can return a dict, given some text, it's valid.
 
     Returns:
-        <collections.OrderedDict>[str: callable]:
+        :class:`collections.OrderedDict` [str: callable]:
             The parse type and expansion function.
 
     '''
@@ -999,7 +1000,7 @@ def _find_context_using_info(obj):
             used instead, if not.
 
     Returns:
-        <ways.api.Context>: The "best-guess" Context for some information.
+        :class:`ways.api.Context`: The "best-guess" Context for some information.
 
     '''
     def contains_all_tokens(context, obj):
@@ -1289,7 +1290,7 @@ def expand_info(info, context=None):
             The info to expand. If the input is a dict, it is passed through
             and returned. If it is a string, the string is parsed against the
             given context.
-        context (:obj:`<sit.Context>`, optional):
+        context (:class:`<ways.api.Context`, optional):
             The Context that will be used to parse info.
             If no Context is given, the Context is automatically found.
             Default is None.

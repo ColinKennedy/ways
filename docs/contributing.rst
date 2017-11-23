@@ -15,7 +15,7 @@ main ideas that Ways uses. This document will expand on ideas written there.
 Contexts
 ++++++++
 
-If you go to ways.situation.Context, you can read more about the class.
+If you go to :class:`ways.base.situation.Context`, you can read more about the class.
 
 Context objects have
 
@@ -43,7 +43,8 @@ important part about how Ways creates Context objects.
 Plugins
 +++++++
 
-In the ways.plugin file, you'll find a couple very basic classes for plugins.
+In the :class:`ways.base.plugin` file, you'll find a couple very basic classes
+for plugins.
 
 Context objects are built out of plugins. There's not much to say about plugins
 other than they're basically classes that wrap around a dict that the user
@@ -63,7 +64,7 @@ Ways Cache
 ++++++++++
 
 Now that you understand Context objects, it's important to know how they are
-loaded. In the ways.cache file, you'll find the functions that are used to
+loaded. In the :class:`ways.base.cache` file, you'll find the functions that are used to
 register Contexts and plugins, which we've talked about already, and also
 register Descriptors and Actions, which we haven't touched on yet. Ignore
 functions related to those two for now and lets just talk about Contexts and
@@ -74,9 +75,9 @@ the WAYS_PLUGINS and WAYS_DESCRIPTOR environment variables. Once you're
 actually in Python, it's best to just use the Ways functions to add additional
 objects. If you absolutely need to add paths to those environment variables,
 first ask yourself why you think you need to. If you still think its necessary,
-add the paths with os.environ and the run ways.api.init_plugins. This function
-**will** remove any objects added in Python so it's not recommended to use. But
-you can do it.
+add the paths with os.environ and the run :class:`ways.api.init_plugins`. This
+function **will** remove any objects added in Python so it's not recommended to
+use. But you can do it.
 
 
 Descriptors
@@ -88,9 +89,9 @@ they're an abstraction used to load Plugin Sheets. That way, you can load
 plugins into Ways from disk, a database, or whatever other method you'd like.
 
 Other than that, they are not special in any way. Everything related to
-Descriptors is found in the ways.descriptor file. To see how they're loaded,
-revisit ways.cache. In particular, it's good to notice two things in
-ways.cache
+Descriptors is found in the :class:`ways.base.descriptor` file. To see how
+they're loaded, revisit ways.base.cache. In particular, it's good to notice two
+things in :class:`ways.base.cache`.
 
 
 1. add_search_path is just an alias to add_descriptor. The user can add plugins
@@ -110,20 +111,19 @@ Many other pages talk about Actions. It's mentioned in :doc:`summary`,
 been said so lets talk just about how Ways actually exposes Actions to the
 user.
 
-When an Action is registered to Ways (using ways.cache.add_action), the user
+When an Action is registered to Ways (using ways.base.cache.add_action), the user
 specifies a hierarchy for the Action and a name to call it.
 
-This is kept in a dictionary in ways.ACTION_CACHE.
+This is kept in a dictionary in :class:`ways.ACTION_CACHE`.
 
 Context and Asset objects both have an "actions" property. "actions" is
 actually an object that uses the current Asset or Context to find the hierarchy
 and assignment that the user wants to get Actions of.
 
-Asset's "actions" property is a ways.resource.AssetFinder object and Context's
-"actions" property is a ways.finder.Find object. Both objects are basically
-exactly the same, functionally, with the only difference that once is meant to
-work with Asset objects and the other Context objects.
-
+Asset's "actions" property is a :class:`ways.parsing.resource.AssetFinder` object
+and Context's "actions" property is a ways.base.finder.Find object. Both objects
+are basically exactly the same, functionally, with the only difference that
+once is meant to work with Asset objects and the other Context objects.
 
 When the user calls an action using "actions", the following happens:
 
@@ -146,9 +146,9 @@ So by using functools.partial, we eliminate the need for the user to write
     context.actions.some_action_name(context)
 
 
-Any class that inherits from ways.api.Action is automatically registered to
-Ways, because the ways.resource.ActionRegistry metaclass registers the class
-once it's defined.
+Any class that inherits from :class:`ways.api.Action` is automatically registered to
+Ways, because the :class:`ways.parsing.resource.ActionRegistry` metaclass registers
+the class once it's defined.
 
 
 Assets
@@ -157,20 +157,20 @@ Assets
 The Asset object is a simple wrapper around a Context object. Nearly all of its
 methods are used for getting data that the user has provided.
 
-All classes and functions are located in the ways.resource file.
+All classes and functions are located in the :class:`ways.parsing.resource` file.
 
 There are a couple functions in particular that are interesting to developers.
-The first is ways.resource._get_value. If a user queries a part of an Asset
-that exists, the value is returned back. But if the value doesn't exist, Ways
-is still able to "build" the value based on surrounding information. For the
+The first is :class:`ways.parsing.resource._get_value`. If a user queries a part
+of an Asset that exists, the value is returned. But if the value doesn't exist,
+Ways is still able to "build" the value based on surrounding information. For the
 sake of making it easier to search for, the two methods are called
 "Parent-Search" and "Child-Search". All of the functions related to those
-search methods are either scoped functions in ways.resource._get_value
-or somewhere within ways.resource.
+search methods are either scoped functions in :class:`ways.parsing.resource._get_value`
+or somewhere within :class:`ways.parsing.resource`.
 
-The other function that's very important is ways.resource._find_context_using_info.
+The other function that's very important is :class:`ways.parsing.resource._find_context_using_info`.
 
-Basically, if a user tries to run ways.api.get_asset without giving a context,
+Basically, if a user tries to run :class:`ways.api.get_asset` without giving a context,
 this function will try to "find" a matching Context to use instead. At the risk
 of reiterating the same information twice, read through
 _find_context_using_info and get_asset's docstrings to find out the common
@@ -215,8 +215,8 @@ When You Write The Issue
    compressed archive (.zip/.rar/.tar/.etc) containing all of the files needed.
    Also, write steps to reproduce your problem. If it involves the files given,
    write steps for setting those files up too.
-2. Add the output of ways.api.trace_all_descriptor_results_info and
-   ways.api.trace_all_plugin_results_info as a text file in the ticket.
+2. Add the output of :class:`ways.api.trace_all_descriptor_results_info` and
+   :class:`ways.api.trace_all_plugin_results_info` as a text file in the ticket.
 3. Write a test case for your issue. It helps a lot while trying to reproduce
    the issue and helps make sure that the issue won't happen again in the future.
 4. Include your WAYS_PLATFORMS and WAYS_PLATFORM environment variables, if
@@ -293,4 +293,3 @@ api.py
 
 If the pull request contains new functions or classes, consider adding them to
 api.py and explain why you think they'd be a good addition.
-

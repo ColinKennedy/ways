@@ -99,67 +99,6 @@ class CommanderTestCase(common_test.ContextTestCase):
         asset = ways.api.get_asset(info, context=hierarchy)
         self.assertTrue(asset.actions.get_foo())
 
-    def test_add_action(self):
-        '''Add an Action object to an existing Context.'''
-        class SomeAction(ways.api.Action):
-
-            '''Some example Action.'''
-
-            name = 'get_assets'
-
-            @classmethod
-            def get_hierarchy(cls):
-                '''Gather the hierarchy.'''
-                return ('27ztt', 'whatever')
-
-            def __call__(self, *args, **kwargs):
-                '''Do something.'''
-                # Use env vars if no resolution tags were given
-                kwargs.setdefault('resolve_with', 'env')
-
-                base_path = self.context.get_str(*args, **kwargs)
-                if not os.path.isdir(base_path):
-                    return []
-                return glob.glob(os.path.join(base_path, '*'))
-
-        # Build our context file and an action to go with it
-        contents = textwrap.dedent(
-            '''
-            globals: {}
-            plugins:
-                a_parse_plugin:
-                    hierarchy: 27ztt/whatever
-                    mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-                    uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
-            ''')
-
-        self._make_plugin_folder_with_plugin2(contents=contents)
-
-        context = ways.api.get_context('27ztt/whatever')
-
-        # Make a fake environment that has files
-        os.environ['JOB'] = 'job_123'
-        os.environ['SCENE'] = 'shots'
-        os.environ['SHOTNAME'] = 'sh01'
-
-        root_folder = '/tmp/job_123/shots/sh01/real_folder'
-        if not os.path.isdir(root_folder):
-            os.makedirs(root_folder)
-        self.temp_paths.append(root_folder)
-
-        open(os.path.join(root_folder, 'asset.1001.tif'), 'a').close()
-        open(os.path.join(root_folder, 'asset.1002.tif'), 'a').close()
-        open(os.path.join(root_folder, 'asset.1003.tif'), 'a').close()
-
-        expected_asset_files = [
-            '/tmp/job_123/shots/sh01/real_folder/asset.1001.tif',
-            '/tmp/job_123/shots/sh01/real_folder/asset.1002.tif',
-            '/tmp/job_123/shots/sh01/real_folder/asset.1003.tif',
-        ]
-        action = context.get_action(SomeAction.name)
-        self.assertNotEqual(action, None)
-        self.assertEqual(action(), expected_asset_files)
-
     def test_add_function_to_context(self):
         '''Create a fake-action using just a simple function.'''
         hierarchy = '27ztt/whatever'
@@ -215,68 +154,6 @@ class CommanderTestCase(common_test.ContextTestCase):
 class FindCommanderTestCase(common_test.ContextTestCase):
 
     '''Wrap a Context with a Find class and test its methods.'''
-
-    def test_wrap_command_with_find(self):
-        '''Call Action objects using a basic Find class.'''
-        class SomeAssetAction(ways.api.Action):
-
-            '''Some example asset action.'''
-
-            name = 'get_assets'
-
-            @classmethod
-            def get_hierarchy(cls):
-                '''Gather the hierarchy.'''
-                return ('27ztt', 'whatever')
-
-            def __call__(self, obj, *args, **kwargs):
-                '''Do something.'''
-                # Use env vars if no resolution tags were given
-                kwargs.setdefault('resolve_with', 'env')
-
-                base_path = self.context.get_str(*args, **kwargs)
-                if not os.path.isdir(base_path):
-                    return []
-                return glob.glob(os.path.join(base_path, '*'))
-
-        # Build our context file and an action to go with it
-        contents = textwrap.dedent(
-            '''
-            plugins:
-                a_parse_plugin:
-                    hierarchy: 27ztt/whatever
-                    mapping: /tmp/{JOB}/{SCENE}/{SHOTNAME}/real_folder
-            ''')
-
-
-        self._make_plugin_folder_with_plugin2(contents=contents)
-
-        context = ways.api.get_context('27ztt/whatever')
-
-        # Make a fake environment that has files
-        os.environ['JOB'] = 'job_123'
-        os.environ['SCENE'] = 'shots'
-        os.environ['SHOTNAME'] = 'sh01'
-
-        root_folder = '/tmp/job_123/shots/sh01/real_folder'
-        if not os.path.isdir(root_folder):
-            os.makedirs(root_folder)
-        self.temp_paths.append(root_folder)
-
-        open(os.path.join(root_folder, 'asset.1001.tif'), 'a').close()
-        open(os.path.join(root_folder, 'asset.1002.tif'), 'a').close()
-        open(os.path.join(root_folder, 'asset.1003.tif'), 'a').close()
-
-        expected_asset_files = [
-            '/tmp/job_123/shots/sh01/real_folder/asset.1001.tif',
-            '/tmp/job_123/shots/sh01/real_folder/asset.1002.tif',
-            '/tmp/job_123/shots/sh01/real_folder/asset.1003.tif',
-        ]
-
-        # Build our finder
-        find = ways.api.Find(context)
-        self.assertEqual(find.get_assets(), expected_asset_files)
-        self.assertEqual(SomeAssetAction, find.get_assets.func.__class__)
 
     def test_action_not_found(self):
         '''Test to make sure that Actions that are not found return None.'''

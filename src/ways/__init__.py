@@ -41,7 +41,7 @@ def _get_actions(hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=Fal
             name) are all returned. Default is False.
 
     Returns:
-        list[list[str], list[<ways.api.Action> or callable]]:
+        list[list[str], list[:class:`ways.api.Action` or callable]]:
             0: All of the names of each action that was found.
             1: The object that was created for a specific action.
 
@@ -95,7 +95,7 @@ def get_actions(hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=Fals
             name) are all returned. Default is False.
 
     Returns:
-        list[<ways.api.Action> or callable]:
+        list[:class:`ways.api.Action` or callable]:
             The actions in the hierarchy.
 
     '''
@@ -202,7 +202,7 @@ def get_actions_info(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
             The group to get items from. Default: 'master'.
 
     Returns:
-        dict[str: <ways.api.Action> or callable]:
+        dict[str: :class:`ways.api.Action` or callable]:
             The name of the action and its associated object.
 
     '''
@@ -227,8 +227,7 @@ def get_action(name, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
                                             assigned to. Default: 'master'.
 
     Returns:
-        <pathfinder.commander.Action> or NoneType: The found Action object
-                                                    or nothing.
+        :class:`ways.api.Action` or NoneType: The found Action object.
 
     '''
     for actions in get_actions_iter(hierarchy, assignment=assignment):
@@ -255,7 +254,7 @@ def get_plugins(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
             If assignment='', all plugins from every assignment is queried.
 
     Returns:
-        list[<pathfinder.plugin.Plugin>]:
+        list[:class:`ways.api.Plugin`]:
             The found plugins, if any.
 
     '''
