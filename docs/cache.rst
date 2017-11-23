@@ -1,5 +1,5 @@
 ways\.base\.cache module
-------------------
+------------------------
 
 .. automodule:: ways.base.cache
     :members:

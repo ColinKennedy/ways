@@ -1,5 +1,5 @@
 ways\.parsing\.parse module
-------------------
+---------------------------
 
 .. automodule:: ways.parsing.parse
     :members:

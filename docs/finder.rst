@@ -1,5 +1,5 @@
 ways\.base\.finder module
--------------------
+-------------------------
 
 .. automodule:: ways.base.finder
     :members:

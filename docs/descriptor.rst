@@ -1,5 +1,5 @@
 ways\.base\.descriptor module
------------------------
+-----------------------------
 
 .. automodule:: ways.base.descriptor
     :members:

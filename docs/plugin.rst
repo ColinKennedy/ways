@@ -1,5 +1,5 @@
 ways\.base\.plugin module
--------------------
+-------------------------
 
 .. automodule:: ways.base.plugin
     :members:

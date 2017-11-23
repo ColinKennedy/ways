@@ -1,5 +1,5 @@
 ways\.parsing\.trace module
-------------------
+---------------------------
 
 .. automodule:: ways.parsing.trace
     :members:

@@ -1,5 +1,5 @@
 ways\.helper\.common module
--------------------
+---------------------------
 
 .. automodule:: ways.helper.common
     :members:

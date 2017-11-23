@@ -1,5 +1,5 @@
 ways\.base\.situation module
-----------------------
+----------------------------
 
 .. automodule:: ways.base.situation
     :members:
