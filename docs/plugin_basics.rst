@@ -279,10 +279,16 @@ platforms
 
 platforms refers to the operating system(s) that a plugin is allowed to run on.
 
-Ways determines which plugins to run based on which plugins match the user's
-platform. The platform that Ways will prefer is set with the WAYS_PLATFORM
-environment variable. If nothing is set, Ways will use the system OS returned by
-platform.system().lower().
+Ways has two environment variables related to the "platforms" key,
+WAYS_PLATFORM and WAYS_PLATFORMS.
+
+WAYS_PLATFORM
+*************
+
+Every plugin has a set of platforms that it's allowed to run on. If one of the
+platforms in the plugin matches the WAYS_PLATFORM environment variable, Ways
+will use it. If WAYS_PLATFORM isn't defined, Ways will just use the computer's
+OS, instead.
 
 ::
     plugins:
@@ -299,12 +305,13 @@ platform.system().lower().
                 - darwin
 
 If "*" is a platform on a plugin, then it is automatically assumed that
-the plugin works on everything. Any plugin with no platforms defined is
-assumed to be "*".
+the plugin works on everything. Any plugin with no platforms defined,
+like "implicit_star_platform" will get "*" by default.
 
-The defined platforms can be any string you'd like. As long as one of the
-plugin's platforms matches the user's platforms defined in WAYS_PLATFORMS,
-Ways will load the plugin.
+WAYS_PLATFORMS is the list of platforms that Ways knows about. It can be any
+string that you'd like, separated by your OS path separator (":" in Linux, ";"
+in Windows). If WAYS_PLATFORMS isn't defined, a default set of platforms if
+given instead.
 
 TODO : Write a very concise platform example
 

@@ -456,6 +456,31 @@ class ContextMethodTestCase(common_test.ContextTestCase):
         with self.assertRaises(OSError):
             context.validate_plugin('asfdas')
 
+    def test_platform_from_environment(self):
+        '''If WAYS_PLATFORMS is defined, have plugins return that.
+
+        Otherwise, if it is not defined, have it return a set of platforms.
+
+        '''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+            ''')
+
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context = ways.api.get_context('foo')
+        generic_platforms = context.get_platforms()
+        os.environ[ways.api.PLATFORMS_ENV_VAR] = (os.pathsep).join(
+            ['fizz', 'buzz', 'custom_platforms'])
+        os.environ[ways.api.PLATFORM_ENV_VAR] = 'fizz'
+        custom_platforms = context.get_platforms()
+
+        self.assertEqual({'windows', 'darwin', 'linux', 'java'}, generic_platforms)
+        self.assertEqual({'fizz', 'buzz', 'custom_platforms'}, custom_platforms)
+
     def test_duplicate_uuid_fail(self):
         '''Two plugins with the same UUID should cause an exception error.'''
         contents = textwrap.dedent(
