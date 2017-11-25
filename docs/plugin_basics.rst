@@ -289,11 +289,11 @@ platform.system().lower().
         explicit_star_platform:
             hierarchy: foo
             platforms:
-                - *
+                - '*'
         implicit_star_platform:
-            hierarchy: foo
+            hierarchy: bar
         some_platforms:
-            hierarchy: foo
+            hierarchy: fizz
             platforms:
                 - linux
                 - darwin
@@ -370,8 +370,10 @@ more than one OS at a time. Take the next example. If we got the mapping for
                 - windows
 
         relative_plugin:
-            hierarchy: foo/bar
+            hierarchy: '{root}/bar'
             mapping: '{root}/shots'
+            uses:
+                - foo
 
 ::
 
@@ -390,7 +392,7 @@ If we include path: true, this isn't a problem.
             hierarchy: foo
             mapping: '/jobs/{JOB}'
             platforms:
-                - Linux
+                - linux
         windows_path_root:
             hierarchy: foo
             mapping: 'Z:\jobs\{JOB}'
@@ -401,8 +403,10 @@ If we include path: true, this isn't a problem.
             path: true
 
         relative_plugin:
-            hierarchy: foo/bar
+            hierarchy: '{root}/bar'
             mapping: '{root}/shots'
+            uses:
+                - foo
 
 ::
 

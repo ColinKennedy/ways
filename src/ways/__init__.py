@@ -237,6 +237,25 @@ def get_action(name, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
             pass
 
 
+def get_known_platfoms():
+    '''The platforms that Ways sees.
+
+    This will return back the platforms defined in the WAYS_PLATFORMS
+    environment variable. If WAYS_PLATFORMS isn't defined, a default set of
+    platforms is returned.
+
+    Returns:
+        set[str]: All of the platforms.
+                  Default: {'darwin', 'java', 'linux', 'windows'}
+
+    '''
+    try:
+        return set(os.environ[common.PLATFORMS_ENV_VAR].split(os.pathsep))
+    except KeyError:
+        # These platforms are the what platform.system() could return
+        return {'darwin', 'java', 'linux', 'windows'}
+
+
 def get_plugins(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
     '''Find an plugin based on its name, hierarchy, and assignment.
 

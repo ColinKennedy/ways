@@ -288,11 +288,7 @@ class Context(object):
             :class:`ways.api.Plugin`: The plugin (completely unmodified).
 
         '''
-        # These platforms are the what platform.system() could return
-        try:
-            recognized_platforms = os.environ[common.PLATFORMS_ENV_VAR].split(os.pathsep)
-        except KeyError:
-            recognized_platforms = {'darwin', 'java', 'linux', 'windows'}
+        recognized_platforms = ways.get_known_platfoms()
 
         current_platform = get_current_platform()
 
@@ -416,7 +412,7 @@ class Context(object):
         would return. (Examples: ['darwin', 'java', 'linux', 'windows']).
 
         Returns:
-            list[str]: The platforms that this Context is allowed to run on.
+            set[str]: The platforms that this Context is allowed to run on.
 
         '''
         return self.connection['get_platforms'](self.plugins)
@@ -468,6 +464,9 @@ def context_connection_info():
 
         '''
         platforms = obj.get_platforms()
+        if '*' in platforms:
+            platforms.update(ways.get_known_platfoms())
+            platforms.remove('*')
         obj_type = platforms.__class__
         return obj_type([platform_.lower() for platform_ in platforms])
 

@@ -183,8 +183,9 @@ class DataPlugin(Plugin):
         return self._info.get('max_folder', '')
 
     def get_platforms(self):
-        '''tuple[str]: The platforms that this Plugin is allowed to run on.'''
-        return self._info.get('platforms', ('*', ))
+        '''set[str]: The platforms that this Plugin is allowed to run on.'''
+        platforms = ways.get_known_platfoms()
+        return set(self._info.get('platforms', platforms))
 
     def get_uses(self):
         '''tuple[str]: The Context hierarchies this instance depends on.'''

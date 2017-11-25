@@ -402,7 +402,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
         self._make_plugin_folder_with_plugin2(contents)
 
         context = ways.api.get_context('foo')
-        self.assertEqual(('*', ), context.get_platforms())
+        self.assertEqual(ways.get_known_platfoms(), context.get_platforms())
 
     def test_get_plugins_in_platform(self):
         '''Only get back plugin objects that are OK for the current platform.'''
