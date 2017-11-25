@@ -5,13 +5,20 @@ Plugin Sheets are the backbone of Ways. They define many plugins in very few
 lines and drive how Ways will parse your objects.
 
 Because Plugin Sheets have a finite list of keys that it can use,
-it's important to know what each of them are called and what they do.
+it's important to know what each of them are called and what each of them do.
+
 
 All Plugin Sheet Keys
 ---------------------
 
-This is a "Hello World" Plugin Sheet. The only things that are required is a
-single value under "plugins" and that value must have a "hierarchy" defined.
+This is a "Hello World" Plugin Sheet. It's the absolute minimum information
+that every Plugin Sheet has. The only things that are required is a single value
+under "plugins" and that value must have a "hierarchy" defined.
+
+.. note ::
+
+    For reference, this is a YAML file. YAML is used in this example because it's
+    pretty easy to read and follow but Ways also supports JSON and Python files.
 
 .. code-block :: yaml
 
@@ -19,13 +26,10 @@ single value under "plugins" and that value must have a "hierarchy" defined.
         some_plugin:
             hierarchy: example
 
-Here is an example of a very complicated Plugin Sheet. The file contains every
-key that you can use. This is a bit like getting thrown into the deep-end of a
+Here is an example of a very complicated Plugin Sheet. Every key that Ways
+uses is in this file. This is a bit like getting thrown into the deep-end of a
 pool but don't worry if not everything makes sense immediately. It'll all be
-explained.
-
-For reference, this is a YAML file. YAML is used in this example because it's
-pretty easy to read and follow but Ways also supports JSON and Python files.
+explained in this page and in others.
 
 .. code-block :: yaml
 
@@ -42,6 +46,7 @@ pretty easy to read and follow but Ways also supports JSON and Python files.
             uuid: another_unique_uuid
             platforms:
                 - linux
+            path: true
 
         window_jobs_plugin:
             hierarchy: example/hierarchy
@@ -53,6 +58,7 @@ pretty easy to read and follow but Ways also supports JSON and Python files.
             platforms:
                 - windows
             uuid: windows_job
+            path: true
 
         jobs_details:
             hierarchy: example/hierarchy
@@ -76,13 +82,14 @@ pretty easy to read and follow but Ways also supports JSON and Python files.
             hierarchy: example/tree
             mapping: /tree
             uuid: does_not_matter_what_it_is
+            path: true
 
         config_plugin:
             hierarchy: "{root}/config"
             mapping: "{root}/configuration"
             uses:
                 - example/hierarchy
-                - example/hierarchy/tree
+                - example/tree
             uuid: as_Long_as_It_is_Different
 
         some_assigned_plugin:
@@ -90,13 +97,15 @@ pretty easy to read and follow but Ways also supports JSON and Python files.
             hierarchy: something
             data:
                 important_information: here
-            uuid: boo
+            uuid: boo_Did_I_scare_you?
 
 
 Clearly there is a big difference between a "Hello World" Plugin Sheet and
-this one. The good news is, everything in the complex sheet is technically
-optional so feel free to use this page as a reference as you get more familiar
-with how Ways works.
+this one. The good news is, everything in this example optional and you may
+not need to ever use it all.
+
+Feel free to use this page as a reference while writing Plugin Sheets.
+
 
 Required Keys
 -------------
@@ -111,13 +120,13 @@ strings, since they're easy to read. Example plugin keys from above are
 "some_plugin", "this_can_be_called_anything", "job_details", and all of the
 other defined plugins.
 
+
 hierarchy
 +++++++++
 
-This is the only required plugin-level key. The value that's defined for
-hierarchy must be a string, separated by "/"s, even if you're using Windows.
-The hierarchy is used later to get a Context or Asset so it's important that
-this is named sensibly.
+This is the only required key at the plugin-level. The value that's defined for
+hierarchy must be a string, separated by "/"s (even if you're using Windows).
+The hierarchy is used to create objects so it's important that it is named sensibly.
 
 
 Optional Keys
@@ -135,18 +144,17 @@ example, every plugin will have the assignment "an_assignment_to_every_plugin"
 except for some_assigned_plugin, which will have an assignment
 of "different_assignment".
 
+
 mapping
 +++++++
 
-"mapping" is just a string that describes where this plugin should live. The
-complex example above treats its mapping like it's a filepath but mapping can
-be anything. For example, it's very common to have some plugins use "/" to
-show that a mapping is meant to be a filepath and "." to show that it's meant
-to be a database. For practical examples of what this looks like, see
-:doc:`common_patterns`.
+mapping is just a string that describes a plugin. The complex example above
+treats its mapping like it's a filepath but mapping doesn't have to be a file
+or folder. It can be anything. For example, mapping can be used to reference
+a database, too.
 
-Once you've moved on from Contexts and start using Asset objects, a Context's
-mapping is used to automatically find Context objects.
+When you begin to use Asset objects (:class:`ways.api.Asset`), the mapping
+becomes crucial for "auto-finding" Context (:class:`ways.api.Context`) objects.
 
 ::
 
@@ -157,18 +165,19 @@ mapping is used to automatically find Context objects.
     explicit_context == autofound_context
     # Result: True
 
-For situations where all you have is input to an Asset and you don't know what
 the right Context should be, mapping is something necessary. The mapping and
 uuid keys are always a good idea to define.
+
+For practical examples on using mapping, see :doc:`common_patterns`.
 
 mapping_details
 +++++++++++++++
 
-Ways likes to call any item in "{}"s within a mapping a "Token".
+Anything in "{}" inside of a mapping is called a "Token".
 Above, "/jobs/{JOB}" has a "JOB" Token and "C:\\Users\\{USER}\\jobs\\{JOB}" has
 "USER" and "JOB" Tokens.
 
-Tokens look like a regular Python format but behave differently, in Ways.
+Tokens look like a Python format but have a set of features specific to Ways.
 
 For one thing, Tokens can represent environment variables or parse-engines like
 regex and glob.
@@ -198,16 +207,16 @@ get_str ignore any environment variables and grab only regex values.
 The second important thing to note is that the regex for "JOB", which is
 "\w+_\d{3}", wasn't actually defined in JOB. It was defined in Subtokens,
 JOB_NAME_PREFIX and JOB_NAME_SUFFIX and JOB_ID. Ways composed that regex value
-for JOB using its Subtokens. A Subtoken is a Token that is nested inside of
-another Token.
+for JOB using its Subtokens. Like the name implies, a Subtoken is a Token that
+is nested inside of another Token.
 
-In docstrings, this is referred to as a "Child-Search". Ways also has a
+In docstrings, we refer to this as a "Child-Search". Ways also has a
 "Parent-Search" which is exactly like "Child-Search" but instead of searching
 for values down, it looks up at a Subtoken's parents. Both Child-Search and
 Parent-Search are recursive.
 
 Search methods like Parent/Child Search matter once you start getting into the
-deeper parts of Ways, such as Asset objects.
+deeper parts of Ways, such as Asset objects. For now, just know that it exists.
 
 ::
 
@@ -216,33 +225,44 @@ deeper parts of Ways, such as Asset objects.
     asset.get_value('JOB_NAME_SUFFIX')
     # Result: 'thing-something'
 
-We never defined what JOB_NAME_SUFFIX was but we can find it because JOB has a
-mapping. By the way, get_value can work on its own, *with or without regex*.
-Regex is good to have but is not required to do this.
+By the way, get_value can work on its own, *with or without regex*.
+Regex is good to have but is not required.
 
 Just like how mapping is used to find Contexts automatically when none is
 given, mapping_details is used to find values for mapping automatically when
 pieces are missing.
 
+
 uuid
 ++++
 
-This is just a unique string that Ways will use to refer to your plugin. For
-example, if you are getting unexpected results from a Context or Asset, it's
-good to be able to search for plugins by UUID to find what Descriptor loaded
-them and where the issue is happening. It's completely optional but it helps
-while debugging. There's more information about this in :doc:`troubleshooting`.
+.. code-block :: yaml
+
+    plugins:
+        something:
+            hierarchy: foo/bar
+            uuid: some_string_to_describe_this_plugin
+
+This is just a string that Ways will use to refer to your plugin. It can be an
+actual UUID (http://docs.python.org/3/library/uuid.html) or anything else, as
+long as it's unique.
+
+If you find yourself needing to troubleshoot a Context or Asset, some of the
+tools that Ways has will require a UUID.
+
+There's more information about this in :doc:`common_patterns` and
+:doc:`troubleshooting`.
+
 
 data
 ++++
 
 data is a regular dictionary that gets loaded onto the Context once it is
-first created. It's mostly just a convenience attribute to store metadata onto.
-It's useful while working with a Context to have a place to store items onto
-the Context and retrieve later. You can also modify and add to data like a
-regular dictionary in a live Python session to an extent.
+first created. It's mostly just a place to store metadata onto and retrieve later.
+You can also modify and add to data like a regular dictionary in a live Python
+session to an extent.
 
-There's two notes about data before you use it.
+There's two things you'll want to know about data before you use it.
 
 The first is that there's a separation between "loaded" values and "user"
 values. Loaded values come for the the plugin files that are registered to
@@ -253,28 +273,29 @@ the loaded plugin data but you cannot delete it.
 If you ever need to go back to a Context's initial data, just call
 Context.revert().
 
+
 platforms
 +++++++++
 
 platforms refers to the operating system(s) that a plugin is allowed to run on.
 
 Ways determines which plugins to run based on which plugins match the user's
-platform. The platform that Ways uses is set with the WAYS_PLATFORM environment
-variable. If nothing is set, Ways will use the system OS returned by
-platform.system().lower(). If "*" is a listed platform on a plugin, then it is
-automatically assumed that the plugin works on everything. "*" is the default
-platform if no platform(s) is given for a plugin.
+platform. The platform that Ways will prefer is set with the WAYS_PLATFORM
+environment variable. If nothing is set, Ways will use the system OS returned by
+platform.system().lower().
+
+If "*" is a listed platform on a plugin, then it is automatically assumed that
+the plugin works on everything and any plugin with no platforms defined is
+assumed to work for all.
 
 The defined platforms can be any string you'd like. As long as one of the
-plugin's platforms matches the user's platform, Ways will load the plugin.
+plugin's platforms matches the user's platforms defined in WAYS_PLATFORMS,
+Ways will load the plugin.
 
-platforms is very important for dealing with file paths. Say you wanted to make
-100 plugins for Windows, Linux, and Mac. If you defined each plugin
-absolutely, that'd be 300 plugins and each time one changed, the other two
-would need to be changed. Because Ways only recognizes one platform at a time,
-it lets the user write 100 relative plugins and 3 absolute, OS-based plugins.
-At runtime, 1 of the 3 OS-based plugins are picked and the other 100 relative
-plugins append to it.
+TODO : Write a very concise platform example
+
+There's a really good example of how to use platforms in :ref:`crossplatforms`
+if you'd like to see another example.
 
 
 uses
@@ -299,3 +320,87 @@ can drastically change how Ways runs in very little lines. In a single
 sentence, assignment has the flexibility of "platforms" and the re-usability of
 "uses". For more information on how to use them, check out
 :doc:`plugin_advanced` for details.
+
+
+.. _path_explanation:
+
+path
+++++
+
+If you are developing a hierarchy that represents a filepath and you need to
+support more than one type of OS (like Linux and Windows), it's best to set this
+option to True.
+
+On Linux, setting path forces "\\" in a mapping to "/".  On Windows, it
+changes "/" to "\\".
+
+Ways will use the OS you've defined in the WAYS_PLATFORM environment variable.
+If that environment variable is not set, Ways will use your system OS.
+
+The path key exists because path-related plugins are difficult to write for
+more than one OS at a time. Take the next example. If we got the mapping for 
+"foo/bar", with the Plugin Sheet below, we get an undesired result on Windows.
+
+.. code-block :: yaml
+
+    plugins:
+        path_plugin:
+            hierarchy: foo
+            mapping: '/jobs/{JOB}'
+            platforms:
+                - linux
+        windows_path_root:
+            hierarchy: foo
+            mapping: 'Z:\jobs\{JOB}'
+            platforms:
+                - windows
+
+        relative_plugin:
+            hierarchy: foo/bar
+            mapping: '{root}/shots'
+
+::
+
+    context = ways.api.get_context('foo/bar')
+    context.get_mapping()
+    # Result on Linux: '/jobs/{JOB}/shots'
+    # Result on Windows: 'Z:\jobs\{JOB}/shots'
+
+The result on Windows is mixes "\\" and "/" because the relative plugin used "/".
+If we include path: true, this isn't a problem.
+
+.. code-block :: yaml
+
+    plugins:
+        path_plugin:
+            hierarchy: foo
+            mapping: '/jobs/{JOB}'
+            platforms:
+                - Linux
+        windows_path_root:
+            hierarchy: foo
+            mapping: 'Z:\jobs\{JOB}'
+            platforms:
+                - windows
+        plugin_that_appends_path:
+            hierarchy: foo
+            path: true
+
+        relative_plugin:
+            hierarchy: foo/bar
+            mapping: '{root}/shots'
+
+::
+
+    context = ways.api.get_context('foo/bar')
+    context.get_mapping()
+    # Result on Linux: '/jobs/{JOB}/shots'
+    # Result on Windows: 'Z:\jobs\{JOB}\shots'
+
+The "foo" hierarchy is set as a path so its child hierarchy, "foo/bar" also
+becomes a path. Now things work as we expect.
+
+What Now?
++++++++++
+Now that you know the basics of each key, head over to :doc:`plugin_advanced`
+or :doc:`common_patterns` to see examples of these keys in examples.

@@ -7,6 +7,34 @@ TODO:
     - Add a UUID to your plugin
     - Show filepath and database plugin examples
 
+Designing Plugins
+-----------------
+
+Appending vs Defining
++++++++++++++++++++++
+
+Show example of "root_details" vs not having root_details
+    plugins:
+        path_plugin:
+            hierarchy: foo/bar
+            mapping: '/jobs/{JOB}'
+            platforms:
+                - Linux
+        windows_path_root:
+            hierarchy: foo/bar
+            mapping: 'Z:\jobs\{JOB}'
+            platforms:
+                - Windows
+        root_details:
+            hierarchy: foo/bar
+            path: true
+
+If path is true in *any* plugin or parent plugin in a hierarchy, it is
+considered a file path. On Linux, setting path forces "\\" in a mapping to "/".
+On Windows, it does the opposite. Ways will find which OS you're using with the
+WAYS_PLATFORM environment variable. If that environment variable is not set, it
+will use your system OS.
+
 .. _asset_swapping:
 
 Asset Swapping

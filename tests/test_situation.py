@@ -11,8 +11,10 @@ behave properly in other test modules.
 
 # IMPORT STANDARD LIBRARIES
 import os
+import platform
 import tempfile
 import textwrap
+import unittest
 
 # IMPORT WAYS LIBRARIES
 import ways.api
@@ -490,6 +492,133 @@ class ContextMethodTestCase(common_test.ContextTestCase):
         context = ways.api.get_context('foo')
 
         self.assertEqual({'THING', 'HERE', 'INNER', 'ITEMS'}, context.get_all_tokens())
+
+    def test_path_false_absolute(self):
+        '''Return a string that is not a path from an absolute plugin.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '/jobs/{THING}/another/{HERE}'
+                    mapping_details:
+                        THING:
+                            mapping: '{INNER}_{ITEMS}'
+            ''')
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context = ways.api.get_context('foo')
+
+        mapping = '/jobs/{THING}/another/{HERE}'
+        self.assertEqual(mapping, context.get_mapping())
+
+    def test_path_false_relative(self):
+        '''Return a string that is not a path from an absolute plugin.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '/jobs/{JOB}'
+                relative:
+                    hierarchy: '{root}/bar'
+                    mapping: '{root}\\thing'
+                    uses:
+                        - foo
+            ''')
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context = ways.api.get_context('foo/bar')
+
+        mapping = r'/jobs/{JOB}\thing'
+        self.assertEqual(mapping, context.get_mapping())
+
+    @unittest.skipUnless(platform.system() == 'Windows', 'requires Windows')
+    def test_path_true_absolute(self):
+        r'''Make sure absolute plugins convert from '/' style to '\'.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                absolute:
+                    hierarchy: 'foo/bar'
+                    mapping: '/jobs/{JOB}/thing'
+                    path: true
+            ''')
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context = ways.api.get_context('foo/bar')
+
+        mapping = r'\jobs\{JOB}\thing'
+        self.assertEqual(mapping, context.get_mapping())
+
+    @unittest.skipUnless(platform.system() == 'Windows', 'requires Windows')
+    def test_path_true_relative(self):
+        '''Make sure relative plugins convert just like absolute plugins.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '/jobs/{JOB}'
+                    path: true
+                relative:
+                    hierarchy: '{root}/bar'
+                    mapping: '{root}\\thing'
+                    uses:
+                        - foo
+            ''')
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context = ways.api.get_context('foo/bar')
+
+        mapping = r'\jobs\{JOB}\thing'
+        self.assertEqual(mapping, context.get_mapping())
+
+    @unittest.skipUnless(platform.system() == 'Linux', 'requires Linux')
+    def test_path_true_relative_windows(self):
+        '''Make Windows-style paths convert into Linux paths'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '\\jobs\\{JOB}'
+                    path: true
+                relative:
+                    hierarchy: '{root}/bar'
+                    mapping: '{root}\\thing'
+                    uses:
+                        - foo
+            ''')
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context = ways.api.get_context('foo/bar')
+
+        mapping = r'/jobs/{JOB}/thing'
+        self.assertEqual(mapping, context.get_mapping())
+
+    def test_remove_path(self):
+        '''Set a hierarchy to path = True and then set it to False.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '\\jobs\\{JOB}'
+                    path: true
+                relative:
+                    hierarchy: '{root}/bar'
+                    mapping: '{root}\\thing'
+                    uses:
+                        - foo
+                    path: false
+            ''')
+        self._make_plugin_folder_with_plugin2(contents)
+
+        context1 = ways.api.get_context('foo')
+        context2 = ways.api.get_context('foo/bar')
+        self.assertTrue(context1.is_path())
+        self.assertFalse(context2.is_path())
 
 
 class ContextInheritanceTestCase(common_test.ContextTestCase):

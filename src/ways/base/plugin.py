@@ -136,11 +136,11 @@ class DataPlugin(Plugin):
         return ('hierarchy', )
 
     def is_path(self):
-        '''bool: If the user indicated that the given mapping is a filepath.'''
+        '''bool or NoneType: If the mapping is a filepath or None if unsure.'''
         try:
             return self._info['path']
         except KeyError:
-            return False
+            return
 
     def get_assignment(self):
         '''str: Where this Plugin lives in Ways, along with its hierarchy.'''

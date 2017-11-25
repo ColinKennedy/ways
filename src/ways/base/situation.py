@@ -385,12 +385,10 @@ class Context(object):
 
     def is_path(self):
         '''bool: If the user indicated that the given mapping is a filepath.'''
-        for plugin in self.plugins:
-            try:
-                if plugin.is_path():
-                    return True
-            except AttributeError:
-                pass
+        for plugin in reversed(self.plugins):
+            value = plugin.is_path()
+            if value is not None:
+                return value
 
         return False
 
@@ -400,11 +398,11 @@ class Context(object):
 
         if self.is_path():
             # TODO : Make a good function here to check if a \ is "escaped"
-            # TODO : Add something to auto-convert / to \\
-            #
             if get_current_platform().lower() == 'windows':
                 mapping = mapping.replace('/', '\\')
                 mapping = mapping.replace(r'\\', r'\\\\')
+            else:
+                mapping = mapping.replace('\\', '/')
         return mapping
 
     def get_max_folder(self):

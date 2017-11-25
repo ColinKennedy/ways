@@ -406,13 +406,15 @@ But, if you need to, you can read all about it in :doc:`parsing`.
 Adding Existing AMS
 -------------------
 
-Most likely, Ways is not the first AMS solution you've tried. Chances are, you
-have your own AMS that you'd ideally like to keep using. Ways has some support
-to be able to integrate existing classes into its hierarchies.
+Most likely, Ways is not the first AMS (Asset Management System) you've tried.
+Chances are, you have your own AMS that you'd like to keep using. Ways can
+partially integrate existing objects into its own code to help tie into
+existing systems.
 
 ::
 
     class MyAssetClass(object):
+
         '''Some class that is part of an existing AMS.'''
 
         def __init__(self, context):
