@@ -201,6 +201,11 @@ class DataPlugin(Plugin):
             sources=self.sources,
             data=dict(self._info))
 
+    def __str__(self):
+        '''str: A more concise print-out of this instance.'''
+        return '{cls_}(hierarchy={hierarchy}, sources={sources!r})'.format(
+            hierarchy=self.get_hierarchy(), sources=self.sources)
+
 
 def get_assignment(obj):
     '''str: Get an object's assignment or fallback to ways.DEFAULT_ASSIGNMENT.'''
