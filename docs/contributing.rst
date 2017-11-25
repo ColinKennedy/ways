@@ -231,7 +231,7 @@ be to clone the main repository. See :doc:`installation` for details.
 
 It's recommended to read all of the documentation here from start to end before
 making changes. But at the very least, read :doc:`summary`,
-:doc:`getting_started` and TODO LINK API Details.
+:doc:`getting_started` and :ref:`api_details`.
 
 
 Repository Structure

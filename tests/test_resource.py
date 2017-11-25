@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# pylint: disable=invalid-name
 '''Test the basic methods of the Asset class, in a variety of Contexts.'''
 
 # IMPORT STANDARD LIBRARIES
@@ -785,7 +784,9 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context')
         asset_is_not_default_asset_type = not isinstance(asset, ways.api.Asset)
+        asset.example_method()
 
+        self.assertNotEqual(None, asset)
         self.assertTrue(asset_is_default_asset_type)
         self.assertTrue(asset_is_not_default_asset_type)
 
@@ -795,8 +796,8 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         def a_custom_init_function(info, context, *args, **kwargs):
             '''Purposefully ignore the context that gets passed.'''
-            del context
-            return asset_class(info, *args, **kwargs)
+            context = 8
+            return asset_class(info, context, *args, **kwargs)
 
         contents = textwrap.dedent(
             '''
@@ -826,9 +827,11 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
         # Get back our new class type
         asset = ways.api.get_asset(some_path, context='some/thing/context')
+        asset.example_method()
 
         asset_is_not_default_asset_type = not isinstance(asset, ways.api.Asset)
 
+        self.assertNotEqual(None, asset)
         self.assertTrue(asset_is_default_asset_type)
         self.assertTrue(asset_is_not_default_asset_type)
 
@@ -877,13 +880,21 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
 
 def _get_asset_class():
     '''Just make a generic asset class.'''
-    class SomeNewAssetClass(object):  # pylint: disable=too-few-public-methods
+    class SomeNewAssetClass(object):
 
         '''Some class that will take the place of our Asset.'''
 
-        def __init__(self, context):
+        def __init__(self, info, context):
             '''Create the object.'''
             super(SomeNewAssetClass, self).__init__()
             self.context = context
+
+        def example_method(self):
+            '''Run some method.'''
+            return 8
+
+        def another_method(self):
+            '''Run another method.'''
+            return 'bar'
 
     return SomeNewAssetClass

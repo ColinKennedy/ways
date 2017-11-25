@@ -18,6 +18,9 @@ Main Pages
     Summary <summary>
     Getting Started <getting_started>
 
+
+.. _api_details:
+
 API Details
 -----------
 
@@ -25,6 +28,7 @@ API Details
     Descriptors <descriptors>
     Plugin Basics <plugin_basics>
     Advanced Plugins <plugin_advanced>
+    Parsing <parsing>
     Troubleshooting <troubleshooting>
 
 Appendices

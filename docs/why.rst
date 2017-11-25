@@ -43,6 +43,8 @@ ways.api.get_asset.
     # Result: 'job_name'
 
 
+.. _creating_actions :
+
 Extend Ways Using Actions
 -------------------------
 

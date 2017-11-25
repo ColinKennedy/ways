@@ -113,7 +113,6 @@ It was hinted at in the previous section that Ways supports reading
 Git repositories directly, instead of using the filesystem. If storing Plugin
 Sheet files locally isn't an option, reading from server is an alternative.
 
-TODO Make an example repository and point to it, in this example.
 
 Any callable object can be a Descriptor
 +++++++++++++++++++++++++++++++++++++++

@@ -262,10 +262,6 @@ The most powerful way to chain Actions together is to have Action objects
 return other Context/Asset/Action objects. Actions have very few rules
 and can be formatted to your needs easily.
 
-TODO : Still need to write this
-Check out `Advanced Actions` to read more.
-
-Now that you've gone through the basics, make sure to read through Common
-Patterns And Best Practices to get an idea of how you should be formatting your
-code
-
+Now that you've gone through the basics, make sure to read through
+:doc:`plugin_basics` to get familiar with Ways and :doc:`common_patterns`
+to get an idea of how you should be formatting your code.
