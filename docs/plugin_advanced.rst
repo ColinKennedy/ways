@@ -232,6 +232,8 @@ onto it.
     :ref:`path_explanation` and in :doc:`common_patterns`.
 
 
+.. _appending_plugins :
+
 Appending To Plugins
 --------------------
 

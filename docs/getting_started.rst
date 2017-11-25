@@ -39,7 +39,7 @@ Now that plugin_sheet.yml exists, lets add a "Hello World!" plugin to it.
 
 At this point, we've made our first plugin in our first Plugin Sheet.
 Now you can open a Python interpreter or import it into another file and use
-it as a ways.api.Context.
+it as a :class:`ways.api.Context`.
 
 Create your new Context
 -----------------------

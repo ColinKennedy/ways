@@ -388,6 +388,7 @@ Now again, lets tackle the same problem, using Ways.
 
 Between the previous example and this one, only 3 new lines were added.
 
+
 ::
 
     mapping_details:
@@ -600,16 +601,3 @@ calls "plugin assignment". It's an advanced feature that isn't often used.
 
 A couple sections in another page, :ref:`assignments_basics` is dedicated to
 show how to do this so, if you're curious how it works, check it out there.
-
-
-String Searching
-----------------
-
-TODO write!
-.. When you've found yourself stuck
-
-
-
-
-
-
