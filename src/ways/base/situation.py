@@ -602,13 +602,6 @@ def context_connection_info():
                     return False
             return True
 
-        def _get_mapping(plugin):
-            mappings = tracehelper.trace_method_resolution(context.get_mapping, plugins=True)
-            for mapping, plugin_ in mappings:
-                if plugin_ == plugin:
-                    return mapping
-            return ''
-
         max_folders = []
         for plugin in plugins:
             plugin_max_folder = plugin.get_max_folder()

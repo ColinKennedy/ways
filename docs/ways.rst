@@ -40,6 +40,7 @@ Inner Modules
     ways.parsing.registry <registry>
     ways.parsing.resource <resource>
     ways.parsing.trace <trace>
+    ways.parsing.tracehelper <tracehelper>
 
 Module contents
 ---------------
