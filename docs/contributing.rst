@@ -43,7 +43,7 @@ important part about how Ways creates Context objects.
 Plugins
 +++++++
 
-In the :class:`ways.base.plugin` file, you'll find a couple very basic classes
+In the :mod:`ways.base.plugin` file, you'll find a couple very basic classes
 for plugins.
 
 Context objects are built out of plugins. There's not much to say about plugins
@@ -64,7 +64,7 @@ Ways Cache
 ++++++++++
 
 Now that you understand Context objects, it's important to know how they are
-loaded. In the :class:`ways.base.cache` file, you'll find the functions that are used to
+loaded. In the :mod:`ways.base.cache` file, you'll find the functions that are used to
 register Contexts and plugins, which we've talked about already, and also
 register Descriptors and Actions, which we haven't touched on yet. Ignore
 functions related to those two for now and lets just talk about Contexts and
@@ -75,7 +75,7 @@ the WAYS_PLUGINS and WAYS_DESCRIPTOR environment variables. Once you're
 actually in Python, it's best to just use the Ways functions to add additional
 objects. If you absolutely need to add paths to those environment variables,
 first ask yourself why you think you need to. If you still think its necessary,
-add the paths with os.environ and the run :class:`ways.api.init_plugins`. This
+add the paths with os.environ and the run :func:`ways.api.init_plugins`. This
 function **will** remove any objects added in Python so it's not recommended to
 use. But you can do it.
 
@@ -89,9 +89,9 @@ they're an abstraction used to load Plugin Sheets. That way, you can load
 plugins into Ways from disk, a database, or whatever other method you'd like.
 
 Other than that, they are not special in any way. Everything related to
-Descriptors is found in the :class:`ways.base.descriptor` file. To see how
+Descriptors is found in the :mod:`ways.base.descriptor` file. To see how
 they're loaded, revisit ways.base.cache. In particular, it's good to notice two
-things in :class:`ways.base.cache`.
+things in :mod:`ways.base.cache`.
 
 
 1. add_search_path is just an alias to add_descriptor. The user can add plugins
@@ -157,20 +157,20 @@ Assets
 The Asset object is a simple wrapper around a Context object. Nearly all of its
 methods are used for getting data that the user has provided.
 
-All classes and functions are located in the :class:`ways.parsing.resource` file.
+All classes and functions are located in the :mod:`ways.parsing.resource` file.
 
 There are a couple functions in particular that are interesting to developers.
-The first is :class:`ways.parsing.resource._get_value`. If a user queries a part
+The first is :func:`ways.parsing.resource._get_value`. If a user queries a part
 of an Asset that exists, the value is returned. But if the value doesn't exist,
 Ways is still able to "build" the value based on surrounding information. For the
 sake of making it easier to search for, the two methods are called
 "Parent-Search" and "Child-Search". All of the functions related to those
-search methods are either scoped functions in :class:`ways.parsing.resource._get_value`
-or somewhere within :class:`ways.parsing.resource`.
+search methods are either scoped functions in :func:`ways.parsing.resource._get_value`
+or somewhere within :mod:`ways.parsing.resource`.
 
-The other function that's very important is :class:`ways.parsing.resource._find_context_using_info`.
+The other function that's very important is :func:`ways.parsing.resource._find_context_using_info`.
 
-Basically, if a user tries to run :class:`ways.api.get_asset` without giving a context,
+Basically, if a user tries to run :func:`ways.api.get_asset` without giving a context,
 this function will try to "find" a matching Context to use instead. At the risk
 of reiterating the same information twice, read through
 _find_context_using_info and get_asset's docstrings to find out the common
@@ -215,8 +215,8 @@ When You Write The Issue
    compressed archive (.zip/.rar/.tar/.etc) containing all of the files needed.
    Also, write steps to reproduce your problem. If it involves the files given,
    write steps for setting those files up too.
-2. Add the output of :class:`ways.api.trace_all_descriptor_results_info` and
-   :class:`ways.api.trace_all_plugin_results_info` as a text file in the ticket.
+2. Add the output of :func:`ways.api.trace_all_descriptor_results_info` and
+   :func:`ways.api.trace_all_plugin_results_info` as a text file in the ticket.
 3. Write a test case for your issue. It helps a lot while trying to reproduce
    the issue and helps make sure that the issue won't happen again in the future.
 4. Include your WAYS_PLATFORMS and WAYS_PLATFORM environment variables, if
