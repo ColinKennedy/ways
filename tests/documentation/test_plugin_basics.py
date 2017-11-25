@@ -66,7 +66,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
                         JOB_ID:
                             parse:
                                 regex: '\d{3}'
-                    uuid: something_unique
+                    uuid: something_unique2
 
                 yet_another_plugin:
                     hierarchy: example/tree

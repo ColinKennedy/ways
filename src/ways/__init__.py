@@ -365,6 +365,8 @@ def add_plugin(plugin, assignment='master'):
 
     # Add the plugin if it doesn't already exist
     if plugin not in PLUGIN_CACHE['all']:
+        check_plugin_uuid(plugin)
+
         PLUGIN_CACHE['hierarchy'][plugin.get_hierarchy()][assignment].append(plugin)
         PLUGIN_CACHE['all'].append(plugin)
 
@@ -391,5 +393,48 @@ def clear():
     registry.reset_asset_classes()
 
 
-if __name__ == '__main__':
-    print(__doc__)
+def check_plugin_uuid(info):
+    '''Make sure that the plugin UUID is not already taken.
+
+    Args:
+        info (:class:`ways.api.DataPlugin` or dict[str]):
+            Data that may become a proper plugin.
+
+    Raises:
+        RuntimeError:
+            If the plugin's UUID is already taken.
+
+    '''
+    uuids = dict()
+
+    for cached_plugin in PLUGIN_CACHE['all']:
+        try:
+            plugin_uuid = cached_plugin.get_uuid()
+        except AttributeError:
+            plugin_uuid = ''
+
+        if plugin_uuid:
+            uuids[plugin_uuid] = cached_plugin
+
+    try:
+        plugin_uuid = info['uuid']
+    except (TypeError, KeyError):
+        pass
+
+    try:
+        plugin_uuid = info.get_uuid()
+    except AttributeError:
+        return
+
+    try:
+        cached = uuids[plugin_uuid]
+    except KeyError:
+        return
+
+    if cached.name == info.name:
+        return
+
+    raise RuntimeError(
+        'UUID: "{uuid_}" is already taken by plugin, "{plug}". Please choose '
+        'another name. Info: "{info}" is invalid.'.format(
+            uuid_=plugin_uuid, plug=cached, info=info))

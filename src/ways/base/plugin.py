@@ -5,6 +5,7 @@
 
 # IMPORT STANDARD LIBRARIES
 import uuid
+import inspect
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
@@ -86,7 +87,7 @@ class DataPlugin(Plugin):
 
     add_to_registry = False
 
-    def __init__(self, sources, info, assignment):
+    def __init__(self, name, sources, info, assignment):
         '''Create the object and set its sources.
 
         Args:
@@ -123,6 +124,7 @@ class DataPlugin(Plugin):
         except AttributeError:
             pass
 
+        self.name = name
         self._info = info
         self.sources = tuple(sources)
         self._data = self._info.get('data', dict())

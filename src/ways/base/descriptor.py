@@ -150,7 +150,6 @@ class FileDescriptor(object):
             # Iterate over the plugins found in the Plugin Sheet
             for plugin, info in six.iteritems(data['plugins']):
                 self._conform_plugin_info(info)
-                check_plugin_uuid(info)
 
                 # If the plugin has a specific assignment given, use that,
                 # instead of what might be written in a config file or in globals
@@ -166,7 +165,7 @@ class FileDescriptor(object):
         return plugins
 
     @classmethod
-    def _build_plugins(cls, source, plugin, info, assignment):
+    def _build_plugins(cls, source, name, info, assignment):
         '''Create a Plugin or multiple Plugin objects.
 
         This method is meant to be used with get_plugins. It just exists
@@ -175,7 +174,7 @@ class FileDescriptor(object):
         Args:
             source (str):
                 The location to a file on disk that defined plugin.
-            plugin (str):
+            name (str):
                 The key that was used in the Plugin Sheet file where the plugin
                 was defined.
             info (dict[str]):
@@ -219,7 +218,7 @@ class FileDescriptor(object):
             #
             if duplicates:
                 raise ValueError(duplicate_uses_message.format(
-                    plug=plugin, uses=duplicates))
+                    plug=name, uses=duplicates))
 
             for hierarchy in uses:
                 if is_invalid_plugin(hierarchy, info):
@@ -230,12 +229,14 @@ class FileDescriptor(object):
                 info_ = cls._make_relative_context_absolute(info, parent=context)
 
                 plugin = plug.DataPlugin(
+                    name=name,
                     sources=(source, ),
                     info=dict_classes.ReadOnlyDict(info_),
                     assignment=assignment)
                 plugins.append((plugin, assignment))
         else:
             plugin = plug.DataPlugin(
+                name=name,
                 sources=(source, ),
                 info=dict_classes.ReadOnlyDict(info),
                 assignment=assignment)
@@ -700,40 +701,3 @@ def find_loader(path):
     raise NotImplementedError(
         'Path: "{path}" has no implementation. Expected one of "{opt}".'
         ''.format(path=path, opt=extensions))
-
-
-def check_plugin_uuid(info):
-    '''Make sure that the plugin UUID is not already taken.
-
-    Args:
-        info (dict[str]): Data that may become a proper plugin.
-
-    Raises:
-        RuntimeError: If the plugin's UUID is already taken.
-
-    '''
-    uuids = dict()
-
-    for cached_plugin in ways.PLUGIN_CACHE['all']:
-        try:
-            plugin_uuid = cached_plugin.get_uuid()
-        except AttributeError:
-            plugin_uuid = ''
-
-        if plugin_uuid:
-            uuids[plugin_uuid] = cached_plugin
-
-    try:
-        plugin_uuid = info['uuid']
-    except KeyError:
-        return
-
-    try:
-        used_plugin = uuids[plugin_uuid]
-    except KeyError:
-        return
-
-    raise RuntimeError(
-        'UUID: "{uuid_}" is already taken by plugin, "{plug}". Please choose '
-        'another name. Info: "{info}" is invalid.'.format(
-            uuid_=plugin_uuid, plug=used_plugin, info=info))
