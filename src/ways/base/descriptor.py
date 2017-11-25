@@ -21,6 +21,7 @@ import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
+import ways
 import yamlordereddictloader
 
 # IMPORT LOCAL LIBRARIES
@@ -149,6 +150,7 @@ class FileDescriptor(object):
             # Iterate over the plugins found in the Plugin Sheet
             for plugin, info in six.iteritems(data['plugins']):
                 self._conform_plugin_info(info)
+                check_plugin_uuid(info)
 
                 # If the plugin has a specific assignment given, use that,
                 # instead of what might be written in a config file or in globals
@@ -220,7 +222,7 @@ class FileDescriptor(object):
                     plug=plugin, uses=duplicates))
 
             for hierarchy in uses:
-                if is_valid_plugin(hierarchy, info):
+                if is_invalid_plugin(hierarchy, info):
                     continue
 
                 context = sit.get_context(
@@ -478,7 +480,7 @@ class GitRemoteDescriptor(GitLocalDescriptor):
         super(GitRemoteDescriptor, self).__init__(path=path, items=items, branch=branch)
 
 
-def is_valid_plugin(hierarchy, info):
+def is_invalid_plugin(hierarchy, info):
     '''Detect if a plugin's hierarchy is invalid, given its loaded information.
 
     A plugin that has cyclic dependencies is considered "invalid".
@@ -698,3 +700,40 @@ def find_loader(path):
     raise NotImplementedError(
         'Path: "{path}" has no implementation. Expected one of "{opt}".'
         ''.format(path=path, opt=extensions))
+
+
+def check_plugin_uuid(info):
+    '''Make sure that the plugin UUID is not already taken.
+
+    Args:
+        info (dict[str]): Data that may become a proper plugin.
+
+    Raises:
+        RuntimeError: If the plugin's UUID is already taken.
+
+    '''
+    uuids = dict()
+
+    for cached_plugin in ways.PLUGIN_CACHE['all']:
+        try:
+            plugin_uuid = cached_plugin.get_uuid()
+        except AttributeError:
+            plugin_uuid = ''
+
+        if plugin_uuid:
+            uuids[plugin_uuid] = cached_plugin
+
+    try:
+        plugin_uuid = info['uuid']
+    except KeyError:
+        return
+
+    try:
+        used_plugin = uuids[plugin_uuid]
+    except KeyError:
+        return
+
+    raise RuntimeError(
+        'UUID: "{uuid_}" is already taken by plugin, "{plug}". Please choose '
+        'another name. Info: "{info}" is invalid.'.format(
+            uuid_=plugin_uuid, plug=used_plugin, info=info))

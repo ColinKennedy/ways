@@ -284,9 +284,23 @@ platform. The platform that Ways will prefer is set with the WAYS_PLATFORM
 environment variable. If nothing is set, Ways will use the system OS returned by
 platform.system().lower().
 
-If "*" is a listed platform on a plugin, then it is automatically assumed that
-the plugin works on everything and any plugin with no platforms defined is
-assumed to work for all.
+::
+    plugins:
+        explicit_star_platform:
+            hierarchy: foo
+            platforms:
+                - *
+        implicit_star_platform:
+            hierarchy: foo
+        some_platforms:
+            hierarchy: foo
+            platforms:
+                - linux
+                - darwin
+
+If "*" is a platform on a plugin, then it is automatically assumed that
+the plugin works on everything. Any plugin with no platforms defined is
+assumed to be "*".
 
 The defined platforms can be any string you'd like. As long as one of the
 plugin's platforms matches the user's platforms defined in WAYS_PLATFORMS,
@@ -338,7 +352,7 @@ Ways will use the OS you've defined in the WAYS_PLATFORM environment variable.
 If that environment variable is not set, Ways will use your system OS.
 
 The path key exists because path-related plugins are difficult to write for
-more than one OS at a time. Take the next example. If we got the mapping for 
+more than one OS at a time. Take the next example. If we got the mapping for
 "foo/bar", with the Plugin Sheet below, we get an undesired result on Windows.
 
 .. code-block :: yaml

@@ -456,6 +456,22 @@ class ContextMethodTestCase(common_test.ContextTestCase):
         with self.assertRaises(OSError):
             context.validate_plugin('asfdas')
 
+    def test_duplicate_uuid_fail(self):
+        '''Two plugins with the same UUID should cause an exception error.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    uuid: a_duplicate_uuid
+                another_plugin:
+                    hierarchy: bar
+                    uuid: a_duplicate_uuid
+            ''')
+
+        with self.assertRaises(RuntimeError):
+            self._make_plugin_folder_with_plugin2(contents)
+
     def test_get_mapping_tokens(self):
         '''Get the Context's top-level tokens and the tokens from a string.'''
         contents = textwrap.dedent(

@@ -539,14 +539,14 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                     platforms:
                         - linux
                         - darwin
-                    uuid: TODO_need_a_uuid
+                    uuid: some_uuid
 
                 windows_parse_plugin:
                     hierarchy: job
                     mapping: '{temproot}\{{JOB}}'
                     platforms:
                         - windows
-                    uuid: TODO_need_a_uuid
+                    uuid: another_uuid
 
                 a_parse_details_plugin:
                     hierarchy: job

@@ -175,7 +175,7 @@ class PluginMethodTestCase(common_test.ContextTestCase):
                     },
                     'groups': ('*', ),
                     'hierarchy': '31tt/whatever',
-                    'uuid': '0d255517-dbbf-4a49-a8d0-285a06b2aa6d',
+                    'uuid': 'some_uuid',
                 },
                 'b_parse_plugin': {
                     'mapping': '/jobs/{JOB}/some_kind/of/real_folders/inner',
@@ -187,7 +187,7 @@ class PluginMethodTestCase(common_test.ContextTestCase):
                     },
                     'groups': tuple(),  # Just adding this plugin for coverage
                     'hierarchy': '31tt/whatever',
-                    'uuid': '0d255517-dbbf-4a49-a8d0-285a06b2aa6d',
+                    'uuid': 'a_unique_uuid',
                 },
                 'c_parse_plugin': {
                     'mapping': '/jobs/{JOB}/some_kind/of/real_folders/inner',

@@ -192,7 +192,7 @@ class DataPlugin(Plugin):
 
     def get_uuid(self):
         '''str: A unique ID for this plugin.'''
-        return self._info['uuid']
+        return self._info.get('uuid', '')
 
     def __repr__(self):
         '''str: The information needed to reproduce this instance.'''

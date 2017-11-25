@@ -345,10 +345,9 @@ def add_plugin(plugin, assignment='master'):
     PLUGIN_CACHE['hierarchy'][hierarchy].setdefault(assignment, [])
 
     # Add the plugin if it doesn't already exist
-    all_plugins = PLUGIN_CACHE['all']
-    if plugin not in all_plugins:
+    if plugin not in PLUGIN_CACHE['all']:
         PLUGIN_CACHE['hierarchy'][plugin.get_hierarchy()][assignment].append(plugin)
-        all_plugins.append(plugin)
+        PLUGIN_CACHE['all'].append(plugin)
 
 
 def clear():

@@ -153,3 +153,6 @@ __all__ = [
 
     'AssetFinder',
 ]
+
+# Create the initial plugins using environment variables
+init_plugins()
