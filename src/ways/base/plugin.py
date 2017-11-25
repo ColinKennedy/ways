@@ -207,7 +207,9 @@ class DataPlugin(Plugin):
     def __str__(self):
         '''str: A more concise print-out of this instance.'''
         return '{cls_}(hierarchy={hierarchy}, sources={sources!r})'.format(
-            hierarchy=self.get_hierarchy(), sources=self.sources)
+            cls_=self.__class__.__name__,
+            hierarchy=self.get_hierarchy(),
+            sources=self.sources)
 
 
 def get_assignment(obj):
