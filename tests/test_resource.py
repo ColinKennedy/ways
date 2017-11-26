@@ -43,7 +43,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
 
         self.assertNotEqual(asset, None)
 
-    def test_create_asset_from_string_fail(self):
+    def test_string_fail(self):
         '''Try to create an Asset and fail because the paths are different.'''
         contents = {
             'globals': {},
@@ -70,7 +70,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
 
         self.assertEqual(asset, None)
 
-    def test_create_asset_context_from_string(self):
+    def test_asset_from_string(self):
         '''Create an Asset class, giving a Context hierarchy as a string.'''
         contents = textwrap.dedent(
             '''
@@ -98,7 +98,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
     '''Test the methods on a ways.api.Asset object.'''
 
-    def test_asset_get_missing_required_tokens(self):
+    def test_missing_required_tokens(self):
         '''Find the tokens that are needed by a Asset/Context.'''
         contents = textwrap.dedent(
             '''
@@ -128,7 +128,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         required_tokens = asset.get_missing_required_tokens()
         self.assertEqual(required_tokens, ['JOB'])
 
-    def test_asset_get_unfilled_required_tokens(self):
+    def test_unfilled_required_tokens(self):
         '''Find tokens that don't have info for a Asset/Context.'''
         contents = textwrap.dedent(
             '''
@@ -207,7 +207,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         asset.set_value('THING', '8')
         self.assertEqual(asset.get_value('THING'), '8')
 
-    def test_get_value_with_token_that_has_value(self):
+    def test_value_from_token(self):
         '''Get the value of a token that is defined.'''
         contents = textwrap.dedent(
             '''
@@ -228,7 +228,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         asset = ways.api.get_asset({'SHOT_NAME': shot_value}, context='a/context')
         self.assertEqual(asset.get_value('SHOT_NAME'), shot_value)
 
-    def test_get_value_with_token_that_has_parent_value(self):
+    def test_value_from_parent_token(self):
         '''Build a value for a token, automatically, using its parent.'''
         contents = textwrap.dedent(
             '''
@@ -256,7 +256,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         value = asset.get_value('SHOT_ID')
         self.assertEqual(value, shot_id)
 
-    def test_get_value_with_token_that_has_child_values(self):
+    def test_value_from_child(self):
         '''Build a value for a token that has all child tokens defined.'''
         contents = textwrap.dedent(
             '''
@@ -285,7 +285,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         value = asset.get_value('SHOT_NAME')
         self.assertEqual(value, shot_prefix + '_' + shot_id)
 
-    def test_get_value_with_token_that_has_parent_value_recursive(self):
+    def test_value_parent_recursive(self):
         '''Build a value for a token, automatically, using its parent.'''
         contents = textwrap.dedent(
             '''
@@ -317,7 +317,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         value = asset.get_value('JOB_SITE')
         self.assertEqual(value, '1')
 
-    def test_get_value_from_parent_regex_parser(self):
+    def test_from_parent_regex_parser(self):
         '''Use regex to split a parent token and return some value.'''
         contents = textwrap.dedent(
             '''
@@ -348,7 +348,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         value = asset.get_value('JOB_SITE')
         self.assertEqual(value, '1')
 
-    def test_get_value_with_token_that_has_child_values_recursive(self):
+    def test_value_from_child_recursive(self):
         '''Build a value for a token that has all child tokens defined.'''
         contents = textwrap.dedent(
             '''
@@ -425,7 +425,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         value = asset.get_token_parse('SHOT_NAME')
         self.assertFalse(value)
 
-    def test_awkward_token_mappings_0001(self):
+    def test_awkward_mappings_0001(self):
         '''If a parent token is missing a value and its child has a bad mappging.
 
         A user will probably (hopefully) never do this but they may accidentally
@@ -483,7 +483,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
         value = asset.get_value('SHOT_NAME')
         self.assertFalse(value)
 
-    def test_unfilled_tokens_bugfix_0001_required_tokens_missing(self):
+    def test_token_bugfix_0001(self):
         '''Fixing an issue where get_unfilled_tokens was breaking my scripts.
 
         This is a reproduction of a larger issue that was found in production
@@ -753,7 +753,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         super(AssetRegistrationTestCase, self).setUp()
         ways.clear()
 
-    def test_register_and_create_a_custom_asset(self):
+    def test_register_custom_asset(self):
         '''Return back some class other than a default Asset class.'''
         asset_class = _get_asset_class()
         contents = textwrap.dedent(
@@ -790,7 +790,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         self.assertTrue(asset_is_default_asset_type)
         self.assertTrue(asset_is_not_default_asset_type)
 
-    def test_register_and_create_a_custom_asset_with_init(self):
+    def test_asset_hierarchy_with_init(self):
         '''Create an Asset class that is created with a non-default init.'''
         asset_class = _get_asset_class()
 
@@ -835,7 +835,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
         self.assertTrue(asset_is_default_asset_type)
         self.assertTrue(asset_is_not_default_asset_type)
 
-    def test_register_and_create_a_custom_asset_with_parent_hierarchy(self):
+    def test_asset_hierarchy(self):
         '''Call a custom Asset class from a child hierarchy, using its parent.'''
         asset_class = _get_asset_class()
         contents = textwrap.dedent(
@@ -887,13 +887,16 @@ def _get_asset_class():
         def __init__(self, info, context):
             '''Create the object.'''
             super(SomeNewAssetClass, self).__init__()
+            self.info = info
             self.context = context
 
-        def example_method(self):
+        @classmethod
+        def example_method(cls):
             '''Run some method.'''
             return 8
 
-        def another_method(self):
+        @classmethod
+        def another_method(cls):
             '''Run another method.'''
             return 'bar'
 

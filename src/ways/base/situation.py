@@ -45,7 +45,6 @@ from . import connection as conn
 from ..core import pathrip
 from ..helper import common
 from ..parsing import parse
-from ..parsing import tracehelper
 
 
 class Context(object):
@@ -403,7 +402,7 @@ class Context(object):
 
     def get_max_folder(self):
         '''str: The highest mapping point that this Context lives in.'''
-        return self.connection['get_max_folder'](self.plugins, self)
+        return self.connection['get_max_folder'](self.plugins)
 
     def get_platforms(self):
         '''Get The OSes that this Context runs on.
@@ -580,16 +579,14 @@ def context_connection_info():
 
         return resolved_mapping
 
-    def get_max_folder(plugins, context):
+    def get_max_folder(plugins):
         '''Get the max folder that this Context is allowed to move into.
 
         Args:
-            plugins (list[:class:`ways.api.Plugin`]):
-                The plugin to get the max folder of.
+            plugins (list[:class:`ways.api.Plugin`]): The plugins to use.
 
         Returns:
-            str:
-                The furthest up that this Context is allowed to move.
+            str: The furthest up that this Context is allowed to move.
 
         '''
         def startswith_iterable(root, startswith):

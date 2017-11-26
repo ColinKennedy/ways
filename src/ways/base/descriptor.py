@@ -21,7 +21,6 @@ import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
-import ways
 import yamlordereddictloader
 
 # IMPORT LOCAL LIBRARIES

@@ -188,7 +188,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
     def test_path_problem(self):
         '''Test the block of code that illustrates the path problem.'''
         contents = textwrap.dedent(
-            '''
+            r'''
             plugins:
                 path_plugin:
                     hierarchy: foo
@@ -211,7 +211,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         self._make_plugin_sheet(contents=contents)
 
         if platform.system() == 'Windows':
-            mapping = 'Z:\jobs\{JOB}/shots'
+            mapping = r'Z:\jobs\{JOB}/shots'
         else:
             mapping = '/jobs/{JOB}/shots'
 
@@ -221,7 +221,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
     def test_path_solution(self):
         '''Show how setting "path: true" fixes the path problem.'''
         contents = textwrap.dedent(
-            '''
+            r'''
             plugins:
                 path_plugin:
                     hierarchy: foo
@@ -247,7 +247,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
         self._make_plugin_sheet(contents=contents)
 
         if platform.system() == 'Windows':
-            mapping = 'Z:\jobs\{JOB}\shots'
+            mapping = r'Z:\jobs\{JOB}\shots'
         else:
             mapping = '/jobs/{JOB}/shots'
 

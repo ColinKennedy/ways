@@ -62,7 +62,8 @@ class ContextTestCase(unittest.TestCase):
 
         return plugin_file
 
-    def _make_plugin(self, contents):
+    @classmethod
+    def _make_plugin(cls, contents):
         '''str: Create a Python plugin file and load it into Ways.'''
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as file_:
             file_.write(contents)

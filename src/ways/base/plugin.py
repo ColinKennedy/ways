@@ -5,7 +5,6 @@
 
 # IMPORT STANDARD LIBRARIES
 import uuid
-import inspect
 
 # IMPORT THIRD-PARTY LIBRARIES
 import six
