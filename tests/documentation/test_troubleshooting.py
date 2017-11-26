@@ -258,15 +258,18 @@ class HierarchyTestCase(TroubleshootingTestCase):
         '''Use an Action function to find the hierachies that it can run on.'''
         self._make_simple_plugin_tree()
 
-        def some_function():
+        def some_function(obj):
             '''Do some function.'''
-            print('Example function return')
+            obj = None
+            return 8
 
         common_test.build_action('some_action', hierarchy='foo/fizz')
 
         ways.api.add_action(some_function, name='something', hierarchy='foo/bar')
+        context = ways.api.get_context('foo/bar')
         expected = {('foo', 'bar'), }
         self.assertEqual(expected, ways.api.get_action_hierarchies(some_function))
+        self.assertEqual(8, context.actions.something())
 
     def test_get_all_action_hierarchies(self):
         '''Get every Action name and the hierarchies that can use it.'''
