@@ -194,7 +194,7 @@ class AliasAssignmentFactory(_AssignmentFactory):
             if current == tuple():
                 current = hierarchy
 
-            # Keep following the aliases until we get to the real hierachy
+            # Keep following the aliases until we get to the real hierarchy
             try:
                 current = self.aliases[current]
             except KeyError:
@@ -215,7 +215,7 @@ class AliasAssignmentFactory(_AssignmentFactory):
             follow_alias (:obj:`bool`, optional):
                 If True, the instance's hierarchy is assumed to be an alias
                 for another hierarchy and the returned instance will use
-                the "real" hierachy. If False, the instance will stay as
+                the "real" hierarchy. If False, the instance will stay as
                 the aliased hierarchy, completely unmodified.
                 Default is False.
             force (:obj:`bool`, optional):

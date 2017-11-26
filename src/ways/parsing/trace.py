@@ -447,7 +447,7 @@ def get_child_hierarchies(hierarchy):
         hierarchy = plugin.get_hierarchy()
 
         # If the plugin's hierarchy is less than the base, it is probably
-        # above it. Which means it doesn't inherit from this hierachy
+        # above it. Which means it doesn't inherit from this hierarchy
         #
         is_parent = len(hierarchy) < len(base_hierarchy)
 

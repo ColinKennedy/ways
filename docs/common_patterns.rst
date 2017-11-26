@@ -362,7 +362,7 @@ can still use it. Just add an init function:
     # Result: <AssetClass>
 
 By default, you will need to register a class/init function for every hierarchy
-that you want to swap. So if you had hierachies like this, "some",
+that you want to swap. So if you had hierarchies like this, "some",
 "some/other", "some/other/child", and "some/other/child/hierarchy" then you'd
 need to register the custom class for all 4 hierarchies individually. If you're
 prefer to register them for "this hierarchy and all its subhierarchies", set

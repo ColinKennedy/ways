@@ -327,7 +327,7 @@ This can be done with Ways, too, with a slight modification of the Plugin Sheet.
     print(asset2.get_value('JOB'))
     # Result on Windows: 'someJobName_123'
 
-The "discipline" key uses "job" hierachy and "job" is defined differently
+The "discipline" key uses "job" hierarchy and "job" is defined differently
 depending on the user's OS.
 
 Lets add some more complexity - Now our project needs to be able to query the
