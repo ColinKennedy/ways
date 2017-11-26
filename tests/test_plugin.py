@@ -92,43 +92,6 @@ class PluginCreationTestCase(common_test.ContextTestCase):
         with self.assertRaises(ValueError):
             self._make_plugin_sheet(contents=contents, ending='.yml')
 
-    # def test_failed_plugin_self_referring_uses(self):
-    #     contents = textwrap.dedent(
-    #         '''
-    #         globals: {}
-    #         plugins:
-    #             a_parse_plugin:
-    #                 mapping: 'something'
-    #                 hierarchy: 27ztt
-    #             relative_plugin:
-    #                 mapping: '{root}/foo'
-    #                 hierarchy: '{root}/whatever'
-    #                 uses:
-    #                     - 27ztt/whatever
-
-    #         ''')
-
-    #     self._make_plugin_sheet(contents=contents, ending='.yml')
-
-    #     # TODO : What do I do about this one?
-    #     # contents = textwrap.dedent(
-    #     #     '''
-    #     #     globals: {}
-    #     #     plugins:
-    #     #         another:
-    #     #             mapping: 'something/else'
-    #     #             hierarchy: 27ztt/whatever
-
-    #     #     ''')
-
-    #     # plugin_path = self._make_plugin_sheet(
-    #     #     contents=contents, ending='.yml')
-
-    #     context = ways.api.get_context('27ztt/whatever/whatever')
-    #     raise ValueError(context.get_mapping())
-    #     raise ValueError(context.get_hierarchy())
-    #     raise ValueError(context)
-
 
 class PluginMethodTestCase(common_test.ContextTestCase):
 
