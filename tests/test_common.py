@@ -30,7 +30,6 @@ class ParseTestCase(unittest.TestCase):
 
         self.assertEqual(expected_output, common.expand_string(format_string, shot))
 
-    # TODO : collapse these tests, using nose?
     def test_expand_string_failure_0001(self):
         '''Force expand_string fails to prevent a bad match from occurring.'''
         text = '/jobs/some_job/some_kind/of/real_folders'
@@ -38,7 +37,6 @@ class ParseTestCase(unittest.TestCase):
 
         self.assertFalse(common.expand_string(pattern, text))
 
-    # TODO : collapse these tests, using nose?
     def test_expand_string_failure_0002(self):
         '''Force expand_string fails to prevent a bad match from occurring.'''
         text = '/jobs/some_job/some_kind/of/real_folders'

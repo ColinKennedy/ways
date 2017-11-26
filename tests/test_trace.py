@@ -122,7 +122,6 @@ class TraceTestCase(Common):
         context = self._setup_simple_contexts()
         _init_actions()
 
-        # TODO : Yield with nose?
         for obj in self._get_object_interfaces(context):
             actions = ways.api.trace_actions(obj, duplicates=False)
             self.assertEqual(len(actions), 2)
@@ -133,7 +132,6 @@ class TraceTestCase(Common):
 
         context = self._setup_simple_contexts()
 
-        # TODO : Yield with nose?
         for obj in self._get_object_interfaces(context):
             actions = ways.api.trace_actions(obj, duplicates=True)
             self.assertEqual(len(actions), 2)
@@ -143,7 +141,6 @@ class TraceTestCase(Common):
         context = self._setup_simple_contexts()
         _init_actions()
 
-        # TODO : Yield with nose?
         for obj in self._get_object_interfaces(context):
             actions = ways.api.trace_action_names(obj)
             self.assertEqual(len(actions), 2)
@@ -153,7 +150,6 @@ class TraceTestCase(Common):
         context = self._setup_simple_contexts()
         _init_actions()
 
-        # TODO : Yield with nose?
         for obj in self._get_object_interfaces(context):
             actions = ways.api.trace_actions_table(obj)
             self.assertTrue(actions)
@@ -275,11 +271,6 @@ class TraceHierarchyTestCase(Common):
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=False))
 
 
-# TODO : Make sure to run tests to make sure that the contents of dir
-#        are what we expect
-#
-#        Also add tests for core - because that makes sense, too
-#
 class DirTestCase(Common):
 
     '''Test that methods that rely on Ways object.__dir__ work properly.'''
@@ -289,9 +280,6 @@ class DirTestCase(Common):
 
         This test is tangentially related to trace because it uses trace to
         find the actions.
-
-        Todo:
-            This is a weird place for this test. Move it someplace else.
 
         '''
         _init_actions()

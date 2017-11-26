@@ -88,7 +88,6 @@ class DescriptorsTestCase(common_test.ContextTestCase):
             )
         ]
 
-        # TODO : nose!
         for info, encoding, class_item in composite:
             # Check to make sure the inspected encoding is OK
             details = ways.api.decode(encoding)

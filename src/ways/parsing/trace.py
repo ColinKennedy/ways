@@ -21,8 +21,6 @@ from ..base import situation as sit
 from ..core import loop
 from ..helper import common
 
-# TODO : Maybe move this to find.py and then move the path class out
-
 
 def _create_fake_uuid():
     return 'ways_generated-' + uuid.uuid4().hex
@@ -203,8 +201,6 @@ def trace_context(obj):
         return obj
 
     # Is it a AssetFinder?
-    # TODO : This dir check is super ghetto. Make this better!
-    #
     if 'finder' in dir(obj):
         obj = obj.finder
 
