@@ -238,7 +238,7 @@ def get_action(name, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
 
 
 def get_known_platfoms():
-    '''The platforms that Ways sees.
+    '''Find the platforms that Ways sees.
 
     This will return back the platforms defined in the WAYS_PLATFORMS
     environment variable. If WAYS_PLATFORMS isn't defined, a default set of

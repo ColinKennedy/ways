@@ -137,7 +137,12 @@ class DataPlugin(Plugin):
         return ('hierarchy', )
 
     def is_path(self):
-        '''bool or NoneType: If the mapping is a filepath or None if unsure.'''
+        '''If the mapping is a filepath or None if unsure.
+
+        Returns:
+            bool or NoneType: If the mapping is a path to a file/folder on disk.
+
+        '''
         try:
             return self._info['path']
         except KeyError:

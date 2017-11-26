@@ -617,7 +617,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
 
     @unittest.skipUnless(platform.system() == 'Linux', 'requires Linux')
     def test_path_true_relative_windows(self):
-        '''Make Windows-style paths convert into Linux paths'''
+        '''Make Windows-style paths convert into Linux paths.'''
         contents = textwrap.dedent(
             '''
             plugins:
