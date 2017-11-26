@@ -7,23 +7,7 @@
 They are necessary because Context objects are flyweights and, because of that,
 cannot carry instance data.
 
-Attributes:
-    ASSET_FACTORY (dict[tuple[str]: dict[str]]:
-        This dict should not be changed directly. You should use
-        the functions in this module, instead.
-
-        It is a global dictionary that stores classes that are meant to swap
-        for an Asset object. ASSET_FACTORY's key is the hierarchy of the Context
-        and its value is another dict, which looks like this:
-
-        'class': The class to swap for.
-        'init': A custom inititialization function for the class (if needed).
-        'children': If True, the class is used for all hierarchies that build
-        off of the given hierarchy. If False, the class is only added to the
-        given hierarchy.
-
 '''
-
 
 # IMPORT STANDARD LIBRARIES
 # scspell-id: 3c62e4aa-c280-11e7-be2b-382c4ac59cfd
@@ -41,16 +25,16 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import pylev
 from . import trace
-from . import common
-from . import finder as find
-from . import situation as sit
-from .core import check
-from .core import compat
+from . import registry
+from ..base import finder as find
+from ..base import situation as sit
+from ..core import check
+from ..core import compat
+from ..helper import pylev
+from ..helper import common
 
 __DEFAULT_OBJECT = object()
-ASSET_FACTORY = dict()
 
 
 class Asset(object):
@@ -95,6 +79,7 @@ class Asset(object):
 
         self.info = info
         self.context = context
+        self.actions = AssetFinder(finder=find.Find(self.context), asset=self)
 
         missing_tokens = self.get_missing_required_tokens()
         if missing_tokens:
@@ -103,10 +88,6 @@ class Asset(object):
                 'Info is missing tokens, "{keys}"'.format(
                     info=self.info, context=self.context, keys=missing_tokens))
 
-    @property
-    def actions(self):
-        '''AssetFinder: The wrapped Find object.'''
-        return AssetFinder(finder=find.Find(self.context), asset=self)
 
     def get_missing_required_tokens(self):
         '''Find any token that still needs to be filled for our parser.
@@ -470,6 +451,7 @@ def _expand_using_context(context, text, choices=None, default=__DEFAULT_OBJECT)
     for key in order:
         getter = pattern_getter.get(key, lambda: None)
         pattern = getter()
+
         if pattern:
             value = _expand_using_parse_types(
                 parse=pattern, text=text, choices=choices, default=default)
@@ -534,7 +516,7 @@ def _get_expand_choices():
     As long as the parse type can return a dict, given some text, it's valid.
 
     Returns:
-        <collections.OrderedDict>[str: callable]:
+        :class:`collections.OrderedDict` [str: callable]:
             The parse type and expansion function.
 
     '''
@@ -644,8 +626,9 @@ def get_asset(info, context=None, *args, **kwargs):
             The Context to use for the asset. If a string is given, it is
             assumed to be the Context's hierarchy and a Context object
             is constructed. If nothing is given, the best possible Context
-            is "found" and tried. This auto-find process is not guaranteed.
-            Default is None.
+            is "found" and tried. This auto-find process will try to find the
+            "best" match by looking at every known Context's mapping.
+            A match is not guaranteed. Default is None.
         *args (list): Optional position variables to pass to our found
                       class's constructor.
         **kwargs (dict): Optional keyword variables to pass to our found
@@ -661,115 +644,30 @@ def get_asset(info, context=None, *args, **kwargs):
 
     '''
     if not context:
-        context = _find_context_using_info(info)
-        if context is None:
+        context_ = _find_context_using_info(info)
+        if context_ is None:
             raise ValueError('Context could not be found for info, "{info}".'.format(info=info))
     else:
-        context = sit.get_context(context)
+        context_ = sit.get_context(context)
+
+    if context_:
+        context = context_
+    else:
+        raise ValueError('Context: "{context}" could not be found. '
+                         'Cannot continue.'.format(context=context))
 
     info = expand_info(info, context=context)
     hierarchy = context.get_hierarchy()
 
-    _, init = get_asset_info(hierarchy)
+    _, init = registry.get_asset_info(hierarchy)
+
+    if not init:
+        init = registry.make_default_init(Asset)
 
     try:
         return init(info, context, *args, **kwargs)
     except Exception:
         return
-
-
-def get_asset_class(hierarchy):
-    '''Get the class that is registered for a Context hierarchy.'''
-    return get_asset_info(hierarchy)[0]
-
-
-def get_asset_info(hierarchy):
-    '''Get the class and initialization function for a Context hierarchy.
-
-    Args:
-        hierarchy (tuple[str] or str):
-            The hierarchy to get the asset information of.
-
-    Returns:
-        tuple[classobj, callable]:
-            The class type and the function that is used to instantiate it.
-
-    '''
-    class_type = Asset  # Asset is our fallback if no other type was defined.
-    init = functools.partial(make_default_init, class_type)
-
-    # Try to find a class type from one of our parent hierarchies
-    for index in reversed(range(len(hierarchy) + 1)):
-        hierarchy_piece = tuple(hierarchy[:index])
-
-        hierarchy_info = ASSET_FACTORY.get(hierarchy_piece, dict())
-
-        try:
-            class_type_ = ASSET_FACTORY[hierarchy_piece]['class']
-            init_ = ASSET_FACTORY[hierarchy_piece]['init']
-        except KeyError:
-            continue
-
-        if hierarchy_piece == hierarchy or hierarchy_info.get('children', False):
-            class_type = class_type_
-            init = init_
-            break
-
-    return (class_type, init)
-
-
-def expand_info(info, context=None):
-    '''Get parsed information, using the given Context.
-
-    Note:
-        This function requires regex in order to parse.
-
-    Todo:
-        Maybe I can abstract the parser to use different parse options, like I
-        did in get_value_from_parent. And then if that doesn't work, I can
-        add the option to "register" a particular parser.
-
-    Args:
-        info (dict[str] or str):
-            The info to expand. If the input is a dict, it is passed through
-            and returned. If it is a string, the string is parsed against the
-            given context.
-        context (:obj:`<sit.Context>`, optional):
-            The Context that will be used to parse info.
-            If no Context is given, the Context is automatically found.
-            Default is None.
-
-    Raises:
-        NotImplementedError:
-            If context is None. There's no auto-find-context option yet.
-
-    Returns:
-        dict[str]: The asset info.
-
-    '''
-    # Is already a dict
-    if isinstance(info, dict):
-        return info
-
-    # Context is probably a string like '/jobs/jobName/here'. If that's the case
-    # then we'll expand it into a dict by using a Context's mapping.
-    #
-    # i.e. path is '/jobs/jobName/here'
-    #      context mapping is '/jobs/{JOB}/here'
-    #      Result: {'JOB': 'jobName'}
-    #
-    try:
-        return _expand_using_context(context, info, default=dict())
-    except AttributeError:
-        pass
-
-    # Is it an iterable-pair object that we can make into a dict?
-    # i.e. (('some': 'thing'), ) -> {'some': 'thing'}
-    #
-    try:
-        return dict(info)
-    except TypeError:
-        return dict()
 
 
 def _get_missing_required_tokens(context, info):
@@ -806,12 +704,7 @@ def _get_missing_required_tokens(context, info):
             missing_tokens.append(token)
 
     # Try to resolve the tokens
-    # TODO : If I reverse the list, could I get away with not creating a
-    #        copy of missing_tokens? Check with unittests + do some profiling
-    #
-    #        Check after coverage
-    #
-    for token in list(missing_tokens):
+    for token in reversed(missing_tokens):
         value = _get_value(token, parser=parser, info=info)
         if value:
             parser[token] = value
@@ -1083,11 +976,23 @@ def _get_value(name, parser, info):
     return get_value_from_children(name, parser, info)
 
 
-# pylint: disable=too-many-branches,too-many-locals
 def _find_context_using_info(obj):
     '''Use some Asset's info, get the best-possible Context.
 
     This function is meant to assist "get_asset" whenever a Context is not given.
+
+    It works first by getting every Context that could work with the given object.
+    Then, if more than one Context matches the given object, we attempt to
+    "break the tie" between all of the Contexts to get a clear winner. This is
+    done by looking at every Token defined in "mapping_details", to try to
+    find if the user's input matches each of the Tokens on the Context.
+
+    If obj is a string and the match Contexts have mappings, this function runs
+    much more quickly because Ways will sort the valid Contexts by how close
+    obj resembles the mapping. So the more "relevant" Contexts are tried before
+    lesser Contexts.
+
+    It's best to give a string whenever possible.
 
     Args:
         obj (dict[str: str] or str):
@@ -1096,7 +1001,7 @@ def _find_context_using_info(obj):
             used instead, if not.
 
     Returns:
-        <ways.api.Context>: The "best-guess" Context for some information.
+        :class:`ways.api.Context`: The "best-guess" Context for some information.
 
     '''
     def contains_all_tokens(context, obj):
@@ -1144,12 +1049,11 @@ def _find_context_using_info(obj):
 
         '''
         mapping = context.get_mapping()
-
         # This algorithm gets thrown off by any contents inside {}s
         # so we're going to make the mapping from strings like
         # '/jobs/{JOBS}/here' into '/jobs//here' to make the sort more fair
         #
-        mapping = re.sub('({[^{}}]*)', mapping, '')
+        mapping = re.sub('({[^{}]*})', '', mapping)
 
         return pylev.levenshtein(mapping, obj)
 
@@ -1178,6 +1082,7 @@ def _find_context_using_info(obj):
 
         # If the high score is listed twice then we can't know which Context
         # to use so raise an error
+        #
         high_scorers = []
         for context, ranking in six.moves.zip(contexts, rankings):
             if ranking == high_score:
@@ -1261,25 +1166,74 @@ def _find_context_using_info(obj):
                 with are both valid, given the user's information.
 
         Returns:
-            <ways.api.Context>: The "winner" Context.
+            :class:`ways.api.Context` or NoneType: The "winner" Context.
 
         '''
         tied_info = get_context_info_from_pool(contexts, info)
         valid_contexts = get_valid_contexts(tied_info)
 
-        if len(valid_contexts) == 1:
+        if not valid_contexts:
+            return
+        elif len(valid_contexts) == 1:
             # Tie-break succeeded
             return valid_contexts[0]
 
         raise ValueError(
-            'Ways got two or more Contexts that tied for mapping, "{mapping}. '
-            'Ways cannot decide which Contexts to use, "{contexts}".'
-            ''.format(mapping=mapping, contexts=contexts))
+            'Ways got two or more Contexts and cannot decide which to use, '
+            '"{contexts!s}".'.format(contexts=[str(context) for context in contexts]))
+
+    def find_context_by_mapping(mapping, contexts):
+        '''Get the correct Context by matching the user's mapping.
+
+        As the function implies, at least one Context given must have a mapping
+        and that mapping should match the Context.
+
+        Args:
+            mapping (str): The mapping that is expected to match the Contexts.
+            contexts (list[:class:`ways.api.Context`]): The Contexts to match with.
+
+        Returns:
+            :class:`ways.api.Context`: The "winner" Context.
+
+        '''
+        try:
+            return get_best_context_by_rankings(list(contexts.keys()), mapping)
+        except ValueError as err:
+            # Try to break the tie, if we can
+            tied_contexts = err.args[-1]
+        return tiebreak(tied_contexts, contexts)
+
+    def filter_valid_contexts(info, contexts):
+        '''Use the given information to find the correct Context.
+
+        This function is very basic. All it does it tries to build an Asset,
+        using the given Context information. If the Asset successfully
+        instantiates, it's assumed that the info was correct.
+
+        Args:
+            info (dict[str, str]): The information to try to get a Context of.
+            contexts (list[:class:`ways.api.Context`]): The Contexts to match.
+
+        Returns:
+            list[:class:`ways.api.Context`]: The Contexts that make valid Assets,
+                                             when given some info.
+
+        '''
+        output = []
+        for context in six.iterkeys(contexts):
+            try:
+                Asset(info, context)
+            except ValueError:
+                # The object was not valid input for the Asset. Just ignore it and move on
+                continue
+
+            output.append(context)
+
+        return output
 
     mapping = ''
     contexts_ = sit.get_all_contexts()
-    contexts_with_info = dict()
-    contexts = []
+    contexts = collections.OrderedDict()
     if not isinstance(obj, collections.Mapping):
         mapping = obj
 
@@ -1296,8 +1250,7 @@ def _find_context_using_info(obj):
                 # expand_string raises an error if context.get_mapping is invalid
                 pass
             else:
-                contexts.append(context)
-                contexts_with_info[context] = expanded_info
+                contexts[context] = expanded_info
 
         if not contexts:
             raise ValueError('No plugins found had mappings. Cannot continue.')
@@ -1305,91 +1258,73 @@ def _find_context_using_info(obj):
         # Otherwise, if it is a mapping (i.e. a dict), we use all contexts
         for context in contexts_:
             if contains_all_tokens(context, obj):
-                contexts.append(context)
-                contexts_with_info[context] = obj
+                contexts[context] = obj
 
     # We'll find the Context we're searching for faster if we sort the more
     # likely candidates to the front. But we can only do that if obj is a string
     #
-    # In this example, we use a Levenshtein sort to figure out the "best" Context
-    #
     if mapping:
-        try:
-            return get_best_context_by_rankings(contexts, mapping)
-        except ValueError as err:
-            # Try to break the tie, if we can
-            tied_contexts = err.args[-1]
-            return tiebreak(tied_contexts, contexts_with_info)
+        return find_context_by_mapping(mapping, contexts)
 
-    valid_contexts = []
-    for context in contexts:
-        try:
-            Asset(obj, context)
-        except ValueError:
-            continue
-        valid_contexts.append(context)
+    # Otherwise, lets just try to find the best-guess
+    valid_contexts = filter_valid_contexts(obj, contexts)
 
     if len(valid_contexts) == 1:
         return valid_contexts[0]
 
-    # Try to break the tie, if we can
-    return tiebreak(valid_contexts, contexts_with_info)
+    # More than one Context was valid. Try to find one clear winner, if we can
+    return tiebreak(valid_contexts, contexts)
 
 
-def register_asset_info(class_type, context, init=None, children=False):
-    '''Change get_asset to return a different class, instead of an Asset.
+def expand_info(info, context=None):
+    '''Get parsed information, using the given Context.
 
-    The Asset class is useful but it may be too basic for some people's purposes.
-    If you have an existing class that you'd like to use with Ways,
+    Note:
+        This function requires regex in order to parse.
 
-    Args:
-        class_type (classobj):
-            The new class to use, instead.
-            context (str or :class:`ways.api.Context`):
-            The Context to apply our new class to.
-        init (:obj:`callable`, optional):
-            A function that will be used to create an instance of class_type.
-            This variable is useful if you need to customize your class_type's
-            __init__ in a way that isn't normal (A common example: If you want
-            to create a class_type that does not pass context into its __init__,
-            you can use this variable to catch and handle that).
-        children (:obj:`bool`, optional):
-            If True, this new class_type will be applied to child hierarchies
-            as well as the given Context's hierarchy. If False, it will only be
-            applied for this Context. Default is False.
-
-    '''
-    if init is None:
-        init = functools.partial(make_default_init, class_type)
-
-    context = sit.get_context(context, force=True)
-
-    ASSET_FACTORY[context.get_hierarchy()] = dict()
-    ASSET_FACTORY[context.get_hierarchy()]['class'] = class_type
-    ASSET_FACTORY[context.get_hierarchy()]['init'] = init
-    ASSET_FACTORY[context.get_hierarchy()]['children'] = children
-
-
-def make_default_init(class_type, *args, **kwargs):
-    '''Just make the class type, normally.'''
-    return class_type(*args, **kwargs)
-
-
-def reset_asset_classes(hierarchies=tuple()):
-    '''Clear out the class(es) that is registered under a given hierarchy.
+    Todo:
+        Maybe I can abstract the parser to use different parse options, like I
+        did in get_value_from_parent. And then if that doesn't work, I can
+        add the option to "register" a particular parser.
 
     Args:
-        hierarchies (iter[tuple[str]]):
-            All of the hierarchies to remove custom Asset classes for.
-            If nothing is given, all hierarchies will be cleared.
+        info (dict[str] or str):
+            The info to expand. If the input is a dict, it is passed through
+            and returned. If it is a string, the string is parsed against the
+            given context.
+        context (:class:`<ways.api.Context`, optional):
+            The Context that will be used to parse info.
+            If no Context is given, the Context is automatically found.
+            Default is None.
+
+    Raises:
+        NotImplementedError:
+            If context is None. There's no auto-find-context option yet.
+
+    Returns:
+        dict[str]: The asset info.
 
     '''
-    if not hierarchies:
-        hierarchies = ASSET_FACTORY.keys()
+    # Is already a dict
+    if isinstance(info, dict):
+        return info
 
-    for key in hierarchies:
-        if key not in ASSET_FACTORY:
-            continue
+    # Context is probably a string like '/jobs/jobName/here'. If that's the case
+    # then we'll expand it into a dict by using a Context's mapping.
+    #
+    # i.e. path is '/jobs/jobName/here'
+    #      context mapping is '/jobs/{JOB}/here'
+    #      Result: {'JOB': 'jobName'}
+    #
+    try:
+        return _expand_using_context(context, info, default=dict())
+    except AttributeError:
+        pass
 
-        # Reset the key
-        ASSET_FACTORY[key] = ASSET_FACTORY[key].__class__()
+    # Is it an iterable-pair object that we can make into a dict?
+    # i.e. (('some': 'thing'), ) -> {'some': 'thing'}
+    #
+    try:
+        return dict(info)
+    except TypeError:
+        return dict()

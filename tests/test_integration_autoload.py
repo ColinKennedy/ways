@@ -35,7 +35,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
             import os
 
             # IMPORT THIRD-PARTY LIBRARIES
-            from ways import cache
+            from ways.base import cache
             import ways.api
 
 
@@ -92,7 +92,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
 
                 # Register a new class type for our Context
                 context = ways.api.get_context('some/thing2/context')
-                ways.api.register_asset_info(
+                ways.api.register_asset_class(
                     SomeNewAssetClass, context, init=a_custom_init_function)
 
             """)
@@ -110,9 +110,8 @@ class AutoloadTestCase(common_test.ContextTestCase):
         ways.api.init_plugins()
 
         path = '/jobs/some_job/some_kind/of/real_folders'
-        self.assertFalse(
-            isinstance(ways.api.get_asset(info=path, context='some/thing2/context'),
-                       ways.api.Asset))
+        asset = ways.api.get_asset(info=path, context='some/thing2/context')
+        self.assertFalse(isinstance(asset, ways.api.Asset))
 
     def test_plugins_from_env_folder(self):
         '''Mimic a user adding plugin folders to a pathfinder env var.'''
@@ -183,7 +182,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
 
                 # Register a new class type for our Context
                 context = ways.api.get_context('some/thing2/context')
-                ways.api.register_asset_info(
+                ways.api.register_asset_class(
                     SomeNewAssetClass, context, init=a_custom_init_function)
 
             """)
@@ -205,41 +204,3 @@ class AutoloadTestCase(common_test.ContextTestCase):
         self.assertFalse(
             isinstance(ways.api.get_asset(info=path, context='some/thing2/context'),
                        ways.api.Asset))
-
-    # TODO : Make this test pass, again
-    # def test_load_descriptors_from_env_var(self):
-    #     '''Mimic a user adding descriptors to our environment variable.'''
-    #     contents = textwrap.dedent(
-    #         '''
-    #         globals: {}
-    #         plugins:
-    #             a_parse_plugin:
-    #                 hierarchy: 2tt/whatever
-    #                 mapping: /jobs/whatever/some_kind/of/real_folders
-    #                 uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
-    #         ''')
-
-    #     # plugin_file = common_test.make_folder_plugin(
-    #     #     'AnotherClass', contents=contents)
-    #     plugin_file = self._make_plugin_folder_with_plugin2(
-    #         contents=contents, ending='.json')
-
-    #     # Add the path to our env var
-    #     plugin_env_var = 'WAYS_DESCRIPTORS'
-    #     os.environ.setdefault(plugin_env_var, '')
-    #     stored_plugins = os.environ[plugin_env_var]
-
-    #     if stored_plugins:
-    #         stored_plugins += os.pathsep
-    #     stored_plugins += plugin_file
-    #     os.environ[plugin_env_var] = stored_plugins
-
-    #     history = self.cache
-
-    #     # Note: This method normally runs on init but because of other tests
-    #     #       instantiating the HistoryCache, we just re-add our plugins
-    #     #
-    #     history.init_plugins()
-
-    #     context = ways.api.get_context('2tt/whatever')
-    #     self.assertNotEqual(context, None)

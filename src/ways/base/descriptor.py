@@ -22,15 +22,13 @@ import collections
 # IMPORT THIRD-PARTY LIBRARIES
 import six
 import yamlordereddictloader
-# pylint: disable=import-error,ungrouped-imports
-from six.moves.urllib import parse
 
 # IMPORT LOCAL LIBRARIES
-from . import common
 from . import plugin as plug
 from . import situation as sit
-from . import dict_classes
-from .core import check
+from ..core import check
+from ..helper import common
+from ..helper import dict_classes
 
 GLOBALS_KEY = 'globals'
 PLUGIN_INFO_FILE_NAME = '.ways_plugin_info'
@@ -166,7 +164,7 @@ class FileDescriptor(object):
         return plugins
 
     @classmethod
-    def _build_plugins(cls, source, plugin, info, assignment):
+    def _build_plugins(cls, source, name, info, assignment):
         '''Create a Plugin or multiple Plugin objects.
 
         This method is meant to be used with get_plugins. It just exists
@@ -175,7 +173,7 @@ class FileDescriptor(object):
         Args:
             source (str):
                 The location to a file on disk that defined plugin.
-            plugin (str):
+            name (str):
                 The key that was used in the Plugin Sheet file where the plugin
                 was defined.
             info (dict[str]):
@@ -219,10 +217,10 @@ class FileDescriptor(object):
             #
             if duplicates:
                 raise ValueError(duplicate_uses_message.format(
-                    plug=plugin, uses=duplicates))
+                    plug=name, uses=duplicates))
 
             for hierarchy in uses:
-                if is_valid_plugin(hierarchy, info):
+                if is_invalid_plugin(hierarchy, info):
                     continue
 
                 context = sit.get_context(
@@ -230,12 +228,14 @@ class FileDescriptor(object):
                 info_ = cls._make_relative_context_absolute(info, parent=context)
 
                 plugin = plug.DataPlugin(
+                    name=name,
                     sources=(source, ),
                     info=dict_classes.ReadOnlyDict(info_),
                     assignment=assignment)
                 plugins.append((plugin, assignment))
         else:
             plugin = plug.DataPlugin(
+                name=name,
                 sources=(source, ),
                 info=dict_classes.ReadOnlyDict(info),
                 assignment=assignment)
@@ -304,11 +304,7 @@ class FileDescriptor(object):
             plugin_info_file = ''
             last_item = None
 
-            # This is a bit hacky but just add an extra name to the path
-            # so that when os.path.dirname happens, we start with the current
-            # dir
-            #
-            path = os.path.join(path, 'asdfasdf')
+            path = os.path.join(path, '.unimportant_folder_that_will_be_removed')
 
             while last_item != path:
                 last_item = path
@@ -429,7 +425,7 @@ class GitLocalDescriptor(FolderDescriptor):
                 items_.append(item)
                 continue
 
-            item_ = os.path.normpath(os.path.join(path, item))
+            item_ = os.path.normpath(os.path.join(self.path, item))
             if not os.path.exists(item_):
                 raise IOError(
                     'File/Folder: "{}" is relative but no absolute path could '
@@ -484,7 +480,7 @@ class GitRemoteDescriptor(GitLocalDescriptor):
         super(GitRemoteDescriptor, self).__init__(path=path, items=items, branch=branch)
 
 
-def is_valid_plugin(hierarchy, info):
+def is_invalid_plugin(hierarchy, info):
     '''Detect if a plugin's hierarchy is invalid, given its loaded information.
 
     A plugin that has cyclic dependencies is considered "invalid".
@@ -704,20 +700,3 @@ def find_loader(path):
     raise NotImplementedError(
         'Path: "{path}" has no implementation. Expected one of "{opt}".'
         ''.format(path=path, opt=extensions))
-
-
-# TODO : Move this to common.py
-def serialize(obj):
-    '''Make the given descriptor information into a standard URL encoding.
-
-    Args:
-        obj (dict[str]): The Descriptor information to serialize.
-        This is normally something like
-        {'create_using': ways.api.FolderDescriptor}.
-
-    Returns:
-        str: The output encoding.
-
-    '''
-    # pylint: disable=redundant-keyword-arg
-    return parse.urlencode(obj, True)

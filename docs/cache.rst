@@ -1,7 +1,7 @@
-ways\.cache module
-------------------
+ways\.base\.cache module
+------------------------
 
-.. automodule:: ways.cache
+.. automodule:: ways.base.cache
     :members:
     :undoc-members:
     :show-inheritance:

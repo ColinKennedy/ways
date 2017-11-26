@@ -13,16 +13,12 @@ import textwrap
 # IMPORT THIRD-PARTY LIBRARIES
 import git
 import six
-# pylint: disable=import-error,unused-import
-from six.moves.urllib import parse
 
 # IMPORT WAYS LIBRARIES
 import ways.api
 
 # IMPORT LOCAL LIBRARIES
 from . import common_test
-
-six.add_move(six.MovedModule('mock', 'mock', 'unittest.mock'))
 
 
 class DescriptorContextTestCase(common_test.ContextTestCase):
@@ -43,8 +39,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         git_repository = git.Repo.init(git_repo_location)
 
         # Make a plugin and put it in smoe inner folder
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, folder=git_repo_location)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, folder=git_repo_location)
         inner_folder = os.path.join(os.path.dirname(plugin_file_path), 'plugins')
         os.makedirs(inner_folder)
         new_plugin_path = os.path.join(inner_folder, os.path.basename(plugin_file_path))
@@ -65,7 +60,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
         return ways.api.get_context('ztt/whatever')
 
@@ -83,8 +78,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         git_repository = git.Repo.init(git_repo_location)
 
         # Make a plugin and put it in smoe inner folder
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, folder=git_repo_location)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, folder=git_repo_location)
         inner_folder = os.path.join(os.path.dirname(plugin_file_path), 'plugins')
         os.makedirs(inner_folder)
         new_plugin_path = os.path.join(inner_folder, os.path.basename(plugin_file_path))
@@ -102,7 +96,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
         context = ways.api.get_context('ztt/whatever')
         self.assertNotEqual(context, None)
@@ -114,11 +108,10 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
 
     def test_not_exists_absolute_items(self):
         '''Create a local Git repo to absolute folders that do not exist.'''
-        context = self._local_git_repository_test(delete=True)
-        self.assertNotEqual(context, None)
+        with common_test.Capturing():
+            context = self._local_git_repository_test(delete=True)
 
-    # def test_add_local_git_branch_descriptor(self):
-    #     '''Gather plugins from a local git repository on a non-master branch.'''
+        self.assertNotEqual(context, None)
 
     @six.moves.mock.patch('git.Repo.clone_from')  # pylint: disable=no-member
     def test_add_remote_git(self, clone_from_mock):
@@ -138,8 +131,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         git_repository = git.Repo.init(git_repo_location)
 
         # Make a plugin and put it in smoe inner folder
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, folder=git_repo_location)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, folder=git_repo_location)
         inner_folder = os.path.join(os.path.dirname(plugin_file_path), 'plugins')
 
         os.makedirs(inner_folder)
@@ -156,22 +148,11 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
             'create_using': 'ways.api.GitRemoteDescriptor',
             'url': 'https://github.com/Mock/url.git',  # Not a real URL
             'path': git_repo_location,
-            'items': ('plugins', ),
+            'items': ['plugins'],
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
-        ways.api.add_descriptor(serialized_info)
-
-        # Make a GitRemoteDescriptor class without specifying a path
-        descriptor_info = {
-            'create_using': 'ways.api.GitRemoteDescriptor',
-            'url': 'https://github.com/Mock/url.git',  # Not a real URL
-            'items': ('plugins', ),
-        }
-
-        # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
@@ -186,15 +167,17 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
                     hierarchy: ztt/whatever
             ''')
 
-        plugin_file_path = self._make_plugin_folder_with_plugin2(contents=contents)
+        plugin_file_path = self._make_plugin_sheet(contents=contents)
 
         descriptor_info = {
             'items': os.path.dirname(plugin_file_path),
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
-        ways.api.add_descriptor(serialized_info)
+        serialized_info = ways.api.encode(descriptor_info)
+
+        with common_test.Capturing():
+            ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
         self.assertNotEqual(context, None)
@@ -214,7 +197,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
                     hierarchy: ztt/whatever
             ''')
 
-        plugin_file_path = self._make_plugin_folder_with_plugin2(contents=contents)
+        plugin_file_path = self._make_plugin_sheet(contents=contents)
 
         descriptor_info = {
             'items': os.path.dirname(plugin_file_path),
@@ -222,17 +205,11 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('ztt/whatever')
         self.assertNotEqual(context, None)
-
-    # def test_add_remote_git_descriptor(self):
-    #     '''Gather plugins from a remote (web) git repository.'''
-
-    # def test_add_remote_git(self):
-    #     '''Gather plugins from a remote (web) git branch repository.'''
 
     def test_add_search_path_folder(self):
         '''Add a folder that contains Plugin Sheet files.'''
@@ -243,7 +220,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
                     hierarchy: 2tt/whatever
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('2tt/whatever')
         self.assertNotEqual(context, None)
@@ -257,7 +234,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
                     hierarchy: 2ff2/whatever
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('2ff2/whatever')
         self.assertNotEqual(context, None)
@@ -329,7 +306,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('foo/bar')
@@ -373,6 +350,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
 
         some_temp_folder = tempfile.mkdtemp()
         module_file_path = os.path.join(some_temp_folder, 'another2.py')
+
         with open(module_file_path, 'w') as file_:
             file_.write(example)
 
@@ -385,7 +363,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
         ways.api.add_descriptor(serialized_info)
 
         context = ways.api.get_context('foo/bar', assignment='job')
@@ -406,13 +384,16 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
+        serialized_info = ways.api.encode(descriptor_info)
 
-        self.assertEqual(ways.api.add_descriptor(serialized_info), None)
+        with common_test.Capturing():
+            descriptor = ways.api.add_descriptor(serialized_info)
+
+        self.assertEqual(descriptor, None)
 
         self.assertEqual(
             ways.api.RESOLUTION_FAILURE_KEY,
-            ways.api.trace_all_descriptor_results()[0]['reason']
+            list(ways.api.trace_all_load_results()['descriptors'].values())[0]['reason']
         )
 
     def test_no_callable_method(self):
@@ -423,8 +404,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
             a_parse_plugin:
                 hierarchy: 2tt/whatever
             ''')
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, register=False)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, register=False)
 
         example_bad_class = textwrap.dedent(
             """\
@@ -454,8 +434,12 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
-        self.assertEqual(ways.api.add_descriptor(serialized_info), None)
+        serialized_info = ways.api.encode(descriptor_info)
+
+        with common_test.Capturing():
+            descriptor = ways.api.add_descriptor(serialized_info)
+
+        self.assertEqual(descriptor, None)
 
     def test_not_callable_failure(self):
         '''A Descriptor whose get_plugins name is not a valid method.'''
@@ -465,8 +449,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
                 a_parse_plugin:
                     hierarchy: 2tt/whatever
             ''')
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, register=False)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, register=False)
 
         example_bad_class = textwrap.dedent(
             """\
@@ -497,8 +480,12 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
-        self.assertEqual(ways.api.add_descriptor(serialized_info), None)
+        serialized_info = ways.api.encode(descriptor_info)
+
+        with common_test.Capturing():
+            descriptor = ways.api.add_descriptor(serialized_info)
+
+        self.assertEqual(descriptor, None)
 
     def test_bad_resolution(self):
         '''Create a descriptor that isn't able to be created, for some reason.'''
@@ -507,5 +494,9 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
         }
 
         # Create an example serialized descriptor that describes our local repo
-        serialized_info = parse.urlencode(descriptor_info, True)
-        self.assertEqual(ways.api.add_descriptor(serialized_info), None)
+        serialized_info = ways.api.encode(descriptor_info)
+
+        with common_test.Capturing():
+            descriptor = ways.api.add_descriptor(serialized_info)
+
+        self.assertEqual(descriptor, None)

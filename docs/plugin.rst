@@ -1,7 +1,7 @@
-ways\.plugin module
--------------------
+ways\.base\.plugin module
+-------------------------
 
-.. automodule:: ways.plugin
+.. automodule:: ways.base.plugin
     :members:
     :undoc-members:
     :show-inheritance:

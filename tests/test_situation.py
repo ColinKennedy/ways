@@ -11,8 +11,10 @@ behave properly in other test modules.
 
 # IMPORT STANDARD LIBRARIES
 import os
+import platform
 import tempfile
 import textwrap
+import unittest
 
 # IMPORT WAYS LIBRARIES
 import ways.api
@@ -157,7 +159,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
                         - linux
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
         mapping = '/jobs/job_part_something'
 
         with self.assertRaises(RuntimeError):
@@ -217,8 +219,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
 
         self.assertEqual(assignment, context.assignment)
 
-    # pylint: disable=invalid-name
-    def test_recursive_config_assignment(self):
+    def test_recursive_assignment(self):
         '''Get plugins (and assignment info) from a folder recursively.'''
         assignment = 'job'
         config = textwrap.dedent(
@@ -268,7 +269,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
                     mapping: bar
             '''.format(assignment=assignment))
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('foo', assignment=assignment)
 
@@ -290,7 +291,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
 
             '''.format(assignment=assignment))
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context1 = ways.api.get_context('foo', assignment=assignment)
         self.assertEqual(assignment, context1.assignment)
@@ -379,7 +380,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
                 some_plugin:
                     hierarchy: foo
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
         self.assertNotEqual(None, context)
@@ -398,10 +399,10 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                 some_plugin:
                     hierarchy: foo
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
-        self.assertEqual(('*', ), context.get_platforms())
+        self.assertEqual(ways.get_known_platfoms(), context.get_platforms())
 
     def test_get_plugins_in_platform(self):
         '''Only get back plugin objects that are OK for the current platform.'''
@@ -455,6 +456,47 @@ class ContextMethodTestCase(common_test.ContextTestCase):
         with self.assertRaises(OSError):
             context.validate_plugin('asfdas')
 
+    def test_platform_from_environment(self):
+        '''If WAYS_PLATFORMS is defined, have plugins return that.
+
+        Otherwise, if it is not defined, have it return a set of platforms.
+
+        '''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+            ''')
+
+        self._make_plugin_sheet(contents)
+
+        context = ways.api.get_context('foo')
+        generic_platforms = context.get_platforms()
+        os.environ[ways.api.PLATFORMS_ENV_VAR] = (os.pathsep).join(
+            ['fizz', 'buzz', 'custom_platforms'])
+        os.environ[ways.api.PLATFORM_ENV_VAR] = 'fizz'
+        custom_platforms = context.get_platforms()
+
+        self.assertEqual({'windows', 'darwin', 'linux', 'java'}, generic_platforms)
+        self.assertEqual({'fizz', 'buzz', 'custom_platforms'}, custom_platforms)
+
+    def test_duplicate_uuid_fail(self):
+        '''Two plugins with the same UUID should cause an exception error.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    uuid: a_duplicate_uuid
+                another_plugin:
+                    hierarchy: bar
+                    uuid: a_duplicate_uuid
+            ''')
+
+        with self.assertRaises(RuntimeError):
+            self._make_plugin_sheet(contents)
+
     def test_get_mapping_tokens(self):
         '''Get the Context's top-level tokens and the tokens from a string.'''
         contents = textwrap.dedent(
@@ -467,7 +509,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                         THING:
                             mapping: '{INNER}_{ITEMS}'
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
 
@@ -486,11 +528,138 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                         THING:
                             mapping: '{INNER}_{ITEMS}'
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
 
         self.assertEqual({'THING', 'HERE', 'INNER', 'ITEMS'}, context.get_all_tokens())
+
+    def test_path_false_absolute(self):
+        '''Return a string that is not a path from an absolute plugin.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '/jobs/{THING}/another/{HERE}'
+                    mapping_details:
+                        THING:
+                            mapping: '{INNER}_{ITEMS}'
+            ''')
+        self._make_plugin_sheet(contents)
+
+        context = ways.api.get_context('foo')
+
+        mapping = '/jobs/{THING}/another/{HERE}'
+        self.assertEqual(mapping, context.get_mapping())
+
+    def test_path_false_relative(self):
+        '''Return a string that is not a path from an absolute plugin.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '/jobs/{JOB}'
+                relative:
+                    hierarchy: '{root}/bar'
+                    mapping: '{root}\\thing'
+                    uses:
+                        - foo
+            ''')
+        self._make_plugin_sheet(contents)
+
+        context = ways.api.get_context('foo/bar')
+
+        mapping = r'/jobs/{JOB}\thing'
+        self.assertEqual(mapping, context.get_mapping())
+
+    @unittest.skipUnless(platform.system() == 'Windows', 'requires Windows')
+    def test_path_true_absolute(self):
+        r'''Make sure absolute plugins convert from '/' style to '\'.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                absolute:
+                    hierarchy: 'foo/bar'
+                    mapping: '/jobs/{JOB}/thing'
+                    path: true
+            ''')
+        self._make_plugin_sheet(contents)
+
+        context = ways.api.get_context('foo/bar')
+
+        mapping = r'\jobs\{JOB}\thing'
+        self.assertEqual(mapping, context.get_mapping())
+
+    @unittest.skipUnless(platform.system() == 'Windows', 'requires Windows')
+    def test_path_true_relative(self):
+        '''Make sure relative plugins convert just like absolute plugins.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '/jobs/{JOB}'
+                    path: true
+                relative:
+                    hierarchy: '{root}/bar'
+                    mapping: '{root}\\thing'
+                    uses:
+                        - foo
+            ''')
+        self._make_plugin_sheet(contents)
+
+        context = ways.api.get_context('foo/bar')
+
+        mapping = r'\jobs\{JOB}\thing'
+        self.assertEqual(mapping, context.get_mapping())
+
+    @unittest.skipUnless(platform.system() == 'Linux', 'requires Linux')
+    def test_path_true_relative_windows(self):
+        '''Make Windows-style paths convert into Linux paths.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '\\jobs\\{JOB}'
+                    path: true
+                relative:
+                    hierarchy: '{root}/bar'
+                    mapping: '{root}\\thing'
+                    uses:
+                        - foo
+            ''')
+        self._make_plugin_sheet(contents)
+
+        context = ways.api.get_context('foo/bar')
+
+        mapping = r'/jobs/{JOB}/thing'
+        self.assertEqual(mapping, context.get_mapping())
+
+    def test_remove_path(self):
+        '''Set a hierarchy to path = True and then set it to False.'''
+        contents = textwrap.dedent(
+            '''
+            plugins:
+                some_plugin:
+                    hierarchy: foo
+                    mapping: '\\jobs\\{JOB}'
+                    path: true
+                relative:
+                    hierarchy: '{root}/bar'
+                    mapping: '{root}\\thing'
+                    uses:
+                        - foo
+                    path: false
+            ''')
+        self._make_plugin_sheet(contents)
+
+        context1 = ways.api.get_context('foo')
+        context2 = ways.api.get_context('foo/bar')
+        self.assertTrue(context1.is_path())
+        self.assertFalse(context2.is_path())
 
 
 class ContextInheritanceTestCase(common_test.ContextTestCase):

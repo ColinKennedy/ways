@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''A set of functions that make working with the cache in Ways easier.'''
+'''A set of functions to register objects to Ways.'''
 
 
 # IMPORT STANDARD LIBRARIES
@@ -9,6 +9,8 @@
 import os
 import imp
 import sys
+import inspect
+import functools
 import collections
 
 # IMPORT THIRD-PARTY LIBRARIES
@@ -18,7 +20,7 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import common
+from ..helper import common
 
 
 def _conform_plugins_with_assignments(plugins):
@@ -62,7 +64,7 @@ def _conform_plugins_with_assignments(plugins):
     return plugins
 
 
-def _resolve_descriptor(description):
+def resolve_descriptor(description):
     '''Build a descriptor object from different types of user input.
 
     Args:
@@ -97,11 +99,12 @@ def _resolve_descriptor(description):
     def get_description_info(description):
         '''Build a descriptor from an encoded URI.'''
         if not isinstance(description, six.string_types):
-            return None
+            return
 
-        description = six.moves.urllib.parse.parse_qs(description)
+        description = common.decode(description)
+
         if not description:
-            return None
+            return
 
         # Make sure that single-item elements are actually single-items
         # Sometimes dicts come in like this, for example:
@@ -109,8 +112,7 @@ def _resolve_descriptor(description):
         #     'create_using': ['ways.api.GitLocalDescriptor']
         # }
         #
-        description['create_using'] = \
-            description.get('create_using', ['ways.api.FolderDescriptor'])[0]
+        description.setdefault('create_using', ['ways.api.FolderDescriptor'])
 
         return get_description_from_dict(description)
 
@@ -125,24 +127,29 @@ def _resolve_descriptor(description):
         #
         reserved_keys = ('create_using', common.WAYS_UUID_KEY)
 
-        descriptor_class = description.get(
+        descriptor_obj = description.get(
             'create_using', descriptor.FolderDescriptor)
         actual_description = {key: value for key, value
                               in description.items() if key not in reserved_keys}
 
         try:
-            descriptor_class = common.import_object(descriptor_class)
+            descriptor_obj = common.import_object(descriptor_obj)
         except (AttributeError, ImportError):
             pass
 
+        # Pass functions directly without calling them
+        if inspect.isfunction(descriptor_obj):
+            return descriptor_obj
+
+        # If it's a class, instantiate it with the args given
         try:
-            return try_load(descriptor_class, actual_description)
+            return try_load(descriptor_obj, actual_description)
         except Exception:
             # TODO : LOG the err
             raise ValueError('Found object, "{cls_}" could not be called. '
                              'Please make sure it is on the PYTHONPATH and '
                              'there are no errors in the class/function.'
-                             ''.format(cls_=descriptor_class))
+                             ''.format(cls_=descriptor_obj))
 
     final_descriptor = None
     for choice_strategy in (get_description_info,
@@ -187,7 +194,7 @@ def init_plugins():
         plugin_files.extend(files)
 
     for item in plugin_files:
-        load_plugin(item)
+        add_plugin(item)
 
     for item in get_items_from_env_var(common.DESCRIPTORS_ENV_VAR):
         add_descriptor(item)
@@ -209,10 +216,23 @@ def add_descriptor(description, update=True):
             Default is True.
 
     '''
+    def return_item(obj):
+        '''Return the given object back.'''
+        return obj
+
+    def is_iterable_of_plugins(descriptor):
+        '''bool: If the user gave a direct list of Plugins.'''
+        try:
+            iter(descriptor)
+        except TypeError:
+            return False
+
+        return all((node for node in descriptor if isinstance(node, ways.api.Plugin)))
+
     info = {'item': description}
 
     try:
-        final_descriptor = _resolve_descriptor(description)
+        final_descriptor = resolve_descriptor(description)
     except ValueError:
         _, _, traceback_ = sys.exc_info()
         info.update(
@@ -234,30 +254,45 @@ def add_descriptor(description, update=True):
         pass
 
     if not callable(final_descriptor):
+        if not is_iterable_of_plugins(final_descriptor):
+            # If this is a list of Plugin objects, then lets pass it through
+            _, _, traceback_ = sys.exc_info()
+            final_descriptor = functools.partial(return_item, final_descriptor)
+            info.update(
+                {
+                    'status': common.FAILURE_KEY,
+                    'reason': common.NOT_CALLABLE_KEY,
+                    'traceback': traceback_,
+                    'description': final_descriptor,
+                }
+            )
+            ways.DESCRIPTOR_LOAD_RESULTS.append(info)
+            # TODO : logging?
+            print('Description: "{desc}" created a descriptor that cannot '
+                  'load plugins.'.format(desc=description))
+            return
+
         _, _, traceback_ = sys.exc_info()
+        final_descriptor = functools.partial(return_item, final_descriptor)
         info.update(
             {
-                'status': common.FAILURE_KEY,
+                'status': common.SUCCESS_KEY,
                 'reason': common.NOT_CALLABLE_KEY,
                 'traceback': traceback_,
                 'description': final_descriptor,
             }
         )
         ways.DESCRIPTOR_LOAD_RESULTS.append(info)
-        # TODO : logging?
-        print('Description: "{desc}" created a descriptor that cannot '
-              'load plugins.'.format(desc=description))
-        return
-
-    ways.DESCRIPTORS.append(final_descriptor)
-
-    info.update(
-        {
-            'status': common.SUCCESS_KEY,
-            'description': final_descriptor,
-        }
-    )
-    ways.DESCRIPTOR_LOAD_RESULTS.append(info)
+        ways.DESCRIPTORS.append(final_descriptor)
+    else:
+        info.update(
+            {
+                'status': common.SUCCESS_KEY,
+                'description': final_descriptor,
+            }
+        )
+        ways.DESCRIPTORS.append(final_descriptor)
+        ways.DESCRIPTOR_LOAD_RESULTS.append(info)
 
     if update:
         update_plugins()
@@ -265,7 +300,7 @@ def add_descriptor(description, update=True):
     return final_descriptor
 
 
-def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNMENT):
+def add_action(action, name='', context='', assignment=common.DEFAULT_ASSIGNMENT):
     '''Add a created action to Ways.
 
     Args:
@@ -278,14 +313,17 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
             pre-existing Action in the same location.
             If no name is given, the name on the action is tried, instead.
             Default: ''.
-        assignment (:obj:`str`, optional): The group to add this action to,
-                                            Default: 'master'.
+        context (:class:`ways.api.Context` or str):
+            The Context or hierarchy of a Context to add this Action to.
+        assignment (:obj:`str`, optional):
+            The group to add this action to, Default: 'master'.
 
     Raises:
         RuntimeError: If no hierarchy is given and no hierarchy could be
                         found on the given action.
         RuntimeError: If no name is given and no name could be found
                         on the given action.
+        ValueError: If a Context object was given and no hierarchy could be found.
 
     '''
     if name == '':
@@ -303,8 +341,10 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
                                'add_action cannot continue.'
                                ''.format(act=action))
 
+    hierarchy = context
+
     # TODO : Possibly change with a "get_hierarchy" function
-    if hierarchy == '':
+    if not context:
         try:
             hierarchy = action.get_hierarchy()
         except AttributeError:
@@ -312,6 +352,15 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
                                'method and no hierarchy was given to '
                                'add_action. add_action cannot continue.'
                                ''.format(act=action))
+
+    try:
+        hierarchy = context.get_hierarchy()
+    except AttributeError:
+        pass
+
+    if not hierarchy:
+        raise ValueError('No hierarchy for "{obj}" could be found.'
+                         ''.format(obj=context))
 
     hierarchy = common.split_hierarchy(hierarchy)
 
@@ -338,18 +387,17 @@ def get_all_plugins():
     return ways.PLUGIN_CACHE['all']
 
 
-# TODO : This should be renamed. Since this isn't a Plugin but a PluginSheet
-def load_plugin(item):
+def add_plugin(path):
     '''Load the Python file as a plugin.
 
     Args:
-        item (str): The absolute path to a valid Python file (py or pyc).
+        path (str): The absolute path to a valid Python file (py or pyc).
 
     '''
-    info = {'item': item}
+    info = {'item': path}
 
     try:
-        module = imp.load_source('module', item)
+        module = imp.load_source('module', path)
     except Exception as err:
         _, _, traceback_ = sys.exc_info()
         info.update(
@@ -381,6 +429,7 @@ def load_plugin(item):
                 'details': 'no_main_function',
             }
         )
+        ways.PLUGIN_LOAD_RESULTS.append(info)
         return
 
     try:
@@ -410,7 +459,6 @@ def update_plugins():
     '''Look up every plugin in every descriptor and register them to Ways.'''
     plugins = [plugin for descriptor_method in ways.DESCRIPTORS
                for plugin in descriptor_method()]
-
     _conform_plugins_with_assignments(plugins)
 
     for plugin, assignment in plugins:

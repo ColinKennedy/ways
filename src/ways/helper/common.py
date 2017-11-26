@@ -19,7 +19,7 @@ import itertools
 import six
 
 # IMPORT LOCAL LIBRARIES
-from .core import check
+from ..core import check
 
 HIERARCHY_SEP = '/'
 DEFAULT_ASSIGNMENT = 'master'
@@ -62,6 +62,7 @@ def expand_string(format_string, obj):
         >>> expand_string(format_string, shot)
         ... {'SHOT': 'NAME', 'ID': '010'}
 
+
     Args:
         format_string (str): The Python-format style string to use to split it.
         obj (str): The string to split out into a dict.
@@ -74,10 +75,8 @@ def expand_string(format_string, obj):
 
     '''
     if '}{' in format_string:
-        # pylint: disable=bad-format-string
         raise ValueError('format_string: "{temp_}" was invalid. Curly braces, '
-                         '"}{" cannot be used, back to back.'
-                         ''.format(temp_=format_string))
+                         'cannot be used, back to back.'.format(temp_=format_string))
 
     info = dict()
 
@@ -249,19 +248,21 @@ def conform_decode(info):
     TODO: Remove this function by cleaning the input from urlencode.
 
     '''
-    output = dict(info)
+    return {key: value[0] if len(value) == 1 else value
+            for key, value in six.iteritems(info)}
 
-    def change_list_to_string(key, obj):
-        '''Change key/list pairs that are meant to be strings.'''
-        try:
-            value = obj[key]
-        except KeyError:
-            pass
-        else:
-            if check.is_itertype(value):
-                output[key] = value[0]
 
-    change_list_to_string('create_using', output)
-    change_list_to_string(WAYS_UUID_KEY, output)
+def encode(obj):
+    '''Make the given descriptor information into a standard URL encoding.
 
-    return output
+    Args:
+        obj (dict[str]): The Descriptor information to serialize.
+        This is normally something like
+        {'create_using': ways.api.FolderDescriptor}.
+
+    Returns:
+        str: The output encoding.
+
+    '''
+    # pylint: disable=redundant-keyword-arg
+    return six.moves.urllib.parse.urlencode(obj, doseq=True)

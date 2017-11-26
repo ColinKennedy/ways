@@ -12,7 +12,6 @@ whatever other purpose). Or some other reportive info that we want to know.
 
 
 # IMPORT STANDARD LIBRARIES
-# pylint: disable=invalid-name
 import os
 import tempfile
 import textwrap
@@ -25,27 +24,8 @@ from ways import common
 # IMPORT LOCAL LIBRARIES
 from . import common_test
 
-# TODO : The types of plugin-trace tests that we need to make sure works
-#
-# - defined in file
-# - defined out of file
-# - defined out of file - imported from another file
-# - explicitly registered
-# - explicitly registered function
-#
-# TODO : Also test for loaded descriptors
-# TODO : Have a way to test which descriptor loaded which plugins?
-# TODO : Get plugin by UUID
-# TODO : Get all plugin UUIDs
-# TODO : Make these tests lighter by only defining actions once in a single
-#        function and just reuse it, instead of relying on ActionRegistry to do
-#        it for you
-# TODO : Get parse order
-# TODO : Possibly make a set parse order function
 
-
-# pylint: disable=too-few-public-methods
-class Common(common_test.ContextTestCase):
+class Common(common_test.ContextTestCase):  # pylint: disable=too-few-public-methods
 
     '''Just a class that has a couple setup methods that subclasses need.'''
 
@@ -65,7 +45,7 @@ class Common(common_test.ContextTestCase):
                                 glob: '*'
             ''')
 
-        plugin_file = self._make_plugin_folder_with_plugin2(contents=contents)
+        plugin_file = self._make_plugin_sheet(contents=contents)
 
         ways.api.add_search_path(os.path.dirname(plugin_file))
 
@@ -142,7 +122,6 @@ class TraceTestCase(Common):
         context = self._setup_simple_contexts()
         _init_actions()
 
-        # TODO : Yield with nose?
         for obj in self._get_object_interfaces(context):
             actions = ways.api.trace_actions(obj, duplicates=False)
             self.assertEqual(len(actions), 2)
@@ -153,7 +132,6 @@ class TraceTestCase(Common):
 
         context = self._setup_simple_contexts()
 
-        # TODO : Yield with nose?
         for obj in self._get_object_interfaces(context):
             actions = ways.api.trace_actions(obj, duplicates=True)
             self.assertEqual(len(actions), 2)
@@ -163,7 +141,6 @@ class TraceTestCase(Common):
         context = self._setup_simple_contexts()
         _init_actions()
 
-        # TODO : Yield with nose?
         for obj in self._get_object_interfaces(context):
             actions = ways.api.trace_action_names(obj)
             self.assertEqual(len(actions), 2)
@@ -173,10 +150,14 @@ class TraceTestCase(Common):
         context = self._setup_simple_contexts()
         _init_actions()
 
-        # TODO : Yield with nose?
         for obj in self._get_object_interfaces(context):
             actions = ways.api.trace_actions_table(obj)
             self.assertTrue(actions)
+
+
+class TraceHierarchyTestCase(Common):
+
+    '''Check that all hierarchy-related trace functions work correctly.'''
 
     def test_get_all_hierarchies(self):
         '''Define a bunch of plugins and then get their hierarchies.'''
@@ -217,7 +198,7 @@ class TraceTestCase(Common):
         self.assertEqual(expected_children,
                          set(ways.api.get_child_hierarchies(('foo', 'bar'))))
 
-    def test_get_all_hierarchies_as_dict_full(self):
+    def test_as_dict_full(self):
         '''Print all of the hierarhies as a big dictionary.'''
         _setup_hierarchies()
 
@@ -240,7 +221,7 @@ class TraceTestCase(Common):
 
         self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=True))
 
-    def test_get_all_hierarchies_as_dict_part(self):
+    def test_as_dict_part(self):
         '''Print all of the hierarhies as a big dictionary.'''
         _setup_hierarchies()
 
@@ -263,7 +244,7 @@ class TraceTestCase(Common):
 
         self.assertEqual(expected, ways.api.get_all_hierarchy_trees(full=False))
 
-    def test_get_child_hierarchies_as_dict_full(self):
+    def test_child_as_dict_full(self):
         '''Print all of the hierarhies at the given hierarchy.'''
         _setup_hierarchies()
 
@@ -276,7 +257,7 @@ class TraceTestCase(Common):
 
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=True))
 
-    def test_get_child_hierarchies_as_dict_part(self):
+    def test_child_as_dict_part(self):
         '''Print all of the hierarhies at the given hierarchy.'''
         _setup_hierarchies()
 
@@ -290,11 +271,6 @@ class TraceTestCase(Common):
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(('foo', 'bar'), full=False))
 
 
-# TODO : Make sure to run tests to make sure that the contents of dir
-#        are what we expect
-#
-#        Also add tests for core - because that makes sense, too
-#
 class DirTestCase(Common):
 
     '''Test that methods that rely on Ways object.__dir__ work properly.'''
@@ -304,9 +280,6 @@ class DirTestCase(Common):
 
         This test is tangentially related to trace because it uses trace to
         find the actions.
-
-        Todo:
-            This is a weird place for this test. Move it someplace else.
 
         '''
         _init_actions()
@@ -362,14 +335,14 @@ class FailureTestCase(common_test.ContextTestCase):
         with open(temp_file, 'w') as file_:
             file_.write(contents)
 
-        ways.api.load_plugin(temp_file)
+        ways.api.add_plugin(temp_file)
 
         # Because the module failed to import, the action won't be visible
         action = ways.get_action(name, hierarchy=hierarchy)
         self.assertEqual(action, None)
 
         # We should at least see some information about this PluginSheet
-        results = ways.api.trace_all_plugin_results_info()
+        results = ways.api.trace_all_load_results()['plugins']
         self.assertTrue(temp_file in results)
         info = results.get(temp_file, dict())
         self.assertEqual(info.get('status'), common.FAILURE_KEY)
@@ -414,13 +387,13 @@ class FailureTestCase(common_test.ContextTestCase):
         with open(temp_file, 'w') as file_:
             file_.write(contents)
 
-        ways.api.load_plugin(temp_file)
+        ways.api.add_plugin(temp_file)
 
         # The module is importable so we can find out action
         action = ways.get_action(name, hierarchy=hierarchy)
         self.assertNotEqual(action, None)
         # But main() fails, so the plugin is a registered failure
-        results = ways.api.trace_all_plugin_results_info()
+        results = ways.api.trace_all_load_results()['plugins']
         self.assertTrue('some_unique_uuid' in results)
         info = results.get('some_unique_uuid', dict())
         self.assertEqual(info.get('status'), common.FAILURE_KEY)

@@ -26,7 +26,7 @@ import copy
 import functools
 
 # IMPORT LOCAL LIBRARIES
-from .core import grouping
+from ..core import grouping
 
 
 def get_right_most_priority(plugins, method):

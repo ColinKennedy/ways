@@ -1,8 +1,7 @@
 Descriptors
 ===========
 
-This section assumes that you've at least read through the Descriptor section
-in the :ref:`descriptor_summary` page.
+This section assumes that you've at least read through the :ref:`descriptor_summary` section.
 
 Basic setup
 -----------
@@ -62,7 +61,7 @@ when our cache unpacks this descriptor string, the result is a dict
         'create_using': 'ways.api.GitLocalDescriptor',
         'uuid': 'some_unique_string-we-can_search_for-later',
         'path': '/some/path/on/disk',
-        'items': ('plugins', ),
+        'items': ['plugins'],
     }
 
 "create_using" and "uuid" are the only reserved key in our dict for all custom
@@ -114,7 +113,6 @@ It was hinted at in the previous section that Ways supports reading
 Git repositories directly, instead of using the filesystem. If storing Plugin
 Sheet files locally isn't an option, reading from server is an alternative.
 
-TODO Make an example repository and point to it, in this example.
 
 Any callable object can be a Descriptor
 +++++++++++++++++++++++++++++++++++++++

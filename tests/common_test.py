@@ -11,11 +11,14 @@ import shutil
 import tempfile
 import unittest
 
+# IMPORT THIRD-PARTY LIBRARIES
+from six.moves import io
+
 # IMPORT WAYS LIBRARIES
 import ways
 import ways.api
-from ways import common
-from ways import situation as sit
+from ways.base import situation as sit
+from ways.helper import common
 
 _SYS_PATH = list(sys.path)
 _ORIGINAL_ENVIRON = os.environ.copy()
@@ -35,7 +38,7 @@ class ContextTestCase(unittest.TestCase):
 
         self.temp_paths = []
 
-    def _make_plugin_folder_with_plugin2(
+    def _make_plugin_sheet(
             self,
             contents=None,
             ending='.yml',
@@ -43,6 +46,9 @@ class ContextTestCase(unittest.TestCase):
             register=True):
         '''Create a Plugin Sheet using some folder and register it to Ways.'''
         import yaml
+
+        if isinstance(contents, dict):
+            contents = yaml.dump(contents)
 
         if contents is not None:
             contents = yaml.load(contents)
@@ -56,20 +62,16 @@ class ContextTestCase(unittest.TestCase):
 
         return plugin_file
 
-    def _make_plugin_folder_with_plugin(
-            self,
-            contents=None,
-            ending='.yml',
-            folder=''):
-        '''Create a Plugin Sheet using some folder and register it to Ways.
+    def _make_plugin(self, contents):
+        '''str: Create a Python plugin file and load it into Ways.'''
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as file_:
+            file_.write(contents)
+            name = file_.name
 
-        Note:
-            DEPRECATED.
+        ways.api.add_plugin(name)
+        self.temp_paths.append(name)
 
-        '''
-        plugin_file = make_folder_plugin(contents=contents, ending=ending, folder=folder)
-        self.temp_paths.append(os.path.dirname(plugin_file))
-        return plugin_file
+        return name
 
     def tearDown(self):
         '''Reset any changes made to our environment during test runs.'''
@@ -79,7 +81,10 @@ class ContextTestCase(unittest.TestCase):
         # Delete temp folders and files
         for item in self.temp_paths:
             if os.path.isdir(item):
-                shutil.rmtree(item)
+                try:
+                    shutil.rmtree(item)
+                except WindowsError:  # pylint: disable=undefined-variable
+                    pass
             elif os.path.isfile(item):
                 os.remove(item)
 
@@ -89,6 +94,34 @@ class ContextTestCase(unittest.TestCase):
                 os.environ[key] = _ORIGINAL_ENVIRON[key]
             else:
                 del os.environ[key]
+
+
+class Capturing(list):
+
+    '''a Python context that silences lines written to stdout.'''
+
+    def __init__(self):
+        '''Create a handle for stringio and for stdout.'''
+        super(Capturing, self).__init__()
+        self._stdout = []
+        self._stringio = None
+
+    def __enter__(self):
+        '''Start capturing stdout by piping sys.stdout to a temporary list.'''
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = io.StringIO()
+        return self
+
+    def __exit__(self, *args):
+        '''Store the lines captured from stdout onto this instance.
+
+        Also, restore the old pipe to stdout so that we can print to
+        the terminal again.
+
+        '''
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio
+        sys.stdout = self._stdout
 
 
 def make_plugin_folder(
@@ -146,7 +179,6 @@ def make_folder_plugin(ending='.yml', contents=None, folder=''):
 
 def create_action(text, hierarchy=('a', )):
     '''Create some action with a name and hierarchy.'''
-    # pylint: disable=W0612
     class ActionObj(ways.api.Action):
 
         '''Some action.'''
@@ -159,6 +191,8 @@ def create_action(text, hierarchy=('a', )):
 
         def __call__(self, *args, **kwargs):
             return True
+
+    return ActionObj
 
 
 def create_plugin(hierarchy=('a', ),
@@ -174,7 +208,6 @@ def create_plugin(hierarchy=('a', ),
     if data is None:
         data = dict()
 
-    # pylint: disable=W0612
     class PluginObj(ways.api.Plugin):
 
         '''A generic Plugin.'''
@@ -197,3 +230,33 @@ def create_plugin(hierarchy=('a', ),
             return platforms
 
     return PluginObj
+
+
+def build_action(action, folders=None, hierarchy='some/context'):
+    '''Create an Action object and return it.'''
+    if folders is None:
+        folders = []
+
+    class SomeAction(ways.api.Action):
+
+        '''A subclass that will automatically be registered by Ways.
+
+        The name of the class (SomeAction) can be anything but the name
+        property must be correct. Also, get_hierarchy must match the Context
+        hierarchy that this action will apply to.
+
+        '''
+
+        name = action
+        items = []
+
+        @classmethod
+        def get_hierarchy(cls):
+            return hierarchy
+
+        def __call__(self, obj, folders):
+            '''Do something.'''
+            return folders
+
+    SomeAction.items = folders
+    return SomeAction

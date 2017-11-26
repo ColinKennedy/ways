@@ -15,8 +15,8 @@ import six
 
 # IMPORT LOCAL LIBRARIES
 from . import cache
-from . import common
 from . import situation as sit
+from ..helper import common
 
 
 class ActionRegistry(type):
@@ -101,7 +101,7 @@ class _Aktion(object):
 Action = _Aktion
 
 
-def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNMENT):
+def add_action(action, name='', context='', assignment=common.DEFAULT_ASSIGNMENT):
     '''Add a created action to this cache.
 
     Args:
@@ -113,9 +113,10 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
             to this hierarchy/assignment or it risks overriding another
             Action that might already exist at the same location.
             If no name is given, the name on the action is tried, instead.
-            Default: ''.
-        assignment (:obj:`str`, optional): The group to add this action to,
-                                            Default: 'master'.
+        context (:class:`ways.api.Context` or str):
+            The Context or hierarchy of a Context to add this Action to.
+        assignment (:obj:`str`, optional):
+            The group to add this action to, Default: 'master'.
 
     Raises:
         RuntimeError: If no hierarchy is given and no hierarchy could be
@@ -125,4 +126,4 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
 
     '''
     return cache.add_action(
-        action=action, name=name, hierarchy=hierarchy, assignment=assignment)
+        action=action, name=name, context=context, assignment=assignment)

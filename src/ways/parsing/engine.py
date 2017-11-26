@@ -45,7 +45,7 @@ def get_token_parse(name, parser, parse_type):
     Args:
         name (str):
             The token to get the token parse of.
-        parser (<ways.api.ContextParser>):
+        parser (:class:`ways.api.ContextParser`):
             The parser which presumably contains any information needed to
             retrieve a token parse value.
         parse_type (str):
@@ -65,7 +65,7 @@ def get_token_parse_regex(name, parser, groups=False):
     Args:
         name (str):
             The token to get the token parse of.
-        parser (<ways.api.ContextParser>):
+        parser (:class:`ways.api.ContextParser`):
             The parser which presumably contains any information needed to
             retrieve a token parse value.
         groups (:obj:`bool`, optional):
@@ -98,7 +98,7 @@ def get_value_from_parent(name, parent, parser, parse_type):
             The token which is a parent of the name token. This parent
             should have a value or be able to get a value which we then
             parse and return.
-        parser (<ways.api.ContextParser>):
+        parser (:class:`ways.api.ContextParser`):
             The parser which presumably contains any information needed to
             retrieve the name token's value.
         parse_type (str):
@@ -123,7 +123,7 @@ def get_value_from_parent_regex(name, parent, parser):
             The token which is a parent of the name token. This parent
             should have a value or be able to get a value which we then
             parse and return.
-        parser (<ways.api.ContextParser>):
+        parser (:class:`ways.api.ContextParser`):
             The parser which presumably contains any information needed to
             retrieve the name token's value.
 
@@ -175,7 +175,7 @@ def _recursive_child_token_parse_regex(name, parser):
             The token to get the parse expression for. Most often, this token
             doesn't have parse expressions defined for regex but its child
             tokens do. This function will search through its child tokens.
-        parser (<ways.api.ContextParser>):
+        parser (:class:`ways.api.ContextParser`):
             The parser which presumably contains any information needed to
             retrieve a token parse value using the token's children.
 

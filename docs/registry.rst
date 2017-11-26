@@ -1,7 +1,7 @@
-ways\.parsing\.resource module
+ways\.parsing\.registry module
 ------------------------------
 
-.. automodule:: ways.parsing.resource
+.. automodule:: ways.parsing.registry
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,7 +1,7 @@
-ways\.finder module
--------------------
+ways\.base\.finder module
+-------------------------
 
-.. automodule:: ways.finder
+.. automodule:: ways.base.finder
     :members:
     :undoc-members:
     :show-inheritance:

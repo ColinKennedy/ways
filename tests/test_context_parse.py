@@ -34,15 +34,14 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('31tt/whatever')
         parse_regex = context.get_str(resolve_with='regex')
         expected_regex = r'/jobs/{JOB_NAME}_{JOB_ID}/some_kind/of/real_folders'
         self.assertEqual(parse_regex, expected_regex)
 
-    # pylint: disable=invalid-name
-    def test_plugin_with_inner_parse_expression(self):
+    def test_inner_parse_expression(self):
         '''Test that plugins with recursive parse tokens get values correctly.'''
         contents = textwrap.dedent(
             r'''
@@ -70,7 +69,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('tt/whatever')
         parse_regex = context.get_str(resolve_with='regex')
@@ -78,8 +77,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
         self.assertEqual(parse_regex,
                          r'/jobs/\w+_\d{4}/some_kind/of/real_folders')
 
-    # pylint: disable=invalid-name
-    def test_plugins_with_inner_parse_expression(self):
+    def test_inner_parse_expression_002(self):
         '''Test that two absolute plugins append to a relative plugin.'''
         # This plugin does nothing to build the final parse_regex.
         # It just exists to give us a couple opportunities for KeyErrors
@@ -117,40 +115,13 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                                     JOB: \w+_\d{4}
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('tt/whatever')
         parse_regex = context.get_str(resolve_with='regex')
 
         self.assertEqual(parse_regex,
                          r'/jobs/\w+_\d{4}/some_kind/of/real_folders')
-
-# #     def test_plugin_with_parse_and_inner_descriptions(self):
-# #         contents = {
-# #             'globals': {},
-# #             'plugins': {
-# #                 'some_unique_plugin_name': {
-# #                     'mapping': '/jobs/{JOB}/some_kind/of/real_folders',
-# #                     'mapping_details': {
-# #                         'JOB': '{JOB_NAME}_{JOB_ID}',
-# #                     }
-# #                     'mapping_parse': {
-# #                         'glob': {
-# #                             'JOB': '*'
-# #                         },
-# #                         'regex': {
-# #                             'JOB': '\w+_\d{4}',
-# #                             'JOB_NAME': '{JOB_MASTER_NAME}{JOB_DESCRIPTION}',
-# #                             'JOB_INNER_NAME': '[a-z]+[a-z0-9]',
-# #                             'JOB_DESCRIPTION': '[A-Z0-9]+',
-# #                         },
-# #                     },
-# #                     'hierarchy': '/asdf/whatever',
-# #                     'uuid': '0d255517-dbbf-4a49-a8d0-285a06b2aa6d',
-# #                 },
-# #             }
-# #         }
-# #         self._make_plugin_folder_with_plugin(contents=contents)
 
     def test_parse_env_vars(self):
         '''Resolve a Context object's mapping using environment variables.'''
@@ -170,7 +141,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                                 regex: \w+
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('yytt/whatever')
 
@@ -206,7 +177,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('yytt/whatever')
 
@@ -231,7 +202,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('31tt/whatever')
         parse_regex = context.get_str(resolve_with='regex', groups={'JOB_ID': 8})
@@ -254,7 +225,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('31tt/whatever')
         parse_regex = context.get_str(resolve_with='regex',
@@ -282,7 +253,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('31tt/whatever')
 
@@ -313,7 +284,7 @@ class ContextParserMethodTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('whatever')
         parser = context.get_parser()

@@ -39,10 +39,10 @@ Now that plugin_sheet.yml exists, lets add a "Hello World!" plugin to it.
 
 At this point, we've made our first plugin in our first Plugin Sheet.
 Now you can open a Python interpreter or import it into another file and use
-it as a ways.api.Context.
+it as a :class:`ways.api.Context`.
 
-Instantiate your new Context
-----------------------------
+Create your new Context
+-----------------------
 
 ::
 
@@ -143,7 +143,6 @@ database). Asset objects have a small list of features that you'll learn in othe
 sections, like token validation (checking if tokens are optional or not),
 Context-expansion, recursive value parsing, and API hooks so that you
 can swap Asset objects for classes that you may have already written.
-TODO : Link to this?
 To find out more about that, check out `Asset Object Tricks`.
 
 Context Actions
@@ -216,13 +215,13 @@ can also use a regular function and register it.
         return ['/library', 'library/grades', 'comp', 'anim']
 
     context = ways.api.get_context('some/context')
-    ways.api.add_action(some_action, hierarchy='some/context')
+    ways.api.add_action(some_action, context='some/context')
     context.actions.some_action()
 
     # If you don't want to use the name of the function, you can give the action
     # a name
     #
-    ways.api.add_action(some_action, 'custom_name', hierarchy='some/context')
+    ways.api.add_action(some_action, 'custom_name', context='some/context')
 
     context.actions.custom_name()
     # Result: ['/library', 'library/grades', 'comp', 'anim']
@@ -263,10 +262,6 @@ The most powerful way to chain Actions together is to have Action objects
 return other Context/Asset/Action objects. Actions have very few rules
 and can be formatted to your needs easily.
 
-TODO : Still need to write this
-Check out `Advanced Actions` to read more.
-
-Now that you've gone through the basics, make sure to read through Common
-Patterns And Best Practices to get an idea of how you should be formatting your
-code
-
+Now that you've gone through the basics, make sure to read through
+:doc:`plugin_basics` to get familiar with Ways and :doc:`common_patterns`
+to get an idea of how you should be formatting your code.

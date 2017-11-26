@@ -39,12 +39,12 @@ from six import moves
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import parse
-from . import common
 from . import finder as find
 from . import factory
 from . import connection as conn
-from .core import pathrip
+from ..core import pathrip
+from ..helper import common
+from ..parsing import parse
 
 
 class Context(object):
@@ -287,16 +287,12 @@ class Context(object):
             :class:`ways.api.Plugin`: The plugin (completely unmodified).
 
         '''
-        # These platforms are the what platform.system() could return
-        try:
-            recognized_platforms = os.environ[common.PLATFORMS_ENV_VAR].split(os.pathsep)
-        except KeyError:
-            recognized_platforms = {'darwin', 'java', 'linux', 'windows'}
+        recognized_platforms = ways.get_known_platfoms()
 
-        system_platform = platform.system().lower()
-        current_platform = os.getenv(common.PLATFORM_ENV_VAR, system_platform)
+        current_platform = get_current_platform()
 
         if current_platform not in recognized_platforms:
+            system_platform = platform.system().lower()
             raise OSError(
                 'Found platform: "{platform_}" was invalid. Options were, '
                 '"{opt}". Detected system platform was: "{d_plat}".'
@@ -382,9 +378,27 @@ class Context(object):
         '''tuple[str]: The groups that this Context belongs to.'''
         return self.connection['get_groups'](self.plugins)
 
+    def is_path(self):
+        '''bool: If the user indicated that the given mapping is a filepath.'''
+        for plugin in reversed(self.plugins):
+            value = plugin.is_path()
+            if value is not None:
+                return value
+
+        return False
+
     def get_mapping(self):
         '''str: The mapping that describes this Context.'''
-        return self.connection['get_mapping'](self.plugins)
+        mapping = self.connection['get_mapping'](self.plugins)
+
+        if self.is_path():
+            # TODO : Make a good function here to check if a \ is "escaped"
+            if get_current_platform().lower() == 'windows':
+                mapping = mapping.replace('/', '\\')
+                mapping = mapping.replace(r'\\', r'\\\\')
+            else:
+                mapping = mapping.replace('\\', '/')
+        return mapping
 
     def get_max_folder(self):
         '''str: The highest mapping point that this Context lives in.'''
@@ -397,10 +411,27 @@ class Context(object):
         would return. (Examples: ['darwin', 'java', 'linux', 'windows']).
 
         Returns:
-            list[str]: The platforms that this Context is allowed to run on.
+            set[str]: The platforms that this Context is allowed to run on.
 
         '''
         return self.connection['get_platforms'](self.plugins)
+
+    def __repr__(self):
+        '''str: The full representation of this object.'''
+        return "{cls_}(hierarchy='{hier}', assignment={ass}, data={data})".format(
+            cls_=self.__class__.__name__,
+            hier=self.hierarchy,
+            ass=self.assignment,
+            data=self.data,
+        )
+
+    def __str__(self):
+        '''str: A simple representation of this object.'''
+        return "{cls_}(hierarchy='{hier}', assignment={ass})".format(
+            cls_=self.__class__.__name__,
+            hier=(common.HIERARCHY_SEP).join(self.hierarchy),
+            ass=self.assignment,
+        )
 
 
 __FACTORY = factory.AliasAssignmentFactory(Context)
@@ -449,6 +480,9 @@ def context_connection_info():
 
         '''
         platforms = obj.get_platforms()
+        if '*' in platforms:
+            platforms.update(ways.get_known_platfoms())
+            platforms.remove('*')
         obj_type = platforms.__class__
         return obj_type([platform_.lower() for platform_ in platforms])
 
@@ -549,12 +583,10 @@ def context_connection_info():
         '''Get the max folder that this Context is allowed to move into.
 
         Args:
-            plugins (list[:class:`ways.api.Plugin`]):
-                The plugin to get the max folder of.
+            plugins (list[:class:`ways.api.Plugin`]): The plugins to use.
 
         Returns:
-            str:
-                The furthest up that this Context is allowed to move.
+            str: The furthest up that this Context is allowed to move.
 
         '''
         def startswith_iterable(root, startswith):
@@ -582,9 +614,10 @@ def context_connection_info():
             return True
 
         max_folders = []
-        for plugin in _get_latest_plugins(plugins):
+        for plugin in plugins:
             plugin_max_folder = plugin.get_max_folder()
-
+            if not plugin_max_folder:
+                continue
             if not max_folders:
                 max_folders.append(plugin_max_folder)
                 continue
@@ -605,7 +638,12 @@ def context_connection_info():
                 max_folders.append(plugin_max_folder)
 
         # Normalize and return our absolute max-folder path
-        return os.path.normpath(''.join(max_folders))
+        joined = ''.join(max_folders)
+
+        if not joined:
+            return ''
+
+        return os.path.normpath(joined)
 
     return {
         'get_groups': functools.partial(
@@ -696,6 +734,19 @@ def get_context(hierarchy,
         follow_alias=follow_alias,
         force=force,
         *args, **kwargs)
+
+
+def get_current_platform():
+    '''Get the user-defined platform for Ways.
+
+    If WAYS_PLATFORM is not defined, the user's system OS is returned instead.
+
+    Returns:
+        str: The platform.
+
+    '''
+    system_platform = platform.system().lower()
+    return os.getenv(common.PLATFORM_ENV_VAR, system_platform)
 
 
 def register_context_alias(alias_hierarchy, old_hierarchy):

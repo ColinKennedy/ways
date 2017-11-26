@@ -10,8 +10,8 @@ import itertools
 import collections
 
 # IMPORT LOCAL LIBRARIES
-from . import engine
-from .core import check
+from ..core import check
+from ..parsing import engine
 
 ENCLOSURE_TOKEN_REGEX = r'(\{[^\{\}]+\})'
 RESERVED_ENV_VAR_PARSE_TYPES = ('env', 'environment', 'env_vars')
@@ -399,14 +399,7 @@ class ContextParser(object):
             #
             mapping_changed = mapping_copy != mapping
             if not mapping_changed:
-                # TODO : At the time of writing (2017-10-15 10:50:05.823780)
-                #        replacing this block with just a "break" statement
-                #        did not cause errors in my unittests.
-                #
-                #        Possibly come back to this part, once there are more
-                #        tests
-                #
-                current_depth = depth
+                break
 
             current_depth += 1
             if current_depth >= depth:

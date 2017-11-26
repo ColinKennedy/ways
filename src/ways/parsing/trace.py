@@ -17,10 +17,9 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import common
-from .core import loop
-
-# TODO : Maybe move this to find.py and then move the path class out
+from ..base import situation as sit
+from ..core import loop
+from ..helper import common
 
 
 def _create_fake_uuid():
@@ -149,48 +148,37 @@ def trace_all_descriptor_results():
     return ways.DESCRIPTOR_LOAD_RESULTS
 
 
-def trace_all_descriptor_results_info():  # pylint: disable=invalid-name
-    '''Get the UUIDs and load results of every Descriptor.
-
-    If the UUID for a Descriptor cannot be found,
-    Ways will automatically assign it a UUID.
-
-    Returns:
-        <collections.OrderedDict>[str: dict[str]]: The load results.
-
-    '''
-    info = collections.OrderedDict()
-    for result in trace_all_descriptor_results():
-        info[_get_ways_uuid_from_descriptor(result)] = result
-
-    return info
-
-
 def trace_all_plugin_results():
     '''list[dict[str]]: The results of each plugin's load results.'''
     return ways.PLUGIN_LOAD_RESULTS
 
 
-def trace_all_plugin_results_info():
-    '''Get the load-results for each plugin that Ways found.
+def trace_all_load_results():
+    '''Get the load results of every plugin and descriptor.
 
-    Not all plugins that we try to load will. (maybe the file has a syntax
-    error or something).
+    If the UUID for a Descriptor cannot be found,
+    Ways will automatically assign it a UUID.
 
     Using this function we can check
     1. What plugins that Ways found and tried to load.
     2. If our plugin loaded and, if not, why.
 
     Returns:
-        :class:`collections.OrderedDict` [str, dict[str]]:
-            The keys are absolute paths to valid Python files
-            the values are dicts that contain information about what happened
-            during the load.
+        dict[str, :class:`collections.OrderedDict` [str, dict[str]]]:
+            The main dictionary has two keys, "descriptors" and "plugins".
+            Each key has an OrderedDict that contains the UUID of each
+            Descriptor and plugin and their objects.
 
     '''
-    info = collections.OrderedDict()
+    info = dict()
+
+    info['descriptors'] = collections.OrderedDict()
+    for result in trace_all_descriptor_results():
+        info['descriptors'][_get_ways_uuid_from_descriptor(result)] = result
+
+    info['plugins'] = collections.OrderedDict()
     for result in trace_all_plugin_results():
-        info[_get_ways_uuid_from_plugin(result)] = result
+        info['plugins'][_get_ways_uuid_from_plugin(result)] = result
 
     return info
 
@@ -208,16 +196,11 @@ def trace_context(obj):
         :class:`ways.api.Context` or NoneType: The found Context.
 
     '''
-    # TODO : Remove this inner import
-    from . import situation as sit
-
     if isinstance(obj, sit.Context):
         # Is it a Context already? If so, return it
         return obj
 
     # Is it a AssetFinder?
-    # TODO : This dir check is super ghetto. Make this better!
-    #
     if 'finder' in dir(obj):
         obj = obj.finder
 
@@ -296,92 +279,14 @@ def trace_hierarchy(obj):  # noqa: D301
     return hierarchy
 
 
-def trace_method_resolution(method, plugins=False):
-    '''Show the progression of how a Context's method is resolved.
-
-    Args:
-        method (callable):
-            Some function on a Context object.
-        plugins (:obj:`bool`, optional):
-            If False, the result at every step of the method will be returned.
-            If True, the Plugin that created each result will be returned al
-            along with the result at every step. Default is False.
-
-    Returns:
-        list: The plugin resolution at each step.
-
-    '''
-    context = method.__self__
-    original = context.get_all_plugins
-
-    output = []
-
-    try:
-        output = _trace_method_resolution(context, method, plugins)
-    except Exception:
-        context.get_all_plugins = original
-        raise
-
-    context.get_all_plugins = original
-
-    return output
-
-
-def _trace_method_resolution(context, method, plugins=False):
-    '''Show the progression of how a Context's method is resolved.
-
-    This function does that actual work of trace_method_resolution.
-
-    Args:
-        context (:class:`ways.api.Context`):
-            Some Context to alter and get the items of back.
-        method (callable):
-            Some function on a Context object.
-        plugins (:obj:`bool`, optional):
-            If False, the result at every step of the method will be returned.
-            If True, the Plugin that created each result will be returned al
-            along with the result at every step. Default is False.
-
-    Returns:
-        list: The plugin resolution at each step.
-
-    '''
-    def substitute_return(obj, *args, **kwargs):  # pylint: disable=unused-argument
-        '''Just return the first object that was given to the function.
-
-        Args:
-            args: The positional items of get_all_plugins, which we will ignore.
-            kwargs: The keyword items of get_all_plugins, which we will ignore.
-
-        Returns:
-            The object.
-
-        '''
-        return obj
-
-    all_plugins = context.get_all_plugins()
-
-    results = []
-    for index in six.moves.range(1, len(all_plugins) + 1):
-        context.get_all_plugins = \
-            functools.partial(substitute_return, all_plugins[:index])
-
-        if plugins:
-            results.append((method(), all_plugins[index - 1]))
-        else:
-            results.append(method())
-
-    return results
-
-
 def __default_hook(obj):
     '''Return back the original object.'''
     return obj
 
 
-def __default_predicate(obj):  # pylint: disable=unused-argument
+def __default_predicate(obj):
     '''Return True.'''
-    return True
+    return bool(obj)
 
 
 def _get_hierarchy_tree(
@@ -538,7 +443,7 @@ def get_child_hierarchies(hierarchy):
         hierarchy = plugin.get_hierarchy()
 
         # If the plugin's hierarchy is less than the base, it is probably
-        # above it. Which means it doesn't inherit from this hierachy
+        # above it. Which means it doesn't inherit from this hierarchy
         #
         is_parent = len(hierarchy) < len(base_hierarchy)
 

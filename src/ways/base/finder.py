@@ -12,13 +12,12 @@ import collections
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import common
-from .core import compat
+from ..core import compat
+from ..helper import common
 
 # TODO : In general, I regret the name of this module. FIXME
 
 
-# pylint: disable=too-few-public-methods
 class Find(compat.DirMixIn, object):
 
     '''A wrapper around a Context object that provides some basic syntax-sugar.
@@ -98,6 +97,12 @@ class Find(compat.DirMixIn, object):
         hierarchy = common.split_by_comma(hierarchy)
 
         cls.defaults[hierarchy][name] = value
+
+    @classmethod
+    def clear(cls):
+        '''Remove all stored default values from this class.'''
+        cls.defaults.clear()
+        cls.defaults[cls._default_key] = dict()
 
     def __getattr__(self, name):
         '''Try to pass missing calls from Finder to the stored Context's actions.

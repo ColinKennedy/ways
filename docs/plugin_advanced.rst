@@ -147,6 +147,8 @@ you would need to change it in 3 places.
     When Ways loads Plugins, all Plugins are "resolved" into absolute
     Plugin objects.
 
+.. _crossplatforms:
+
 Designing For Cross-Platform Use
 --------------------------------
 
@@ -213,17 +215,24 @@ To make the process easier, just use relative plugins
             uses:
                 - job/library
 
-When two plugins have the same hierarchy but different platforms, the "correct"
-plugin for the user's OS is used. The "correct" plugins is chosen based on the
-WAYS_PLATFORM environment variable. If it is not defined, the user's
-system OS is used.
+Imagine a scenario where you have to maintain 100 separate plugins for Windows,
+Mac, and Linux. If it were written using absolute plugins only, that'd mean
+writing 300 plugins, total. And if you needed to change any plugin, you'd have to
+change it once for each OS. But if we write 3 absolute plugins, each with their
+own platform, we can write 99 relative plugins that just append to that root OS
+plugin. Ways will pick whichever root matches the system OS or what is defined
+in the WAYS_PLATFORM environment variable and then append all other 99 plugins
+onto it.
 
 .. note ::
 
-    In our previous example, the relative plugin called "library" will make the
-    appropriate Plugin object that matches the user's OS. If the OS is Windows,
-    the mapping for the plugin will convert "/" to "\\".
+    If you're designing plugins for cross-platform use and you're dealing with
+    filepaths, it's best to write "path: true" in your hierarchies. That way,
+    the path separator will always be correct. Examples of this are in
+    :ref:`path_explanation` and in :doc:`common_patterns`.
 
+
+.. _appending_plugins :
 
 Appending To Plugins
 --------------------
@@ -260,11 +269,37 @@ Appending with an absolute plugin is much simpler.
             data:
                 some_data: 8
 
+But if you need to append information to more than one plugin at once, relative
+plugins are very useful.
+
+
+.. code-block :: yaml
+
+    plugins:
+        some_plugin:
+            hierarchy: foo/bar
+            mapping: something
+        another_plugin:
+            hierarchy: another
+        another_plugin:
+            hierarchy: another/tree
+        append_plugin:
+            hierarchy: ''
+            data:
+                some_data: 8
+            uses:
+                - foo/bar
+                - another
+                - another/tree
+
 So in conclusion, absolute and relative plugins both have their pros and cons.
 Pick the right one for the right job.
 
-Other than plugin platforms, there's one other way to affect the discovery and
-runtime of plugins in Ways: assignments.
+Other than plugin platforms and relative plugins, there's another way to affect
+the discovery and runtime of plugins in Ways called "assignments".
+
+
+.. _assignments_basics:
 
 Using Assignments
 -----------------
@@ -279,6 +314,7 @@ a live environment.
 
 There are 3 ways to define assignments to a plugin. Each one is a matter of
 convenience/preference and is no better than the other.
+
 
 Assigning To Multiple Plugin Sheets
 +++++++++++++++++++++++++++++++++++
@@ -312,6 +348,7 @@ Examples:
 The assignment in this file will apply to all plugins in all Plugins Sheets at
 the same directory or below the ".waypoint_plugin_info" file.
 
+
 Assigning To A Plugin Sheet
 +++++++++++++++++++++++++++
 
@@ -329,6 +366,7 @@ You can add an assignment to every plugin in a Plugin Sheet, using "globals"
 
 All plugins listed now have "job" assigned to them. Using "globals" takes
 priority over any assignment in a ".waypoint_plugin_info" file.
+
 
 Assigning To A Plugin
 +++++++++++++++++++++
@@ -432,7 +470,7 @@ jobber.yml
                 - job/shot
 
 
-Now let's see this in a live environment
+Now let's see this in a live Python environment
 
 ::
 
@@ -442,9 +480,10 @@ Now let's see this in a live environment
     context.get_mapping()
     # Result: "/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo"
 
-Before adding jobber.yml to our system, the mapping was
-"/jobs/{JOB}/{SCENE}/{SHOT}/library/graded/plates/clientinfo". Now, it's
-"/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo".
+Before adding jobber.yml to our system, the mapping for "job.shot/plates/client"
+was "/jobs/{JOB}/{SCENE}/{SHOT}/library/graded/plates/clientinfo".
+
+Now, it's "/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo".
 
 This works because the "job_plugin" key in jobber.yml matches the same hierarchy
 as the "plates" key in master.yml.
@@ -484,5 +523,4 @@ Maybe one job is called "foo" and another is called "bar".
 /jobs/foo/config/ways and /jobs/bar/config/ways could have different Plugin
 Sheet files customized for each job's needs.
 
-With just a single, 8 line file, Ways's plugin resolution can completely change.
-
+With just a single, 8 line file, Ways's plugin structure can completely change.

@@ -1,7 +1,7 @@
-ways\.dict\_classes module
---------------------------
+ways\.helper\.dict\_classes module
+----------------------------------
 
-.. automodule:: ways.dict_classes
+.. automodule:: ways.helper.dict_classes
     :members:
     :undoc-members:
     :show-inheritance:

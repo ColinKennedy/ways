@@ -1,7 +1,7 @@
-ways\.common module
--------------------
+ways\.helper\.common module
+---------------------------
 
-.. automodule:: ways.common
+.. automodule:: ways.helper.common
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,7 +1,7 @@
-ways\.commander module
-----------------------
+ways\.base\.commander module
+----------------------------
 
-.. automodule:: ways.commander
+.. automodule:: ways.base.commander
     :members:
     :undoc-members:
     :show-inheritance:

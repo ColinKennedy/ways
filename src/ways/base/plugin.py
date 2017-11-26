@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''A module that holds Plugin classes - objects that combine into a Context.'''
+'''A module that holds Plugin classes and objects that combine into a Context.'''
 
 # IMPORT STANDARD LIBRARIES
 import uuid
@@ -13,13 +13,13 @@ import six
 import ways
 
 # IMPORT LOCAL LIBRARIES
-from . import common
-from .core import check
+from ..core import check
+from ..helper import common
 
 
 class PluginRegistry(type):
 
-    '''A metaclass that adds newly-created Plugin objects to a cache.'''
+    '''A metaclass that adds new Plugin objects to a cache.'''
 
     def __new__(mcs, clsname, bases, attrs):
         '''Add the created object to the HistoryCache.'''
@@ -86,7 +86,7 @@ class DataPlugin(Plugin):
 
     add_to_registry = False
 
-    def __init__(self, sources, info, assignment):
+    def __init__(self, name, sources, info, assignment):
         '''Create the object and set its sources.
 
         Args:
@@ -123,6 +123,7 @@ class DataPlugin(Plugin):
         except AttributeError:
             pass
 
+        self.name = name
         self._info = info
         self.sources = tuple(sources)
         self._data = self._info.get('data', dict())
@@ -134,6 +135,18 @@ class DataPlugin(Plugin):
     def _required_keys(cls):
         '''tuple[str]: Keys that must be set in our Plugin.'''
         return ('hierarchy', )
+
+    def is_path(self):
+        '''If the mapping is a filepath or None if unsure.
+
+        Returns:
+            bool or NoneType: If the mapping is a path to a file/folder on disk.
+
+        '''
+        try:
+            return self._info['path']
+        except KeyError:
+            return
 
     def get_assignment(self):
         '''str: Where this Plugin lives in Ways, along with its hierarchy.'''
@@ -173,11 +186,12 @@ class DataPlugin(Plugin):
 
     def get_max_folder(self):
         '''str: The furthest location up that this plugin can navigate to.'''
-        return self._info.get('max_folder', self.get_mapping())
+        return self._info.get('max_folder', '')
 
     def get_platforms(self):
-        '''tuple[str]: The platforms that this Plugin is allowed to run on.'''
-        return self._info.get('platforms', ('*', ))
+        '''set[str]: The platforms that this Plugin is allowed to run on.'''
+        platforms = ways.get_known_platfoms()
+        return set(self._info.get('platforms', platforms))
 
     def get_uses(self):
         '''tuple[str]: The Context hierarchies this instance depends on.'''
@@ -185,7 +199,7 @@ class DataPlugin(Plugin):
 
     def get_uuid(self):
         '''str: A unique ID for this plugin.'''
-        return self._info['uuid']
+        return self._info.get('uuid', '')
 
     def __repr__(self):
         '''str: The information needed to reproduce this instance.'''
@@ -193,6 +207,13 @@ class DataPlugin(Plugin):
             cls_=self.__class__.__name__,
             sources=self.sources,
             data=dict(self._info))
+
+    def __str__(self):
+        '''str: A more concise print-out of this instance.'''
+        return '{cls_}(hierarchy={hierarchy}, sources={sources!r})'.format(
+            cls_=self.__class__.__name__,
+            hierarchy=self.get_hierarchy(),
+            sources=self.sources)
 
 
 def get_assignment(obj):

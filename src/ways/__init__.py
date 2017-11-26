@@ -11,14 +11,10 @@ import collections
 import six
 
 # IMPORT LOCAL LIBRARIES
-# TODO : ugh this import is bad. FIXME
-#        It's only used so that we can clear our Context instances
-#        Find a better way to do this. Maybe store the instances here, too?
-#
-# pylint: disable=wrong-import-position
-from . import common
-from . import resource
-from . import situation as sit
+from .base import finder
+from .base import situation as sit
+from .helper import common
+from .parsing import registry
 
 __version__ = "0.1.0b1"
 
@@ -46,7 +42,7 @@ def _get_actions(hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=Fal
             name) are all returned. Default is False.
 
     Returns:
-        list[list[str], list[<ways.api.Action> or callable]]:
+        list[list[str], list[:class:`ways.api.Action` or callable]]:
             0: All of the names of each action that was found.
             1: The object that was created for a specific action.
 
@@ -100,7 +96,7 @@ def get_actions(hierarchy, assignment=common.DEFAULT_ASSIGNMENT, duplicates=Fals
             name) are all returned. Default is False.
 
     Returns:
-        list[<ways.api.Action> or callable]:
+        list[:class:`ways.api.Action` or callable]:
             The actions in the hierarchy.
 
     '''
@@ -124,7 +120,7 @@ def get_actions_iter(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
             If assignment='', all plugins from every assignment is queried.
 
     Yields:
-        dict[str: :class:`ways.api.Action`]:
+        dict[str, :class:`ways.api.Action`]:
             The actions for some hierarchy.
 
     '''
@@ -207,7 +203,7 @@ def get_actions_info(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
             The group to get items from. Default: 'master'.
 
     Returns:
-        dict[str: <ways.api.Action> or callable]:
+        dict[str: :class:`ways.api.Action` or callable]:
             The name of the action and its associated object.
 
     '''
@@ -232,8 +228,7 @@ def get_action(name, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
                                             assigned to. Default: 'master'.
 
     Returns:
-        <pathfinder.commander.Action> or NoneType: The found Action object
-                                                    or nothing.
+        :class:`ways.api.Action` or NoneType: The found Action object.
 
     '''
     for actions in get_actions_iter(hierarchy, assignment=assignment):
@@ -241,6 +236,25 @@ def get_action(name, hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
             return actions[name]
         except (TypeError, KeyError):  # TypeError in case action is None
             pass
+
+
+def get_known_platfoms():
+    '''Find the platforms that Ways sees.
+
+    This will return back the platforms defined in the WAYS_PLATFORMS
+    environment variable. If WAYS_PLATFORMS isn't defined, a default set of
+    platforms is returned.
+
+    Returns:
+        set[str]: All of the platforms.
+                  Default: {'darwin', 'java', 'linux', 'windows'}
+
+    '''
+    try:
+        return set(os.environ[common.PLATFORMS_ENV_VAR].split(os.pathsep))
+    except KeyError:
+        # These platforms are the what platform.system() could return
+        return {'darwin', 'java', 'linux', 'windows'}
 
 
 def get_plugins(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
@@ -260,7 +274,7 @@ def get_plugins(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
             If assignment='', all plugins from every assignment is queried.
 
     Returns:
-        list[<pathfinder.plugin.Plugin>]:
+        list[:class:`ways.api.Plugin`]:
             The found plugins, if any.
 
     '''
@@ -351,10 +365,58 @@ def add_plugin(plugin, assignment='master'):
     PLUGIN_CACHE['hierarchy'][hierarchy].setdefault(assignment, [])
 
     # Add the plugin if it doesn't already exist
-    all_plugins = PLUGIN_CACHE['all']
-    if plugin not in all_plugins:
+    if plugin not in PLUGIN_CACHE['all']:
+        check_plugin_uuid(plugin)
+
         PLUGIN_CACHE['hierarchy'][plugin.get_hierarchy()][assignment].append(plugin)
-        all_plugins.append(plugin)
+        PLUGIN_CACHE['all'].append(plugin)
+
+
+def check_plugin_uuid(info):
+    '''Make sure that the plugin UUID is not already taken.
+
+    Args:
+        info (:class:`ways.api.DataPlugin` or dict[str]):
+            Data that may become a proper plugin.
+
+    Raises:
+        RuntimeError:
+            If the plugin's UUID is already taken.
+
+    '''
+    uuids = dict()
+
+    for cached_plugin in PLUGIN_CACHE['all']:
+        try:
+            plugin_uuid = cached_plugin.get_uuid()
+        except AttributeError:
+            plugin_uuid = ''
+
+        if plugin_uuid:
+            uuids[plugin_uuid] = cached_plugin
+
+    try:
+        plugin_uuid = info['uuid']
+    except (TypeError, KeyError):
+        pass
+
+    try:
+        plugin_uuid = info.get_uuid()
+    except AttributeError:
+        return
+
+    try:
+        cached = uuids[plugin_uuid]
+    except KeyError:
+        return
+
+    if cached.name == info.name:
+        return
+
+    raise RuntimeError(
+        'UUID: "{uuid_}" is already taken by plugin, "{plug}". Please choose '
+        'another name. Info: "{info}" is invalid.'.format(
+            uuid_=plugin_uuid, plug=cached, info=info))
 
 
 def clear():
@@ -374,10 +436,7 @@ def clear():
     del PLUGIN_LOAD_RESULTS[:]
     del DESCRIPTOR_LOAD_RESULTS[:]
     del DESCRIPTORS[:]
+    finder.Find.clear()
     sit.clear_aliases()
     sit.clear_contexts()
-    resource.reset_asset_classes()
-
-
-if __name__ == '__main__':
-    print(__doc__)
+    registry.reset_asset_classes()
