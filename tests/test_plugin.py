@@ -154,7 +154,7 @@ class PluginMethodTestCase(common_test.ContextTestCase):
             },
         }
 
-        plugin_file = self._make_plugin_folder_with_plugin(contents=contents)
+        plugin_file = self._make_plugin_folder_with_plugin2(contents=contents)
 
         ways.api.add_search_path(os.path.dirname(plugin_file))
         context = ways.api.get_context('31tt/whatever')
@@ -203,7 +203,7 @@ class PluginMethodTestCase(common_test.ContextTestCase):
                 },
             },
         }
-        plugin_file = self._make_plugin_folder_with_plugin(contents=contents)
+        plugin_file = self._make_plugin_folder_with_plugin2(contents=contents)
 
         ways.api.add_search_path(os.path.dirname(plugin_file))
         context = ways.api.get_context('31tt/whatever')

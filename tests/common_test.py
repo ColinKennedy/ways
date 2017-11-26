@@ -47,6 +47,9 @@ class ContextTestCase(unittest.TestCase):
         '''Create a Plugin Sheet using some folder and register it to Ways.'''
         import yaml
 
+        if isinstance(contents, dict):
+            contents = yaml.dump(contents)
+
         if contents is not None:
             contents = yaml.load(contents)
 
@@ -57,21 +60,6 @@ class ContextTestCase(unittest.TestCase):
         if register:
             ways.api.add_search_path(os.path.dirname(plugin_file))
 
-        return plugin_file
-
-    def _make_plugin_folder_with_plugin(
-            self,
-            contents=None,
-            ending='.yml',
-            folder=''):
-        '''Create a Plugin Sheet using some folder and register it to Ways.
-
-        Note:
-            DEPRECATED.
-
-        '''
-        plugin_file = make_folder_plugin(contents=contents, ending=ending, folder=folder)
-        self.temp_paths.append(os.path.dirname(plugin_file))
         return plugin_file
 
     def tearDown(self):

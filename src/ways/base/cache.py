@@ -445,7 +445,6 @@ def update_plugins():
     '''Look up every plugin in every descriptor and register them to Ways.'''
     plugins = [plugin for descriptor_method in ways.DESCRIPTORS
                for plugin in descriptor_method()]
-
     _conform_plugins_with_assignments(plugins)
 
     for plugin, assignment in plugins:
