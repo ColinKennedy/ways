@@ -2,10 +2,7 @@ Ways Documentation
 =========================
 
 Welcome to Ways, an AMS toolkit for Python. For the tired programmer that has
-to deal with projects
-
-with expanding scope and
-
+to deal with projects with expanding scope and revisions, this tool is for you.
 
 For more information, read on
 
