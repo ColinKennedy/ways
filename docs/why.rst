@@ -265,7 +265,7 @@ This is what using our plugin in Python would look like
 Now for some bad news - We need our setup to work with Windows. And worse,
 the Windows-equivalent path for "/jobs/{JOB}/{SCENE}/{SHOT}/{DISCIPLINE}"
 has a different number of folders so our old function cannot work for both
-("\\\\NETWORK\\server1\\jobs\\{JOB}\\{SCENE}\\{SHOT}\\{DISCIPLINE}").
+("\\\\\\NETWORK\\server1\\jobs\\{JOB}\\{SCENE}\\{SHOT}\\{DISCIPLINE}").
 
 But in Ways, these sort of changes only require a slight change in our Plugin Sheets.
 
@@ -394,7 +394,7 @@ But, if you want to know more, you can skip ahead to :doc:`parsing`.
 Adding Existing AMS
 -------------------
 
-Most likely, Ways is not the first AMS (Asset Management System) you've tried.
+Most likely, Ways is not the first AMS (Asset Management System) tool you've used.
 Chances are, you have your own AMS that you'd like to keep using. Ways can
 partially integrate existing objects into its own code to help tie into
 existing systems.
@@ -405,11 +405,15 @@ existing systems.
 
         '''Some class that is part of an existing AMS.'''
 
-        def __init__(self, context):
+        def __init__(self, info, context):
             super(MyAssetClass, self).__init__()
             # ... more code ...
 
-    ways.api.register_asset_class(MyAssetClass, context='some/hierarchy')
+    def main():
+        ways.api.register_asset_class(MyAssetClass, context='some/hierarchy')
+
+    asset = ways.api.get_asset({}, context='some/hierarchy')
+    # Result: <MyAssetClass>
 
 Now when you run "get_asset", the function will return MyAssetClass.
 For more information on register_asset_class, check out :ref:`asset_swapping`.
@@ -418,8 +422,8 @@ For more information on register_asset_class, check out :ref:`asset_swapping`.
 Dealing With Revised Projects
 -----------------------------
 
-You're working on a tool that publishes rendered images to a database. Because
-you were only working for yourself, you made a function to parse your path:
+Imagine that you're working on a tool that publishes images to a database.
+Because you were only working for yourself, you made a function to parse your path:
 
 (Example path:
 "/jobs/{JOB}/{SCENE}/{SHOT}/elements/{NAME}/{VERSION}/{LAYER}/{SEQUENCE_NAME}"
@@ -441,10 +445,10 @@ you were only working for yourself, you made a function to parse your path:
 
     publish(info)
 
-Lets just pretend for a moment that this example suited our needs. Maybe
-instead get_sequence_info would actually use some regex or something to make
-the paths easier to parse. The point is that, whatever the solution it, it's
-good enough for your tool.
+Lets just pretend for a moment that this example did everything we
+needed to do. Maybe get_sequence_info is some regex or another parser.
+The point is that, whatever the solution it, it's good enough for the tool
+that you're writing.
 
 
 If we used Ways, this is what the same example could look like.
@@ -480,9 +484,9 @@ to do the publish.
         def get_hierarchy(cls):
             return 'job/shot/element'
 
-        def __callable__(info):
+        def __call__(self, info):
             '''Publish to the database with our info.'''
-            # Do the publish to our database ...
+            # ... do the publish ...
 
 ::
 
@@ -490,9 +494,9 @@ to do the publish.
     asset = ways.api.get_asset(path)
     asset.actions.publish()
 
-Another developer on your team developed a tool that depends on published images
-too but their tool uses very different paths and your tool from earlier needs to
-accomodate those paths.
+Another developer on your team may have developed a tool that depends on those
+published images too but their tool uses very different paths from yours and
+you are being asked to accomodate those paths to.
 
 You've been putting files in
 
@@ -505,12 +509,10 @@ but the other developer has been putting similar files in
 
 Now you're in a bad situation. The other developer is adding files in a
 completely different folder with a different number of folders, and a slightly
-different naming convention than your tool expected.
+different naming convention than what your tool expected.
 
 You can't rely on your database to get information from these paths because
 neither paths have actually been published yet - just rendered to disk.
-
-TODO Write a fix for this "situation" (the non-Ways solution)
 
 In Ways, the same situation can be solved by just writing a new plugin
 
@@ -532,7 +534,7 @@ In Ways, the same situation can be solved by just writing a new plugin
             uses:
                 - job/shot/element
         houdini_rendered_plugin:
-            hierarchy: '{root}'/rendered/sequence/houdini'
+            hierarchy: '{root}/rendered/sequence/houdini'
             mapping: '{root}/plates/houdini/{NAME}_{VERSION}/{VERSION}/{LAYER}/file_sequence.####.tif'
             uses:
                 - job/shot/element
@@ -558,20 +560,20 @@ Now we can publish those paths without changing anything else.
     asset1.actions.publish()
     asset2.actions.publish()
 
-When no context is given to "get_asset", Ways will guess the "best"
-possible Context for whatever information you do give it. If the information
-was a string like in our example and the string matches a Context's mapping,
-this guess will always be correct. So even though all we have is a path to some
-sequence on disk, Ways gets the right Context and the right Asset for us,
-letting us publish like normal, no problem.
+.. note ::
 
-Both plugins, "sequence_bit" and "houdini_rendered_plugin" share the same
-hierarchy, "job/shot/element". That hierarchy has a "publish" Action
-defined so all hierachies that use "job/shot/element" also get the "publish" Action.
+    When no context is given to "get_asset", Ways will guess the "best"
+    possible Context for the information you give it.
 
-The procedural method of solving this problem got overly complicated and
-difficult to read and maintain. In Ways, the change was 5 extra lines in the
-config file to support that other developer's tools.
+    If the information was a string and it matches a Context's mapping,
+    this guess will always be correct.
+
+    There's more information about this in :ref:`mapping_basics` and :ref:`autofind_pattern`.
+
+Both plugins, "sequence_bit" and "houdini_rendered_plugin", share the same
+hierarchy - "job/shot/element". "job/shot/element" has a "publish" Action
+defined for it so our new hierarchy in "job/shot/element/rendered/sequence/houdini"
+can also reuse the same Action.
 
 
 Split Deployment

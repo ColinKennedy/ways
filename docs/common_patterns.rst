@@ -21,6 +21,9 @@ of information, a string or a dict, and you don't know what Context hierarchy
 it belongs to, mapping and mapping_details are used to "auto-find" the right
 Context.
 
+
+.. _autofind_pattern :
+
 Auto-find using mapping
 ***********************
 

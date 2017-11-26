@@ -145,6 +145,8 @@ except for some_assigned_plugin, which will have an assignment
 of "different_assignment".
 
 
+.. _mapping_basics :
+
 mapping
 +++++++
 

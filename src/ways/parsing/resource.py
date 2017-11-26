@@ -1054,12 +1054,11 @@ def _find_context_using_info(obj):
 
         '''
         mapping = context.get_mapping()
-
         # This algorithm gets thrown off by any contents inside {}s
         # so we're going to make the mapping from strings like
         # '/jobs/{JOBS}/here' into '/jobs//here' to make the sort more fair
         #
-        mapping = re.sub('({[^{}}]*)', mapping, '')
+        mapping = re.sub('({[^{}]*})', '', mapping)
 
         return pylev.levenshtein(mapping, obj)
 
@@ -1088,6 +1087,7 @@ def _find_context_using_info(obj):
 
         # If the high score is listed twice then we can't know which Context
         # to use so raise an error
+        #
         high_scorers = []
         for context, ranking in six.moves.zip(contexts, rankings):
             if ranking == high_score:
@@ -1184,9 +1184,8 @@ def _find_context_using_info(obj):
             return valid_contexts[0]
 
         raise ValueError(
-            'Ways got two or more Contexts that tied for info, "{info}". '
-            'Ways cannot decide which Contexts to use, "{contexts!s}".'
-            ''.format(info=info, contexts=[str(context) for context in contexts]))
+            'Ways got two or more Contexts and cannot decide which to use, '
+            '"{contexts!s}".'.format(contexts=[str(context) for context in contexts]))
 
     def find_context_by_mapping(mapping, contexts):
         '''Get the correct Context by matching the user's mapping.
