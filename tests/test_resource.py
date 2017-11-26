@@ -35,7 +35,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
                                 regex: .+
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         some_path = '/jobs/some_job/some_kind/of/real_folders'
         context = ways.api.get_context('some/context')
@@ -61,7 +61,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
                 },
             },
         }
-        plugin = self._make_plugin_folder_with_plugin2(contents=contents)
+        plugin = self._make_plugin_sheet(contents=contents)
         ways.api.add_search_path(os.path.dirname(plugin))
 
         some_path = '/jobs/some_job/some_other_kind/of/real_folders'
@@ -86,7 +86,7 @@ class AssetCreateTestCase(common_test.ContextTestCase):
                             required: false
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         some_path = '/jobs/some_job/some_kind/of/real_folders'
         asset = ways.api.get_asset(some_path, context='some/other/context')
@@ -118,7 +118,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                             required: false
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         some_path = '/jobs/some_job_here/some_kind/of/real_folders'
         asset = ways.api.get_asset(some_path, context='some/other/context')
@@ -148,7 +148,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                             required: false
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         asset = ways.api.get_asset({'JOB': 'asdf'}, context='some/other/context')
 
@@ -175,7 +175,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                             required: false
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         asset = ways.api.get_asset({'JOB': 'asdf', 'THING': '8'}, context='some/other/context')
         tokens = asset.get_token_parse('JOB', 'regex')
@@ -201,7 +201,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                             required: false
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         asset = ways.api.get_asset({'JOB': 'asdf'}, context='some/other/context')
         asset.set_value('THING', '8')
@@ -222,7 +222,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                                 regex: .+
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         shot_value = 'asdf'
         asset = ways.api.get_asset({'SHOT_NAME': shot_value}, context='a/context')
@@ -248,7 +248,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                                 regex: '[0-9]+'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         shot_id = '0012'
         shot_name = 'SHOTNAME_' + shot_id
@@ -276,7 +276,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                                 regex: '[0-9]+'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         shot_id = '010'
         shot_prefix = 'SHOT'
@@ -311,7 +311,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         asset = ways.api.get_asset({'JOB': 'fooBar_1.342'}, context='a/context')
         value = asset.get_value('JOB_SITE')
@@ -342,7 +342,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
 
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         asset = ways.api.get_asset({'JOB': 'fooBar1.342'}, context='a/context')
         value = asset.get_value('JOB_SITE')
@@ -373,7 +373,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                                 regex: '[0-9]+'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         shot_id = '010'
         shot_prefix = 'SHOT.t'
@@ -399,7 +399,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                                 regex: '\w+'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
         value = asset.get_token_parse('SHOT_NAME')
@@ -419,7 +419,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                             arbitrary: info
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
         value = asset.get_token_parse('SHOT_NAME')
@@ -471,7 +471,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                             mapping: whatever
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         asset = ways.api.get_asset({'SHOT_NAME': 'foo'}, context='a/context')
 
@@ -600,7 +600,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                         - job/scene
             ''').format(temproot=tempdir)
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         # Set up our fake environment
         make_fake_job_and_scenes(tempdir)
@@ -641,7 +641,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                                 - int
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         asset = ways.api.get_asset({'JOB': 'something_123'}, context='job')
         self.assertEqual(asset.get_value('JOB_ID'), 123)
@@ -663,7 +663,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                     mapping: '/tmp/{JOB}/{SCENE}/{SHOT}'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         shot = ways.api.get_asset(
             {'JOB': 'something_123', 'SCENE': 'foo', 'SHOT': 'bar'},
@@ -690,7 +690,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                     mapping: '/tmp/{JOB}/{SCENE}/{SHOT}'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         shot = ways.api.get_asset(
             {'JOB': 'something_123', 'SCENE': 'foo', 'SHOT': 'bar'},
@@ -712,7 +712,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                             before_return: ways.common.get_platforms
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         scene = ways.api.get_asset(
             {'JOB': 'something_123', 'SCENE': 'foo'}, context='job/scene')
@@ -734,7 +734,7 @@ class AssetMethodTestCase(common_test.ContextTestCase):
                                 - ways.common.get_platforms
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         name = 'foo'
         scene = ways.api.get_asset(
@@ -770,7 +770,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
                             required: false
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         # Create a default Asset
         some_path = '/jobs/some_job/some_kind/of/real_folders'
@@ -813,7 +813,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
                             required: false
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         # Create a default Asset
         some_path = '/jobs/some_job/some_kind/of/real_folders'
@@ -860,7 +860,7 @@ class AssetRegistrationTestCase(common_test.ContextTestCase):
                             required: false
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         # Create a default Asset
         some_path = '/jobs/some_job/some_kind/of/real_folders/inner'

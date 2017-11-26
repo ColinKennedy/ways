@@ -159,7 +159,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
                         - linux
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
         mapping = '/jobs/job_part_something'
 
         with self.assertRaises(RuntimeError):
@@ -269,7 +269,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
                     mapping: bar
             '''.format(assignment=assignment))
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('foo', assignment=assignment)
 
@@ -291,7 +291,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
 
             '''.format(assignment=assignment))
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context1 = ways.api.get_context('foo', assignment=assignment)
         self.assertEqual(assignment, context1.assignment)
@@ -380,7 +380,7 @@ class ContextCreateTestCase(common_test.ContextTestCase):
                 some_plugin:
                     hierarchy: foo
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
         self.assertNotEqual(None, context)
@@ -399,7 +399,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                 some_plugin:
                     hierarchy: foo
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
         self.assertEqual(ways.get_known_platfoms(), context.get_platforms())
@@ -469,7 +469,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                     hierarchy: foo
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
         generic_platforms = context.get_platforms()
@@ -495,7 +495,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
             ''')
 
         with self.assertRaises(RuntimeError):
-            self._make_plugin_folder_with_plugin2(contents)
+            self._make_plugin_sheet(contents)
 
     def test_get_mapping_tokens(self):
         '''Get the Context's top-level tokens and the tokens from a string.'''
@@ -509,7 +509,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                         THING:
                             mapping: '{INNER}_{ITEMS}'
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
 
@@ -528,7 +528,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                         THING:
                             mapping: '{INNER}_{ITEMS}'
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
 
@@ -546,7 +546,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                         THING:
                             mapping: '{INNER}_{ITEMS}'
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo')
 
@@ -567,7 +567,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                     uses:
                         - foo
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
 
@@ -585,7 +585,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                     mapping: '/jobs/{JOB}/thing'
                     path: true
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
 
@@ -608,7 +608,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                     uses:
                         - foo
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
 
@@ -631,7 +631,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                     uses:
                         - foo
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
 
@@ -654,7 +654,7 @@ class ContextMethodTestCase(common_test.ContextTestCase):
                         - foo
                     path: false
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context1 = ways.api.get_context('foo')
         context2 = ways.api.get_context('foo/bar')

@@ -220,7 +220,7 @@ class AutoloadTestCase(common_test.ContextTestCase):
 
     #     # plugin_file = common_test.make_folder_plugin(
     #     #     'AnotherClass', contents=contents)
-    #     plugin_file = self._make_plugin_folder_with_plugin2(
+    #     plugin_file = self._make_plugin_sheet(
     #         contents=contents, ending='.json')
 
     #     # Add the path to our env var

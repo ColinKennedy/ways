@@ -43,7 +43,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
             '''
         )
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
     def test_basic_descriptor_with_uuid(self):
         '''Test to make sure that a Descriptor is created as we expect.'''
@@ -108,7 +108,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
                 a_parse_plugin:
                     hierarchy: 2tt/whatever
             ''')
-        self._make_plugin_folder_with_plugin2(contents=contents, register=False)
+        self._make_plugin_sheet(contents=contents, register=False)
 
         example_bad_class = textwrap.dedent(
             """\

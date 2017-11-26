@@ -39,8 +39,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         git_repository = git.Repo.init(git_repo_location)
 
         # Make a plugin and put it in smoe inner folder
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, folder=git_repo_location)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, folder=git_repo_location)
         inner_folder = os.path.join(os.path.dirname(plugin_file_path), 'plugins')
         os.makedirs(inner_folder)
         new_plugin_path = os.path.join(inner_folder, os.path.basename(plugin_file_path))
@@ -79,8 +78,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         git_repository = git.Repo.init(git_repo_location)
 
         # Make a plugin and put it in smoe inner folder
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, folder=git_repo_location)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, folder=git_repo_location)
         inner_folder = os.path.join(os.path.dirname(plugin_file_path), 'plugins')
         os.makedirs(inner_folder)
         new_plugin_path = os.path.join(inner_folder, os.path.basename(plugin_file_path))
@@ -133,8 +131,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
         git_repository = git.Repo.init(git_repo_location)
 
         # Make a plugin and put it in smoe inner folder
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, folder=git_repo_location)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, folder=git_repo_location)
         inner_folder = os.path.join(os.path.dirname(plugin_file_path), 'plugins')
 
         os.makedirs(inner_folder)
@@ -170,7 +167,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
                     hierarchy: ztt/whatever
             ''')
 
-        plugin_file_path = self._make_plugin_folder_with_plugin2(contents=contents)
+        plugin_file_path = self._make_plugin_sheet(contents=contents)
 
         descriptor_info = {
             'items': os.path.dirname(plugin_file_path),
@@ -200,7 +197,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
                     hierarchy: ztt/whatever
             ''')
 
-        plugin_file_path = self._make_plugin_folder_with_plugin2(contents=contents)
+        plugin_file_path = self._make_plugin_sheet(contents=contents)
 
         descriptor_info = {
             'items': os.path.dirname(plugin_file_path),
@@ -223,7 +220,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
                     hierarchy: 2tt/whatever
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('2tt/whatever')
         self.assertNotEqual(context, None)
@@ -237,7 +234,7 @@ class DescriptorContextTestCase(common_test.ContextTestCase):
                     hierarchy: 2ff2/whatever
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('2ff2/whatever')
         self.assertNotEqual(context, None)
@@ -407,8 +404,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
             a_parse_plugin:
                 hierarchy: 2tt/whatever
             ''')
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, register=False)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, register=False)
 
         example_bad_class = textwrap.dedent(
             """\
@@ -453,8 +449,7 @@ class DescriptorInvalidTestCase(common_test.ContextTestCase):
                 a_parse_plugin:
                     hierarchy: 2tt/whatever
             ''')
-        plugin_file_path = self._make_plugin_folder_with_plugin2(
-            contents=contents, register=False)
+        plugin_file_path = self._make_plugin_sheet(contents=contents, register=False)
 
         example_bad_class = textwrap.dedent(
             """\

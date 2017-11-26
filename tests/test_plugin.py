@@ -48,8 +48,7 @@ class PluginCreationTestCase(common_test.ContextTestCase):
                     hierarchy: 27ztt/whatever
             ''')
 
-        self._make_plugin_folder_with_plugin2(
-            contents=contents, ending='.json')
+        self._make_plugin_sheet(contents=contents, ending='.json')
 
         found_instances = ways.PLUGIN_CACHE['hierarchy'][hierarchy]['master']
         self.assertEqual([plug.get_hierarchy() for plug in found_instances],
@@ -65,7 +64,7 @@ class PluginCreationTestCase(common_test.ContextTestCase):
                     hierarchy: 27ztt/whatever
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents, ending='.yml')
+        self._make_plugin_sheet(contents=contents, ending='.yml')
 
         context = ways.api.get_context('27ztt/whatever')
         self.assertEqual(context.get_hierarchy(), ('27ztt', 'whatever'))
@@ -91,7 +90,7 @@ class PluginCreationTestCase(common_test.ContextTestCase):
             ''')
 
         with self.assertRaises(ValueError):
-            self._make_plugin_folder_with_plugin2(contents=contents, ending='.yml')
+            self._make_plugin_sheet(contents=contents, ending='.yml')
 
     # def test_failed_plugin_self_referring_uses(self):
     #     contents = textwrap.dedent(
@@ -109,7 +108,7 @@ class PluginCreationTestCase(common_test.ContextTestCase):
 
     #         ''')
 
-    #     self._make_plugin_folder_with_plugin2(contents=contents, ending='.yml')
+    #     self._make_plugin_sheet(contents=contents, ending='.yml')
 
     #     # TODO : What do I do about this one?
     #     # contents = textwrap.dedent(
@@ -122,7 +121,7 @@ class PluginCreationTestCase(common_test.ContextTestCase):
 
     #     #     ''')
 
-    #     # plugin_path = self._make_plugin_folder_with_plugin2(
+    #     # plugin_path = self._make_plugin_sheet(
     #     #     contents=contents, ending='.yml')
 
     #     context = ways.api.get_context('27ztt/whatever/whatever')
@@ -154,7 +153,7 @@ class PluginMethodTestCase(common_test.ContextTestCase):
             },
         }
 
-        plugin_file = self._make_plugin_folder_with_plugin2(contents=contents)
+        plugin_file = self._make_plugin_sheet(contents=contents)
 
         ways.api.add_search_path(os.path.dirname(plugin_file))
         context = ways.api.get_context('31tt/whatever')
@@ -203,7 +202,7 @@ class PluginMethodTestCase(common_test.ContextTestCase):
                 },
             },
         }
-        plugin_file = self._make_plugin_folder_with_plugin2(contents=contents)
+        plugin_file = self._make_plugin_sheet(contents=contents)
 
         ways.api.add_search_path(os.path.dirname(plugin_file))
         context = ways.api.get_context('31tt/whatever')
@@ -230,7 +229,7 @@ class PluginMergeMethodTestCase(common_test.ContextTestCase):
 
             '''
         )
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('foo/bar')
         expected_mapping = 'something/yyz'

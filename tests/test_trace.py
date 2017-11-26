@@ -45,7 +45,7 @@ class Common(common_test.ContextTestCase):  # pylint: disable=too-few-public-met
                                 glob: '*'
             ''')
 
-        plugin_file = self._make_plugin_folder_with_plugin2(contents=contents)
+        plugin_file = self._make_plugin_sheet(contents=contents)
 
         ways.api.add_search_path(os.path.dirname(plugin_file))
 

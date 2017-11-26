@@ -90,7 +90,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
                     uuid: boo_Did_I_scare_you?
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         os.environ[ways.api.PRIORITY_ENV_VAR] = (os.pathsep).join(
             ['master', 'an_assignment_to_every_plugin'])
@@ -104,7 +104,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
                     hierarchy: example
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('example')
         self.assertNotEqual(None, context)
@@ -178,7 +178,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
             ''')
 
         os.environ['WAYS_PLATFORM'] = 'linux'
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         all_platforms = {'windows', 'darwin', 'linux', 'java'}
         self.assertEqual(all_platforms, ways.api.get_context('foo').get_platforms())
@@ -208,7 +208,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
                         - foo
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         if platform.system() == 'Windows':
             mapping = 'Z:\jobs\{JOB}/shots'
@@ -244,7 +244,7 @@ class PluginBasicsTestCase(common_test.ContextTestCase):
                         - foo
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         if platform.system() == 'Windows':
             mapping = 'Z:\jobs\{JOB}\shots'

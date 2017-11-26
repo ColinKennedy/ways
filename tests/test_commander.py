@@ -40,7 +40,7 @@ class CommanderTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
         context = ways.api.get_context(hierarchy)
 
         # This should not fail
@@ -62,7 +62,7 @@ class CommanderTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         info = {
             'JOB': 'asdfds',
@@ -88,7 +88,7 @@ class CommanderTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         info = {
             'JOB': 'asdfds',
@@ -113,7 +113,7 @@ class CommanderTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context(hierarchy)
 
@@ -136,7 +136,7 @@ class CommanderTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('27ztt/whatever')
 
@@ -166,7 +166,7 @@ class FindCommanderTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('27ztt/whatever')
 
@@ -187,7 +187,7 @@ class FindCommanderTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('27ztt/whatever')
 

@@ -34,7 +34,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('31tt/whatever')
         parse_regex = context.get_str(resolve_with='regex')
@@ -69,7 +69,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('tt/whatever')
         parse_regex = context.get_str(resolve_with='regex')
@@ -115,7 +115,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                                     JOB: \w+_\d{4}
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('tt/whatever')
         parse_regex = context.get_str(resolve_with='regex')
@@ -141,7 +141,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                                 regex: \w+
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('yytt/whatever')
 
@@ -177,7 +177,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('yytt/whatever')
 
@@ -202,7 +202,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('31tt/whatever')
         parse_regex = context.get_str(resolve_with='regex', groups={'JOB_ID': 8})
@@ -225,7 +225,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('31tt/whatever')
         parse_regex = context.get_str(resolve_with='regex',
@@ -253,7 +253,7 @@ class ContextWithParseExpressionTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('31tt/whatever')
 
@@ -284,7 +284,7 @@ class ContextParserMethodTestCase(common_test.ContextTestCase):
                     uuid: 0d255517-dbbf-4a49-a8d0-285a06b2aa6d
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('whatever')
         parser = context.get_parser()

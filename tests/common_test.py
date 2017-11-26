@@ -38,7 +38,7 @@ class ContextTestCase(unittest.TestCase):
 
         self.temp_paths = []
 
-    def _make_plugin_folder_with_plugin2(
+    def _make_plugin_sheet(
             self,
             contents=None,
             ending='.yml',

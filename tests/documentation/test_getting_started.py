@@ -26,7 +26,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
                     hierarchy: 'some/context'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('some/context')
         self.assertNotEqual(context, None)
@@ -47,7 +47,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
                                 - bar
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('some/context')
         data = context.data['some']['arbitrary']
@@ -69,7 +69,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
                                 - bar
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         context = ways.api.get_context('some/context')
         context.data['some']['arbitrary'].append('bar2')
@@ -92,7 +92,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
                     mapping: /jobs/{JOB}/here
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         path = '/jobs/foo/here'
 
@@ -117,7 +117,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
                     hierarchy: 'some/context'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         folders = ['/library', 'library/grades', 'comp', 'anim']
 
@@ -136,7 +136,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
                     hierarchy: 'some/context'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         folders = ['/library', 'library/grades', 'comp', 'anim']
 
@@ -165,7 +165,7 @@ class GettingStartedTestCase(common_test.ContextTestCase):
                     mapping: /jobs/{JOB}/here
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         folders = ['/library', 'library/grades', 'comp', 'anim']
         common_test.build_action('get_info', folders)

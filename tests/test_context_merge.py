@@ -147,7 +147,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                     uuid: some_relative_plugin2
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         animation_context = ways.api.get_context('maya_project/animation')
         mocap_context = ways.api.get_context('houdini_project/mocap')
@@ -247,7 +247,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                     uuid: some_relative_plugin2
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         mocap_context = ways.api.get_context('maya_project/mocap/something')
         self.assertEqual(mocap_context, None)
@@ -275,7 +275,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                     uuid: some_relative_plugin1
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         mocap_context = ways.api.get_context('mocap')
         self.assertEqual(mocap_context, None)
@@ -336,7 +336,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                     uuid: some_relative_plugin2
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents=contents)
+        self._make_plugin_sheet(contents=contents)
 
         mocap_context = ways.api.get_context('maya_project/mocap/something')
         self.assertNotEqual(mocap_context, None)
@@ -388,7 +388,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                     uses:
                         - foo
             ''').format(key=key, value=value)
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
         self.assertEqual(context.data[key], value)
@@ -413,7 +413,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                     uses:
                         - foo/bar
             ''').format(key=key, value=value)
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
         self.assertEqual(context.data[key], value)
@@ -447,7 +447,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - foo
 
             ''').format(key=key, value=value, key2=key2, value2=value2)
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
         self.assertEqual(context.data[key], value)
@@ -470,7 +470,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - foo/bar
             ''').format(key=key, value=value)
         os.environ[ways.api.PRIORITY_ENV_VAR] = (os.pathsep).join(['master', 'job'])
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
         self.assertEqual(context.data[key], value)
@@ -496,7 +496,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
 
             ''').format(key=key, value=value)
         os.environ[ways.api.PRIORITY_ENV_VAR] = (os.pathsep).join(['master', 'job'])
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
 
@@ -525,7 +525,7 @@ class ContextMergeTestCase(common_test.ContextTestCase):
                         - foo/bar
             ''')
         os.environ[ways.api.PRIORITY_ENV_VAR] = (os.pathsep).join(['master', 'job'])
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar/fizz')
 

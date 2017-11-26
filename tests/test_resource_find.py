@@ -27,7 +27,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                     mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         versioned = '/tmp/foo/ttt/8'
 
@@ -48,7 +48,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                     mapping: '/tmp/{JOB}/config'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         self.assertNotEqual(None, ways.api.get_asset('/tmp/foo/library'))
 
@@ -77,7 +77,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                                 regex: '[a-z]+'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         info = {
             'JOB': 'foo',
@@ -113,7 +113,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                                 regex: '[a-z]+'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         info = {
             'JOB_NAME': 'foo',
@@ -136,7 +136,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                     mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         versioned = '/tmp/foo/ttt/8'
 
@@ -171,7 +171,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                                 regex: '[a-z]+'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         self.assertNotEqual(None, ways.api.get_asset('/tmp/foo/ttt/8'))
 
@@ -185,7 +185,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                     mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         versioned = {
             'JOB': 'foo',
@@ -208,7 +208,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                     mapping: '/tmp/{JOB}/{SOMETHING}/{ASSET_VERSION}'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         versioned = {
             'JOB': 'foo',
@@ -247,7 +247,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                                 regex: '[a-z]+'
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         versioned = {
             'JOB': 'foo',
@@ -268,7 +268,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                     hierarchy: job/vvvv
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         versioned = '/tmp/thing'
 
@@ -286,7 +286,7 @@ class FindContextTestCase(common_test.ContextTestCase):
                     hierarchy: job/vvvv
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         versioned = {
             'JOB': 'foo',

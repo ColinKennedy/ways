@@ -21,7 +21,7 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
 
     def test_find_plugin_in_path(self):
         '''Add a plugin file and then read its contents.'''
-        plugin_file = self._make_plugin_folder_with_plugin2()
+        plugin_file = self._make_plugin_sheet()
         plugins = ways.api.get_all_plugins()
         plugin_names = [plugin.__class__.__name__ for plugin in plugins]
 
@@ -30,7 +30,7 @@ class CacheFindPluginTestCase(common_test.ContextTestCase):
 
     def test_get_recursive_plugin_true(self):
         '''Test that Plugin Sheets are found/created recursively.'''
-        plugin_file = self._make_plugin_folder_with_plugin2()
+        plugin_file = self._make_plugin_sheet()
         plugin_folder = os.path.dirname(plugin_file)
 
         # Make a config file that specifies the folder as recursive

@@ -31,7 +31,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                 absolute_plugin:
                     hierarchy: fizz/buzz
             ''')
-        self._make_plugin_folder_with_plugin2(absolute)
+        self._make_plugin_sheet(absolute)
         context = ways.api.get_context('fizz/buzz')
         absolute_info = context.as_dict()
 
@@ -47,7 +47,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     uses:
                         - fizz
             ''')
-        self._make_plugin_folder_with_plugin2(relative)
+        self._make_plugin_sheet(relative)
         context = ways.api.get_context('fizz/buzz')
         relative_info = context.as_dict()
 
@@ -65,7 +65,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                         - some/place
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
         context = ways.api.get_context('some/place')
         self.assertEqual(context, None)
 
@@ -84,7 +84,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                         - foo/bar
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
         context = ways.api.get_context('some/place')
         self.assertEqual(context, None)
 
@@ -104,7 +104,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     uses:
                         - fizz/buzz
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
         context = ways.api.get_context('fizz/buzz/foo')
         self.assertNotEqual(None, context)
 
@@ -142,7 +142,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     mapping: bar/something/another/thing/sets/library
 
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('fizz/buzz/pop/fizz/library')
         absolute_info = context.as_dict()
@@ -184,7 +184,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                         - fizz/buzz/pop/fizz
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
         context = ways.api.get_context('fizz/buzz/pop/fizz/library')
         relative_info = context.as_dict()
 
@@ -215,7 +215,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     hierarchy: job/library/reference
             ''')
 
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
         context = ways.api.get_context('job/library/reference')
         absolute_info = context.as_dict()
 
@@ -248,7 +248,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     uses:
                         - job/library
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
         context = ways.api.get_context('job/library/reference')
         relative_info = context.as_dict()
 
@@ -269,7 +269,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     data:
                         {key}: {value}
             ''').format(key=key, value=value)
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
         absolute_info = context.data[key]
@@ -289,7 +289,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     uses:
                         - foo/bar
             ''').format(key=key, value=value)
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         context = ways.api.get_context('foo/bar')
         relative_info = context.data[key]
@@ -316,7 +316,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                 some_plugin:
                     hierarchy: bar
             ''')
-        self._make_plugin_folder_with_plugin2(contents, folder=root)
+        self._make_plugin_sheet(contents, folder=root)
 
         context = ways.api.get_context('bar', assignment='foo')
         yml_assignment = context.get_assignment()
@@ -342,7 +342,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                 some_plugin:
                     hierarchy: bar
             ''')
-        self._make_plugin_folder_with_plugin2(contents, folder=root)
+        self._make_plugin_sheet(contents, folder=root)
 
         context = ways.api.get_context('bar', assignment='foo')
         json_assignment = context.get_assignment()
@@ -375,7 +375,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     hierarchy: something
             '''
         )
-        self._make_plugin_folder_with_plugin2(contents, folder=root)
+        self._make_plugin_sheet(contents, folder=root)
 
         contents = textwrap.dedent(
             '''
@@ -390,7 +390,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     mapping: bar
                     assignment: job
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
         config_context = ways.api.get_context('something', assignment='foo')
         globals_context = ways.api.get_context('some/hierarchy', assignment='bar')
         plugin_context = ways.api.get_context('another/hierarchy', assignment='job')
@@ -429,7 +429,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     uses:
                         - job/shot/plates
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         contents = textwrap.dedent(
             '''
@@ -442,7 +442,7 @@ class PluginAdvancedTestCase(common_test.ContextTestCase):
                     uses:
                         - job/shot
             ''')
-        self._make_plugin_folder_with_plugin2(contents)
+        self._make_plugin_sheet(contents)
 
         expected = '/jobs/{JOB}/{SCENE}/{SHOT}/archive/plates/clientinfo'
         context = ways.api.get_context('job/shot/plates/client')
