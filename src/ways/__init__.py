@@ -120,7 +120,7 @@ def get_actions_iter(hierarchy, assignment=common.DEFAULT_ASSIGNMENT):
             If assignment='', all plugins from every assignment is queried.
 
     Yields:
-        dict[str: :class:`ways.api.Action`]:
+        dict[str, :class:`ways.api.Action`]:
             The actions for some hierarchy.
 
     '''

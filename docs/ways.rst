@@ -1,17 +1,16 @@
 ways package
 ============
 
-Ways is split into two main sections. "ways" and "ways.api". Of the two, 99% of
-all your work is going to use classes and functions out of "ways.api" but in
+Ways is split into two main sections. :mod:`ways` and :mod:`ways.api`. Of the two, 99% of
+all your work is going to use classes and functions out of :mod:`ways.api` but in
 the exceptional case where you need to do something special, You'd use the
 parent module's functions.
 
 Main Module
 -----------
 
-ways.api is where you should import from. All other modules add their public
-classes and functions into ways.api so it contains almost everything that you'd
-need to work.
+ways.api is where almost every function and class is added to and contains
+everything that you'd need to work with Ways.
 
 .. toctree::
     ways.api <api>

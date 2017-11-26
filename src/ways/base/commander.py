@@ -113,9 +113,10 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
             to this hierarchy/assignment or it risks overriding another
             Action that might already exist at the same location.
             If no name is given, the name on the action is tried, instead.
-            Default: ''.
-        assignment (:obj:`str`, optional): The group to add this action to,
-                                            Default: 'master'.
+        hierarchy (str):
+            The hierarchy of a Context to add this Action to.
+        assignment (:obj:`str`, optional):
+            The group to add this action to, Default: 'master'.
 
     Raises:
         RuntimeError: If no hierarchy is given and no hierarchy could be

@@ -12,8 +12,8 @@ Dealing with these complexity-scenarios is where Ways truly shines.
 Basics
 ------
 
-Ways is a Python toolkit which is supported by config files called which are
-called "Plugin Sheets". This is an example of a relatively simple Plugin Sheet.
+Ways is a Python toolkit which is supported by config files called "Plugin Sheets".
+This is an example of a relatively simple Plugin Sheet.
 
 .. code-block :: yaml
 
@@ -22,8 +22,8 @@ called "Plugin Sheets". This is an example of a relatively simple Plugin Sheet.
             hierarchy: some/hierarchy
             mapping: /path/to/a/{JOB}/here
 
-This Plugin Sheet is written using YAML but it can implemented using Python or
-JSON, as well. The important bit here is the "hierarchy" key. The string used
+This Plugin Sheet is written using YAML but it can written in Python or JSON, too.
+The important bit in this Plugin Shet is the "hierarchy" key. The string used
 there is what we'll use to get Context and Asset objects in other examples.
 
 .. note ::
@@ -59,8 +59,8 @@ argument. The first argument given to an Action will always be the Asset or
 Context that called it.
 
 There are two ways to create Action objects. Create a class/function and
-"register" it to Ways or subclass ways.api.Action, and Ways will register it
-for you.
+"register" it to Ways or subclass :class:`ways.api.Action`, and Ways
+will register it for you.
 
 ::
 
@@ -69,24 +69,25 @@ for you.
 
         name = 'some_action'
 
-        def __callable__(self, context):
-            print('Hello, World!')
+        def __call__(self, context):
+            return 8
 
         @classmethod
         def get_hierarchy(cls):
             return 'some/hierarchy'
 
     # Method #2: Register a function or class, explicitly
-    def some_function():
-        print('Hello, World, again!')
+    def some_function(obj):
+        return 8
 
-    ways.api.register_action(some_function, name='function', context='some/hierarchy')
+    def main():
+        ways.api.add_action(some_function, name='function', hierarchy='some/hierarchy')
 
     # Actually using the Actions
     context = ways.api.get_context('some/hierarchy')
 
     context.actions.some_action()
-    context.actions.some_function()
+    context.actions.function()
 
 Actions let the user link Contexts together, manipulate data, or
 communicate between different APIs.
@@ -95,7 +96,7 @@ communicate between different APIs.
 Mixing Ways with other APIs
 ---------------------------
 
-Many examples in this and other pages use Ways to describe filepaths. This
+Many examples in this page and others use Ways to describe filepaths. This
 isn't a requirement for Ways, it's just to keep examples simple. The truth is,
 in practice, if you're using Ways only to deal with filepaths, Ways won't be
 much better than a database.
@@ -163,10 +164,10 @@ used in Maya)
             rig.actions.publish(convert_to='geometry_cache')  # Publish the new version
 
 
-These sort of API mixtures are possible because of the "hierarchy" line
+These sort of API mixtures are possible because of the "hierarchy" key
 mentioned earlier. Each Context knows about their own hierarchy, the hierarchy
-of its parent Context, and all child Contexts because its hierarchy which you
-have full control over.
+of its parent Context, and all child Contexts by looking through its hierarchy
+which you have full control over.
 
 .. code-block :: yaml
 
@@ -216,7 +217,7 @@ something like this to split a path and get its pieces.
 
     def get_environment_info(path):
         '''Parse a path of format "/jobs/{JOB}/{SCENE}/{SHOT}/{DISCIPLINE}".'''
-        parts = os_path_split_asunder(path)
+        parts = get_parts(path)
 
         return {
             'JOB': parts[2],
@@ -261,57 +262,19 @@ This is what using our plugin in Python would look like
     print(asset.get_value('JOB'))
     # Result: 'someJobName_123'
 
-Now for some bad news - We need our setups to work with Windows.
-Here we're writing code for Windows and Linux.
+Now for some bad news - We need our setup to work with Windows. And worse,
+the Windows-equivalent path for "/jobs/{JOB}/{SCENE}/{SHOT}/{DISCIPLINE}"
+has a different number of folders so our old function cannot work for both
+("\\\\NETWORK\\server1\\jobs\\{JOB}\\{SCENE}\\{SHOT}\\{DISCIPLINE}").
 
-::
-
-    # Reference: https://stackoverflow.com/questions/4579908
-    def os_path_split_asunder(path, debug=False):
-        parts = []
-        while True:
-            newpath, tail = os.path.split(path)
-            if debug: print repr(path), (newpath, tail)
-            if newpath == path:
-                assert not tail
-                if path: parts.append(path)
-                break
-            parts.append(tail)
-            path = newpath
-        parts.reverse()
-        return parts
-
-    def get_environment_info(path):
-        '''Parse a path of format "/jobs/{JOB}/{SCENE}/{SHOT}/{DISCIPLINE}".'''
-        parts = os_path_split_asunder(path)
-
-        return {
-            'JOB': parts[2],
-            'SCENE': parts[3],
-            'SHOT': parts[4],
-            'DISCIPLINE': parts[4],
-        }
-
-::
-
-    path1 = '/jobs/someJobName_123/shot_name-Info/sh01/animation'
-    info1 = get_environment_info(path1)
-    print(info1['JOB'])
-    # Result on Linux/Mac: 'someJobName_123'
-
-    path2 = r'\\NETWORK\jobs\someJobName_123\shot_name-Info\sh01\animation'
-    info2 = get_environment_info(path2)
-    print(info2['JOB'])
-    # Result on Windows: 'someJobName_123'
-
-This can be done with Ways, too, with a slight modification of the Plugin Sheet.
+But in Ways, these sort of changes only require a slight change in our Plugin Sheets.
 
 .. code-block :: yaml
 
     plugins:
         windows_root:
             hierarchy: job
-            mapping: "Z:\\"
+            mapping: "\\\\NETWORK\\jobs"
             path: true
             platforms:
                 - windows
@@ -336,21 +299,30 @@ This can be done with Ways, too, with a slight modification of the Plugin Sheet.
     print(asset1.get_value('JOB'))
     # Result on Linux: 'someJobName_123'
 
-    path2 = r'Z:\jobs\someJobName_123\shot_name-Info\sh01\animation'
+    path2 = r'\\NETWORK\jobs\someJobName_123\shot_name-Info\sh01\animation'
     asset2 = ways.api.get_asset(path2)
     print(asset2.get_value('JOB'))
     # Result on Windows: 'someJobName_123'
 
-The "discipline" key uses "job" hierarchy and "job" is defined differently
-depending on the user's OS.
+This works because the "discipline" plugin key uses "job" and "job" is
+defined differently for each OS. To support other operating systems, you write
+once for each OS and just append any information you need onto it.
 
-Lets add some more complexity - Now our project needs to be able to query the
-"Info" part from SCENE because "Info" is useful to us.
+
+String Parsing
+++++++++++++++
+
+Now our project needs to be able to query the "Info" part from SCENE because
+"Info" is useful to us.
+
+If we're doing a non-Ways solution, like using built-in Python functions or
+regex, your solution may look something like this:
 
 ::
 
-    def get_scene_info(job):
-        return job.split('-')[-1]
+    def get_scene_info(scene):
+        '''str: Get the "Info" part of some scene.'''
+        return scene.split('-')[-1]
 
     path = '/jobs/someJobName_123/shot_name-Info/sh01/animation'
     info = get_environment_info(path)
@@ -359,23 +331,23 @@ Lets add some more complexity - Now our project needs to be able to query the
 
 
 Using "split('-')" is definitely not ideal because we're forcing a specific
-convention on the code that would need to be enforced in any other tool. But we
-don't have much of a choice. It's either that, use regex or some other text parser.
+convention on the code that will need to be consistent for all of our other
+tools.
 
-To make it easier for other tools to follow the same convention, we could
-make "-" a global variable or read in from a config file. That will help but,
-either way, getting "Info" becomes a a very granular task. Imagining what kinds
-of paths that our program expects without documentation becomes more difficult,
-as well.
+We could make "-" a global variable or read in from a config file and that
+will help but, either way, getting "Info" becomes a a very granular task.
 
-Now again, lets tackle the same problem, using Ways.
+Imagining what kinds of paths that our program expects without documentation
+becomes more difficult, as well.
+
+Lets tackle the same problem, using Ways.
 
 .. code-block :: yaml
 
     plugins:
         windows_root:
             hierarchy: job
-            mapping: "Z:\\"
+            mapping: "\\\\NETWORK\\jobs"
             path: true
             platforms:
                 - windows
@@ -386,8 +358,8 @@ Now again, lets tackle the same problem, using Ways.
             platforms:
                 - linux
         discipline:
-            hierarchy: "{root}/shot/discipline"
-            mapping: "{root}/{JOB}/{SCENE}/{SHOT}/{DISCIPLINE}"
+            hierarchy: '{root}/shot/discipline'
+            mapping: '{root}/{JOB}/{SCENE}/{SHOT}/{DISCIPLINE}'
             mapping_details:
                 SCENE:
                     mapping: "{SCENE_PREFIX}-{SCENE_INFO}"
@@ -407,19 +379,16 @@ Now again, lets tackle the same problem, using Ways.
 Between the previous example and this one, only 3 new lines were added.
 
 
-::
+.. code-block :: yaml
 
     mapping_details:
         SCENE:
             mapping: "{SCENE_PREFIX}-{SCENE_INFO}"
 
-The first example required a new function to be added to parse the string.
-Ways can do the same thing by adding 3 lines into a YAML file.
-
-There's a lot more to learn about parsing - we haven't talked at all about how
-Ways can handle querying missing data or how it integrates other parse engines
-like regex and glob. These topics are pretty dense so for now lets skip it.
-But, if you need to, you can read all about it in :doc:`parsing`.
+There's a lot more to learn about parsing. Ways can handle querying missing
+data or integrate other parse engines like regex and glob. Most of those topics
+are pretty dense so lets skip it for now.
+But, if you want to know more, you can skip ahead to :doc:`parsing`.
 
 
 Adding Existing AMS
@@ -460,7 +429,7 @@ you were only working for yourself, you made a function to parse your path:
 
     def get_sequence_info(path):
         '''Parse a path like get_environment_info.'''
-        TODO write
+        # ... get the info ...
 
     def publish(info):
         '''Publish to the database with our info.'''
