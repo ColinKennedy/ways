@@ -371,28 +371,6 @@ def add_plugin(plugin, assignment='master'):
         PLUGIN_CACHE['all'].append(plugin)
 
 
-def clear():
-    '''Remove all Ways plugins and actions.'''
-    def reset_cache(cache):
-        '''Reset some dict cache.'''
-        try:
-            cache['hierarchy'].clear()
-        except KeyError:
-            pass
-
-        cache['all'][:] = []
-
-    ACTION_CACHE.clear()
-    reset_cache(PLUGIN_CACHE)
-
-    del PLUGIN_LOAD_RESULTS[:]
-    del DESCRIPTOR_LOAD_RESULTS[:]
-    del DESCRIPTORS[:]
-    sit.clear_aliases()
-    sit.clear_contexts()
-    registry.reset_asset_classes()
-
-
 def check_plugin_uuid(info):
     '''Make sure that the plugin UUID is not already taken.
 
@@ -438,3 +416,25 @@ def check_plugin_uuid(info):
         'UUID: "{uuid_}" is already taken by plugin, "{plug}". Please choose '
         'another name. Info: "{info}" is invalid.'.format(
             uuid_=plugin_uuid, plug=cached, info=info))
+
+
+def clear():
+    '''Remove all Ways plugins and actions.'''
+    def reset_cache(cache):
+        '''Reset some dict cache.'''
+        try:
+            cache['hierarchy'].clear()
+        except KeyError:
+            pass
+
+        cache['all'][:] = []
+
+    ACTION_CACHE.clear()
+    reset_cache(PLUGIN_CACHE)
+
+    del PLUGIN_LOAD_RESULTS[:]
+    del DESCRIPTOR_LOAD_RESULTS[:]
+    del DESCRIPTORS[:]
+    sit.clear_aliases()
+    sit.clear_contexts()
+    registry.reset_asset_classes()

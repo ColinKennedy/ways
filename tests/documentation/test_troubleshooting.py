@@ -60,8 +60,8 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
 
         os.environ['WAYS_DESCRIPTORS'] = descriptor_string
 
-        descriptor_string = _itemize_seralized_descriptor(descriptor_string)
-        output = _itemize_seralized_descriptor(ways.api.encode(info))
+        descriptor_string = split_descriptor_string(descriptor_string)
+        output = split_descriptor_string(ways.api.encode(info))
         self.assertEqual(descriptor_string, output)
 
         with common_test.Capturing():
@@ -88,8 +88,8 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
 
         os.environ['WAYS_DESCRIPTORS'] = descriptor_string
 
-        descriptor_string = _itemize_seralized_descriptor(descriptor_string)
-        output = _itemize_seralized_descriptor(ways.api.encode(info))
+        descriptor_string = split_descriptor_string(descriptor_string)
+        output = split_descriptor_string(ways.api.encode(info))
         self.assertEqual(descriptor_string, output)
 
         with common_test.Capturing():
@@ -144,8 +144,8 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
             'items=%2Fsomething%2Fhere&' \
             'create_using=module.BadDescriptor&' \
             'uuid=some_uuid'
-        expected_encoded_string = _itemize_seralized_descriptor(expected_encoded_string)
-        serialized_info_ = _itemize_seralized_descriptor(serialized_info)
+        expected_encoded_string = split_descriptor_string(expected_encoded_string)
+        serialized_info_ = split_descriptor_string(serialized_info)
 
         self.assertEqual(expected_encoded_string, serialized_info_)
 
@@ -398,6 +398,6 @@ class HierarchyTestCase(TroubleshootingTestCase):
         self.assertEqual(expected, ways.api.get_child_hierarchy_tree(asset, full=False))
 
 
-def _itemize_seralized_descriptor(descriptor):
+def split_descriptor_string(descriptor):
     '''set[str]: Break a Descriptor string to its parts.'''
     return set(descriptor.split('&'))

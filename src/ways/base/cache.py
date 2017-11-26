@@ -373,7 +373,6 @@ def get_all_plugins():
     return ways.PLUGIN_CACHE['all']
 
 
-# TODO : This should be renamed. Since this isn't a Plugin but a PluginSheet
 def load_plugin(item):
     '''Load the Python file as a plugin.
 
