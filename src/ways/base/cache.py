@@ -373,17 +373,17 @@ def get_all_plugins():
     return ways.PLUGIN_CACHE['all']
 
 
-def add_plugin(item):
+def add_plugin(path):
     '''Load the Python file as a plugin.
 
     Args:
-        item (str): The absolute path to a valid Python file (py or pyc).
+        path (str): The absolute path to a valid Python file (py or pyc).
 
     '''
-    info = {'item': item}
+    info = {'item': path}
 
     try:
-        module = imp.load_source('module', item)
+        module = imp.load_source('module', path)
     except Exception as err:
         _, _, traceback_ = sys.exc_info()
         info.update(
