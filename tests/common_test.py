@@ -62,15 +62,14 @@ class ContextTestCase(unittest.TestCase):
 
         return plugin_file
 
-    @classmethod
-    def _make_plugin(cls, contents):
+    def _make_plugin(self, contents):
         '''str: Create a Python plugin file and load it into Ways.'''
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as file_:
             file_.write(contents)
             name = file_.name
 
-        # ways.api.add_plugin(name)
-        # self.temp_paths.append(name)
+        ways.api.add_plugin(name)
+        self.temp_paths.append(name)
 
         return name
 

@@ -125,7 +125,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
             """)
 
         some_temp_folder = tempfile.mkdtemp()
-        module_file_path = os.path.join(some_temp_folder, 'module.py')
+        module_file_path = os.path.join(some_temp_folder, 'module_here.py')
         with open(module_file_path, 'w') as file_:
             file_.write(example_bad_class)
 
@@ -133,7 +133,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
 
         uuid_ = 'some_uuid'
         descriptor_info = {
-            'create_using': 'module.BadDescriptor',
+            'create_using': 'module_here.BadDescriptor',
             'uuid': uuid_,
             'items': '/something/here',
         }
@@ -142,7 +142,7 @@ class TroubleshootingTestCase(common_test.ContextTestCase):
         serialized_info = ways.api.encode(descriptor_info)
         expected_encoded_string = \
             'items=%2Fsomething%2Fhere&' \
-            'create_using=module.BadDescriptor&' \
+            'create_using=module_here.BadDescriptor&' \
             'uuid=some_uuid'
         expected_encoded_string = split_descriptor_string(expected_encoded_string)
         serialized_info_ = split_descriptor_string(serialized_info)

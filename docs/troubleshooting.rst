@@ -81,7 +81,7 @@ to the system since it isn't sure about it and errors out, instead.
 
 ::
 
-    # cat /some/module.py
+    # cat /some/module_here.py
     class BadDescriptor(object):
 
         '''A Descriptor that does not work.'''
@@ -92,13 +92,13 @@ to the system since it isn't sure about it and errors out, instead.
 
             self.get_plugins = None
 
-Assuming module.py is on the PYTHONPATH, Ways can import it but it won't
+Assuming module_here.py is on the PYTHONPATH, Ways can import it but it won't
 work because get_plugins isn't a callable function.
 
 .. code-block :: json
 
     {
-        "create_using": "module.BadDescriptor",
+        "create_using": "module_here.BadDescriptor",
         "uuid": "some_uuid",
         "items": "/something/here"
     }
@@ -107,7 +107,7 @@ And finally, that becomes
 
 ::
 
-    items=%2Fsomething%2Fhere&create_using=module.BadDescriptor&uuid=some_uuid
+    items=%2Fsomething%2Fhere&create_using=module_here.BadDescriptor&uuid=some_uuid
 
 In this example, BadDescriptor is not callable and does not have a "get_plugins"
 method. Ways has no way of knowing how to get the plugins out of the Descriptor.

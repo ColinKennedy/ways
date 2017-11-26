@@ -415,6 +415,7 @@ def add_plugin(item):
                 'details': 'no_main_function',
             }
         )
+        ways.PLUGIN_LOAD_RESULTS.append(info)
         return
 
     try:
