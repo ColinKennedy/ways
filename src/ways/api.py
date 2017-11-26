@@ -3,7 +3,7 @@
 
 '''Expose common functionality.
 
-This module's responsibility to maintain backwards- and forwards-compatibility
+This module's responsibility to maintain backwards and forwards compatibility
 so that this package can be refactored without breaking any tools.
 
 It's recommended to always import and use modules, here.

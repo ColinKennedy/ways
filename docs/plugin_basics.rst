@@ -291,6 +291,7 @@ will use it. If WAYS_PLATFORM isn't defined, Ways will just use the computer's
 OS, instead.
 
 ::
+
     plugins:
         explicit_star_platform:
             hierarchy: foo
@@ -344,6 +345,7 @@ sentence, assignment has the flexibility of "platforms" and the re-usability of
 
 
 .. _path_explanation:
+
 
 path
 ++++
@@ -424,6 +426,7 @@ If we include path: true, this isn't a problem.
 
 The "foo" hierarchy is set as a path so its child hierarchy, "foo/bar" also
 becomes a path. Now things work as we expect.
+
 
 What Now?
 +++++++++

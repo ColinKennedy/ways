@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''A module that holds Plugin classes - objects that combine into a Context.'''
+'''A module that holds Plugin classes and objects that combine into a Context.'''
 
 # IMPORT STANDARD LIBRARIES
 import uuid
@@ -19,7 +19,7 @@ from ..helper import common
 
 class PluginRegistry(type):
 
-    '''A metaclass that adds newly-created Plugin objects to a cache.'''
+    '''A metaclass that adds new Plugin objects to a cache.'''
 
     def __new__(mcs, clsname, bases, attrs):
         '''Add the created object to the HistoryCache.'''

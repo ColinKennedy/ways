@@ -3,8 +3,8 @@ Why use Ways
 
 The problem with writing code isn't actually writing it for the first time.
 It's changing code later that causes the most issues.
-Project requirements change or I/O can out of hand, forcing multiple
-tools to update with new changes to the code.
+Project requirements change or I/O can out of hand. Depending on the changes
+needed, multiple tools might need to be updated at once.
 
 Dealing with these complexity-scenarios is where Ways truly shines.
 
@@ -12,8 +12,8 @@ Dealing with these complexity-scenarios is where Ways truly shines.
 Basics
 ------
 
-Ways is a Python toolkit that is supported by config files called "Plugin
-Sheets". This is an example of a relatively simple Plugin Sheet.
+Ways is a Python toolkit which is supported by config files called which are
+called "Plugin Sheets". This is an example of a relatively simple Plugin Sheet.
 
 .. code-block :: yaml
 
@@ -28,12 +28,14 @@ there is what we'll use to get Context and Asset objects in other examples.
 
 .. note ::
 
-    Context and Asset objects are written in detail in other pages so, for now,
-    just know that Context objects help you get plugin data and Asset objects
-    wrap Contexts with extra functionality.
+    This page will reference "Context" and "Asset" objects a lot.
+    (:class:`ways.api.Context` and :class:`ways.api.Asset`).
 
-To make a Context and Asset, you would use ways.api.get_context and
-ways.api.get_asset.
+    They're both explained in other pages so, for now, just know that Context
+    objects help get plugins and Asset objects add functionality to Context objects.
+
+To make a Context and Asset from the Plugin Sheet that was written earlier,
+you would use :func:`ways.api.get_context` and :func:`ways.api.get_asset`.
 
 ::
 
@@ -49,12 +51,16 @@ Extend Ways Using Actions
 -------------------------
 
 Context and Asset objects have very few methods by default and almost every
-method just queries information defined in a Plugin Sheet.  To actually write
+method just queries information defined in a Plugin Sheet. To actually write
 methods that use a Context or Asset, we need to define an Action for it.
 
-An Action is a callable object, class or function, that takes at least one
+An Action is any callable object, class or function, that takes at least one
 argument. The first argument given to an Action will always be the Asset or
 Context that called it.
+
+There are two ways to create Action objects. Create a class/function and
+"register" it to Ways or subclass ways.api.Action, and Ways will register it
+for you.
 
 ::
 
@@ -91,14 +97,14 @@ Mixing Ways with other APIs
 
 Many examples in this and other pages use Ways to describe filepaths. This
 isn't a requirement for Ways, it's just to keep examples simple. The truth is,
-in practice, if you're using Ways to deal just with filepaths, it won't provide
-that many benefits over just querying values from a database.
+in practice, if you're using Ways only to deal with filepaths, Ways won't be
+much better than a database.
 
 But Ways doesn't need to represent paths on disk, Ways can represent anything
 as long as it can be broken down into a string.
 
-A common situation that comes up in the VFX industry is that tools communicate
-with a filesystem, a database, and some third-party Python API at once.
+A common situation that comes up in the VFX industry is that tools need to
+communicate with a filesystem, a database, and some third-party Python API at once.
 
 For example, say an artist published a new version of a texture on a job's
 database and we wanted to republish a 3D model with those new textures.
@@ -138,13 +144,18 @@ used in Maya)
     asset.actions.set_path(path)
 
     # Now we need to find the rig(s) that contain this texture to republish
-    rig_sets = [node_ for node_ in pm.sets(query=True)
-                if 'setType' in node_.listAttrs() and
-                node_.attr('setType') == 'rig']
+    rig_sets = []
+    for node_ in pm.sets(query=True):
+        try:
+            if node_.attr('setType') == 'rig':
+                rig_sets.append(node_)
+        except pm.MayaAttributeError:
+            pass
 
     rigs = []
     for rig_node in rig_sets:
         rig = get_asset(rig_node)
+
         if not rig:
             continue
 
@@ -153,8 +164,9 @@ used in Maya)
 
 
 These sort of API mixtures are possible because of the "hierarchy" line
-mentioned earlier. Contexts know about themselves and the Contexts above
-and below them because of a hierarchy that you have full control over.
+mentioned earlier. Each Context knows about their own hierarchy, the hierarchy
+of its parent Context, and all child Contexts because its hierarchy which you
+have full control over.
 
 .. code-block :: yaml
 
@@ -169,7 +181,7 @@ and below them because of a hierarchy that you have full control over.
         # filepath-related plugin
         textures_output:
             hierarchy: job/shot/textures/release
-            # This filepath lets us know where to publish the next version to
+            # This is an example filepath to publish our texture to
             mapping: "{JOB}/{SCENE}/{SHOT}/releases/{ASSET}_v{VERSION}/{texture}"
 
         # Maya plugins
@@ -183,13 +195,12 @@ and below them because of a hierarchy that you have full control over.
 
         # Texture-related nodes
         file_node:
-            hierarchy: "{root}/nodes/File"
-            uses:
-                - dcc/maya
+            hierarchy: "dcc/maya/nodes/File"
 
 The above example only works with Maya "File" nodes. If we wanted to support
 other Maya texture-related nodes, all we'd have to do is add them to this
 Plugin Sheet and then implement a "set_path" Action for them.
+
 
 String Querying
 ---------------
@@ -231,6 +242,7 @@ Start by making a Plugin Sheet. We'll call this Plugin Sheet "plugin_sheet.yml".
         foo_plugin:
             hierarchy: job/shot/discipline
             mapping: /jobs/{JOB}/{SCENE}/{SHOT}/{DISCIPLINE}
+            path: true
 
 Add the path to "plugin_sheet.yml", to your WAYS_DESCRIPTORS environment variable.
 
@@ -300,11 +312,13 @@ This can be done with Ways, too, with a slight modification of the Plugin Sheet.
         windows_root:
             hierarchy: job
             mapping: "Z:\\"
+            path: true
             platforms:
                 - windows
         linux_root:
             hierarchy: job
             mapping: /jobs
+            path: true
             platforms:
                 - linux
         discipline:
@@ -362,11 +376,13 @@ Now again, lets tackle the same problem, using Ways.
         windows_root:
             hierarchy: job
             mapping: "Z:\\"
+            path: true
             platforms:
                 - windows
         linux_root:
             hierarchy: job
             mapping: /jobs
+            path: true
             platforms:
                 - linux
         discipline:
@@ -470,6 +486,7 @@ If we used Ways, this is what the same example could look like.
         linux_root:
             hierarchy: job
             mapping: /jobs
+            path: true
         element:
             hierarchy: '{root}/shot/element'
             mapping: '{root}/{JOB}/{SCENE}/{SHOT}/elements'
@@ -534,6 +551,7 @@ In Ways, the same situation can be solved by just writing a new plugin
         linux_root:
             hierarchy: job
             mapping: /jobs
+            path: true
         element:
             hierarchy: '{root}/shot/element'
             mapping: '{root}/{JOB}/{SCENE}/{SHOT}/elements'
