@@ -644,11 +644,17 @@ def get_asset(info, context=None, *args, **kwargs):
 
     '''
     if not context:
-        context = _find_context_using_info(info)
-        if context is None:
+        context_ = _find_context_using_info(info)
+        if context_ is None:
             raise ValueError('Context could not be found for info, "{info}".'.format(info=info))
     else:
-        context = sit.get_context(context)
+        context_ = sit.get_context(context)
+
+    if context_:
+        context = context_
+    else:
+        raise ValueError('Context: "{context}" could not be found. '
+                         'Cannot continue.'.format(context=context))
 
     info = expand_info(info, context=context)
     hierarchy = context.get_hierarchy()

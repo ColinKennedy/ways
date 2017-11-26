@@ -151,6 +151,14 @@ Because Actions are applied to certain hierarchies, sometimes you may call an
 Action on an Asset or Context that you think exists but doesn't.
 When that happens, AttributeError is raised.
 
+.. code-block :: yaml
+
+    plugins:
+        foo:
+            hierarchy: some/hierarchy
+        another:
+            hierarchy: action/hierarchy
+
 ::
 
     class ActionOne(ways.api.Action):
@@ -211,7 +219,6 @@ In a plugin file, you can write this:
         def __call__(self, obj):
             return [1, 2, 4, 5.4, 6, -2]
 
-
     def main():
         '''Add defaults for actions.'''
         ways.api.add_action_default('some_action', [])
@@ -242,10 +249,6 @@ file that defines Actions. That way there is always a fallback value.
 
 Designing Plugins
 -----------------
-
-- TODO
-- tree types (you can switch filepath types but it's best to try to not)
-
 
 Appending vs Defining
 +++++++++++++++++++++
@@ -311,13 +314,15 @@ that that information. The Context is optional, as mentioned before.
 ::
 
     info = {'foo': 'bar'}
-    context = 'some/hierarchy'
+    context = 'some/thing/context'
     ways.api.get_asset(info, context)
 
 If you have a class that takes two or more arguments, you can use that class
 directly in place of an Asset.
 
 ::
+
+    import ways.api
 
     class SomeNewAssetClass(object):
 
@@ -335,10 +340,9 @@ directly in place of an Asset.
         def another_method(self):
             '''Run another method.'''
             return 'bar'
-
     context = ways.api.get_context('some/thing/context')
     ways.api.register_asset_class(SomeNewAssetClass, context)
-    asset = ways.api.get_asset(some_path, context='some/thing/context')
+    asset = ways.api.get_asset({'JOB': 'something'}, context='some/thing/context')
     asset.example_method()
     # Result: 8
 
@@ -347,18 +351,22 @@ can still use it. Just add an init function:
 
 ::
 
+    import ways.api
+
     class AssetClass(object):
         def __init__(self):
             super(AssetClass, self).__init__()
 
-        def a_custom_init_function(info, context, *args, **kwargs):
-            '''Purposefully ignore the info and context that gets passed.'''
-            return asset_class(info, *args, **kwargs)
+
+    def a_custom_init_function(info, context, *args, **kwargs):
+        '''Purposefully ignore the info and context that gets passed.'''
+        return asset_class(info, *args, **kwargs)
+
 
     ways.api.register_asset_class(
         AssetClass, 'some/hierarchy', init=a_custom_init_function)
 
-    asset = ways.api.get_asset({}, 'some/hierarchy')
+    asset = ways.api.get_asset({}, 'some/thing/context')
     # Result: <AssetClass>
 
 By default, you will need to register a class/init function for every hierarchy

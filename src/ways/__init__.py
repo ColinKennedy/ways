@@ -12,6 +12,7 @@ import six
 
 # IMPORT LOCAL LIBRARIES
 from .base import situation as sit
+from .base import finder
 from .helper import common
 from .parsing import registry
 
@@ -435,6 +436,7 @@ def clear():
     del PLUGIN_LOAD_RESULTS[:]
     del DESCRIPTOR_LOAD_RESULTS[:]
     del DESCRIPTORS[:]
+    finder.Find.clear()
     sit.clear_aliases()
     sit.clear_contexts()
     registry.reset_asset_classes()
