@@ -3,7 +3,7 @@ sudo: false
 cache: pip
 os:
     - linux
-    - osx
+    - windows
 env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
