@@ -81,7 +81,7 @@ will register it for you.
         return 8
 
     def main():
-        ways.api.add_action(some_function, name='function', hierarchy='some/hierarchy')
+        ways.api.add_action(some_function, name='function', context='some/hierarchy')
 
     # Actually using the Actions
     context = ways.api.get_context('some/hierarchy')

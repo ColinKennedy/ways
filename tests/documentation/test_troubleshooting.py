@@ -270,7 +270,7 @@ class HierarchyTestCase(TroubleshootingTestCase):
 
         common_test.build_action('some_action', hierarchy='foo/fizz')
 
-        ways.api.add_action(some_function, name='something', hierarchy='foo/bar')
+        ways.api.add_action(some_function, name='something', context='foo/bar')
         context = ways.api.get_context('foo/bar')
         expected = {('foo', 'bar'), }
         self.assertEqual(expected, ways.api.get_action_hierarchies(some_function))

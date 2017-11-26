@@ -215,13 +215,13 @@ can also use a regular function and register it.
         return ['/library', 'library/grades', 'comp', 'anim']
 
     context = ways.api.get_context('some/context')
-    ways.api.add_action(some_action, hierarchy='some/context')
+    ways.api.add_action(some_action, context='some/context')
     context.actions.some_action()
 
     # If you don't want to use the name of the function, you can give the action
     # a name
     #
-    ways.api.add_action(some_action, 'custom_name', hierarchy='some/context')
+    ways.api.add_action(some_action, 'custom_name', context='some/context')
 
     context.actions.custom_name()
     # Result: ['/library', 'library/grades', 'comp', 'anim']

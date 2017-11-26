@@ -300,7 +300,7 @@ def add_descriptor(description, update=True):
     return final_descriptor
 
 
-def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNMENT):
+def add_action(action, name='', context='', assignment=common.DEFAULT_ASSIGNMENT):
     '''Add a created action to Ways.
 
     Args:
@@ -313,8 +313,8 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
             pre-existing Action in the same location.
             If no name is given, the name on the action is tried, instead.
             Default: ''.
-        hierarchy (str):
-            The hierarchy of a Context to add this Action to.
+        context (:class:`ways.api.Context` or str):
+            The Context or hierarchy of a Context to add this Action to.
         assignment (:obj:`str`, optional):
             The group to add this action to, Default: 'master'.
 
@@ -323,6 +323,7 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
                         found on the given action.
         RuntimeError: If no name is given and no name could be found
                         on the given action.
+        ValueError: If a Context object was given and no hierarchy could be found.
 
     '''
     if name == '':
@@ -340,8 +341,10 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
                                'add_action cannot continue.'
                                ''.format(act=action))
 
+    hierarchy = context
+
     # TODO : Possibly change with a "get_hierarchy" function
-    if not hierarchy:
+    if not context:
         try:
             hierarchy = action.get_hierarchy()
         except AttributeError:
@@ -349,6 +352,15 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
                                'method and no hierarchy was given to '
                                'add_action. add_action cannot continue.'
                                ''.format(act=action))
+
+    try:
+        hierarchy = context.get_hierarchy()
+    except AttributeError:
+        pass
+
+    if not hierarchy:
+        raise ValueError('No hierarchy for "{obj}" could be found.'
+                         ''.format(obj=context))
 
     hierarchy = common.split_hierarchy(hierarchy)
 

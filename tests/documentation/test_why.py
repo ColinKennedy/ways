@@ -79,7 +79,7 @@ class PluginAndActionTestCase(common_test.ContextTestCase):
                 return 8
 
             def main():
-                ways.api.add_action(some_function, name='function', hierarchy='some/hierarchy')
+                ways.api.add_action(some_function, name='function', context='some/hierarchy')
             ''')
 
         self._make_plugin(contents=contents)

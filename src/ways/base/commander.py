@@ -101,7 +101,7 @@ class _Aktion(object):
 Action = _Aktion
 
 
-def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNMENT):
+def add_action(action, name='', context='', assignment=common.DEFAULT_ASSIGNMENT):
     '''Add a created action to this cache.
 
     Args:
@@ -113,8 +113,8 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
             to this hierarchy/assignment or it risks overriding another
             Action that might already exist at the same location.
             If no name is given, the name on the action is tried, instead.
-        hierarchy (str):
-            The hierarchy of a Context to add this Action to.
+        context (:class:`ways.api.Context` or str):
+            The Context or hierarchy of a Context to add this Action to.
         assignment (:obj:`str`, optional):
             The group to add this action to, Default: 'master'.
 
@@ -126,4 +126,4 @@ def add_action(action, name='', hierarchy='', assignment=common.DEFAULT_ASSIGNME
 
     '''
     return cache.add_action(
-        action=action, name=name, hierarchy=hierarchy, assignment=assignment)
+        action=action, name=name, context=context, assignment=assignment)
