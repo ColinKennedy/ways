@@ -168,7 +168,7 @@ class ActionTestCase(common_test.ContextTestCase):
         '''Call a missing Action that has a default value assigned.'''
         self._setup_actions(main=True)
 
-        for index, hierarchy in enumerate(['some/hierarchy', 'action/hierarchy', 'bar']):
+        for hierarchy in ['some/hierarchy', 'action/hierarchy', 'bar']:
             context = ways.api.get_context(hierarchy)
             context.actions.some_action()
 
@@ -275,21 +275,27 @@ class CustomClassTestCase(common_test.ContextTestCase):
             """
             import ways.api
 
-            class AssetClass(object):
+            class SomeNewAssetClass(object):
+
+                '''Some class that will take the place of our Asset.'''
+
                 def __init__(self):
-                    super(AssetClass, self).__init__()
+                    '''Create the object.'''
+                    super(SomeNewAssetClass, self).__init__()
 
-
-            def a_custom_init_function(info, context, *args, **kwargs):
-                '''Purposefully ignore the info and context that gets passed.'''
-                return asset_class(info, *args, **kwargs)
-
+            def custom_init(*args, **kwargs):
+                return SomeNewAssetClass()
 
             def main():
-                '''Make a default Asset with a non-default init function.'''
+                '''Register a default Asset class for 'some/thing/context.'''
+                context = ways.api.get_context('some/thing/context')
                 ways.api.register_asset_class(
-                    AssetClass, 'some/thing/context', init=a_custom_init_function)
+                    SomeNewAssetClass, context=context, init=custom_init)
             """)
 
-        asset = ways.api.get_asset({}, 'some/thing/context')
+        self._make_plugin(contents=contents)
+
+        asset = ways.api.get_asset({'JOB': 'something'}, context='some/thing/context')
+
+        self.assertNotEqual(None, asset)
         self.assertNotEqual(ways.api.Asset, asset)

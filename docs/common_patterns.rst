@@ -353,21 +353,22 @@ can still use it. Just add an init function:
 
     import ways.api
 
-    class AssetClass(object):
+    class SomeNewAssetClass(object):
+
+        '''Some class that will take the place of our Asset.'''
+
         def __init__(self):
-            super(AssetClass, self).__init__()
+            '''Create the object.'''
+            super(SomeNewAssetClass, self).__init__()
 
+    def custom_init(*args, **kwargs):
+        return SomeNewAssetClass()
 
-    def a_custom_init_function(info, context, *args, **kwargs):
-        '''Purposefully ignore the info and context that gets passed.'''
-        return asset_class(info, *args, **kwargs)
-
-
-    ways.api.register_asset_class(
-        AssetClass, 'some/hierarchy', init=a_custom_init_function)
-
-    asset = ways.api.get_asset({}, 'some/thing/context')
-    # Result: <AssetClass>
+    def main():
+        '''Register a default Asset class for 'some/thing/context.'''
+        context = ways.api.get_context('some/thing/context')
+        ways.api.register_asset_class(
+            SomeNewAssetClass, context=context, init=custom_init)
 
 By default, you will need to register a class/init function for every hierarchy
 that you want to swap. So if you had hierarchies like this, "some",

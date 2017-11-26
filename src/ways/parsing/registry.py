@@ -96,7 +96,7 @@ def register_asset_class(class_type, context, init=None, children=False):
             applied for this Context. Default is False.
 
     '''
-    if init is None:
+    if not init:
         init = make_default_init(class_type)
 
     context = sit.get_context(context, force=True)
