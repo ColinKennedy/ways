@@ -240,14 +240,7 @@ def decode(obj):
 
 
 def conform_decode(info):
-    '''Make sure that 'create_using' returns a single string.
-
-    This function is a hacky solution because I don't understand why,
-    for some reason, decoding will decode a string as a list.
-
-    TODO: Remove this function by cleaning the input from urlencode.
-
-    '''
+    '''Make sure that 'create_using' returns a single string.'''
     return {key: value[0] if len(value) == 1 else value
             for key, value in six.iteritems(info)}
 

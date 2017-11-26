@@ -405,12 +405,6 @@ class GitLocalDescriptor(FolderDescriptor):
                 The branch of the git repository to use.
 
         '''
-        # TODO : I added this patch to deal with the way that urlparse.parse_qs
-        #        gets back items. For some reason, strings would could be as a
-        #        list with just a single path like ['/some/location'] instead of
-        #        '/some/location'. I should really just clean my inputs,
-        #        instead of this hacky patch
-        #
         if not isinstance(path, six.string_types):
             path = path[0]
 
