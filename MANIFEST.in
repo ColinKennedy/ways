@@ -1,22 +1,22 @@
-graft docs
+prune docs
 graft src
-graft ci
-graft tests
+prune ci
+prune tests
 
-include .bumpversion.cfg
-include .coveragerc
-include .cookiecutterrc
-include .editorconfig
-include .pylintrc
-include .isort.cfg
-include .pydocstylerc
+exclude .bumpversion.cfg
+exclude .coveragerc
+exclude .cookiecutterrc
+exclude .editorconfig
+exclude .pylintrc
+exclude .isort.cfg
+exclude .pydocstylerc
+exclude tox.ini
+exclude appveyor.yml
 
 include AUTHORS.rst
 include CHANGELOG.rst
 include CONTRIBUTING.rst
 include LICENSE
 include README.rst
-
-include tox.ini .travis.yml appveyor.yml
 
 global-exclude *.py[cod] __pycache__ *.so *.dylib *.ropeproject*
