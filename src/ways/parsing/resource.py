@@ -975,10 +975,8 @@ def _get_value(name, parser, info):
     if value:
         return value
 
-    # TODO : swap Parent-Search and Child-Search. More often than not,
-    #        it will make systems faster (I think)
-    #
     return get_value_from_children(name, parser, info)
+
 
 
 def _find_context_using_info(obj):

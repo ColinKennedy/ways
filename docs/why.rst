@@ -265,7 +265,7 @@ This is what using our plugin in Python would look like
 Now for some bad news - We need our setup to work with Windows. And worse,
 the Windows-equivalent path for "/jobs/{JOB}/{SCENE}/{SHOT}/{DISCIPLINE}"
 has a different number of folders so our old function cannot work for both
-("\\\\\\NETWORK\\server1\\jobs\\{JOB}\\{SCENE}\\{SHOT}\\{DISCIPLINE}").
+("Z:\\NETWORK\\server1\\jobs\\{JOB}\\{SCENE}\\{SHOT}\\{DISCIPLINE}").
 
 But in Ways, these sort of changes only require a slight change in our Plugin Sheets.
 
@@ -274,7 +274,7 @@ But in Ways, these sort of changes only require a slight change in our Plugin Sh
     plugins:
         windows_root:
             hierarchy: job
-            mapping: "\\\\NETWORK\\jobs"
+            mapping: Z:\\NETWORK\\jobs
             path: true
             platforms:
                 - windows
@@ -299,7 +299,7 @@ But in Ways, these sort of changes only require a slight change in our Plugin Sh
     print(asset1.get_value('JOB'))
     # Result on Linux: 'someJobName_123'
 
-    path2 = r'\\NETWORK\jobs\someJobName_123\shot_name-Info\sh01\animation'
+    path2 = r'Z:\NETWORK\jobs\someJobName_123\shot_name-Info\sh01\animation'
     asset2 = ways.api.get_asset(path2)
     print(asset2.get_value('JOB'))
     # Result on Windows: 'someJobName_123'
@@ -347,7 +347,7 @@ Lets tackle the same problem, using Ways.
     plugins:
         windows_root:
             hierarchy: job
-            mapping: "\\\\NETWORK\\jobs"
+            mapping: Z:\\NETWORK\\jobs
             path: true
             platforms:
                 - windows

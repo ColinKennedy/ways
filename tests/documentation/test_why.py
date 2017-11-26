@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# pylint: disable=line-too-long
 '''Tests for all of the "why.rst" documentation page.'''
 
 # IMPORT STANDARD LIBRARIES
@@ -93,6 +94,7 @@ class PluginAndActionTestCase(common_test.ContextTestCase):
         info = get_environment_info(path)
         self.assertEqual('someJobName_123', info['JOB'])
 
+    @unittest.skipUnless(platform.system() != 'Windows', 'requires UNIX')
     def test_path_split_ways(self):
         '''Split the same path in test_path_split_basic, using Ways.'''
         contents = textwrap.dedent(
@@ -117,7 +119,7 @@ class PluginAndActionTestCase(common_test.ContextTestCase):
             plugins:
                 windows_root:
                     hierarchy: job
-                    mapping: "\\\\NETWORK\\jobs"
+                    mapping: Z:\NETWORK\jobs
                     path: true
                     platforms:
                         - windows
@@ -136,15 +138,13 @@ class PluginAndActionTestCase(common_test.ContextTestCase):
 
         self._make_plugin_sheet(contents=contents)
 
-        if platform.system() == 'Windows':
-            path = r'\\NETWORK\jobs\someJobName_123\shot_name-Info\sh01\animation'
-        else:
-            path = '/jobs/someJobName_123/shot_name-Info/sh01/animation'
+        path = _get_path()
 
         asset = ways.api.get_asset(path)
 
         self.assertEqual('someJobName_123', asset.get_value('JOB'))
 
+    @unittest.skipUnless(platform.system() != 'Windows', 'requires UNIX')
     def test_scene_split_basic(self):
         '''Split a SCENE without Ways.'''
         path = '/jobs/someJobName_123/shot_name-Info/sh01/animation'
@@ -158,7 +158,7 @@ class PluginAndActionTestCase(common_test.ContextTestCase):
             plugins:
                 windows_root:
                     hierarchy: job
-                    mapping: "\\\\NETWORK\\jobs"
+                    mapping: Z:\NETWORK\jobs
                     path: true
                     platforms:
                         - windows
@@ -180,7 +180,9 @@ class PluginAndActionTestCase(common_test.ContextTestCase):
 
         self._make_plugin_sheet(contents=contents)
 
-        path = '/jobs/someJobName_123/shot_name-Info/sh01/animation'
+        context = ways.api.get_context('job/shot/discipline')
+
+        path = _get_path()
         asset = ways.api.get_asset(path)
         self.assertEqual('Info', asset.get_value('SCENE_INFO'))
 
@@ -235,6 +237,7 @@ class AdvancedAssetManagementTestCase(common_test.ContextTestCase):
         self.assertNotEqual(None, asset)
         self.assertNotEqual(ways.api.Asset, asset)
 
+    @unittest.skipUnless(platform.system() != 'Windows', 'requires UNIX')
     def test_simple_production_example(self):
         '''Write a test for our "publisher" example in "why.rst".'''
         contents = textwrap.dedent(
@@ -263,6 +266,7 @@ class AdvancedAssetManagementTestCase(common_test.ContextTestCase):
         asset = ways.api.get_asset(path)
         self.assertTrue(asset.actions.publish())
 
+    @unittest.skipUnless(platform.system() != 'Windows', 'requires UNIX')
     def test_adding_another_path(self):
         '''Add a path to our complex example.'''
         contents = textwrap.dedent(
@@ -299,6 +303,14 @@ class AdvancedAssetManagementTestCase(common_test.ContextTestCase):
 
         self.assertTrue(asset1.actions.publish())
         self.assertTrue(asset2.actions.publish())
+
+
+def _get_path():
+    '''str: Get a fake path for our examples in this TestCase.'''
+    if platform.system() == 'Windows':
+        return r'Z:\NETWORK\jobs\someJobName_123\shot_name-Info\sh01\animation'
+    else:
+        return '/jobs/someJobName_123/shot_name-Info/sh01/animation'
 
 
 def get_parts(path):
