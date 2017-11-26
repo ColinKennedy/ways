@@ -260,7 +260,12 @@ class HierarchyTestCase(TroubleshootingTestCase):
 
         def some_function(obj):
             '''Do some function.'''
-            obj = None
+            def some_function(something):
+                '''Do another function.'''
+                return something
+
+            some_function(obj)
+
             return 8
 
         common_test.build_action('some_action', hierarchy='foo/fizz')
