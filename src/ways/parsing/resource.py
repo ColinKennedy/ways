@@ -704,12 +704,7 @@ def _get_missing_required_tokens(context, info):
             missing_tokens.append(token)
 
     # Try to resolve the tokens
-    # TODO : If I reverse the list, could I get away with not creating a
-    #        copy of missing_tokens? Check with unittests + do some profiling
-    #
-    #        Check after coverage
-    #
-    for token in list(missing_tokens):
+    for token in reversed(missing_tokens):
         value = _get_value(token, parser=parser, info=info)
         if value:
             parser[token] = value
@@ -975,8 +970,10 @@ def _get_value(name, parser, info):
     if value:
         return value
 
+    # TODO : swap Parent-Search and Child-Search. More often than not,
+    #        it will make systems faster (I think)
+    #
     return get_value_from_children(name, parser, info)
-
 
 
 def _find_context_using_info(obj):

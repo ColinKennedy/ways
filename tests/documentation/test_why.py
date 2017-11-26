@@ -180,8 +180,6 @@ class PluginAndActionTestCase(common_test.ContextTestCase):
 
         self._make_plugin_sheet(contents=contents)
 
-        context = ways.api.get_context('job/shot/discipline')
-
         path = _get_path()
         asset = ways.api.get_asset(path)
         self.assertEqual('Info', asset.get_value('SCENE_INFO'))
@@ -309,8 +307,7 @@ def _get_path():
     '''str: Get a fake path for our examples in this TestCase.'''
     if platform.system() == 'Windows':
         return r'Z:\NETWORK\jobs\someJobName_123\shot_name-Info\sh01\animation'
-    else:
-        return '/jobs/someJobName_123/shot_name-Info/sh01/animation'
+    return '/jobs/someJobName_123/shot_name-Info/sh01/animation'
 
 
 def get_parts(path):
