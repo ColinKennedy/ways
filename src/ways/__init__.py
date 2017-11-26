@@ -11,8 +11,8 @@ import collections
 import six
 
 # IMPORT LOCAL LIBRARIES
-from .base import situation as sit
 from .base import finder
+from .base import situation as sit
 from .helper import common
 from .parsing import registry
 
