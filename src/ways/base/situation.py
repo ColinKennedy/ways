@@ -417,6 +417,23 @@ class Context(object):
         '''
         return self.connection['get_platforms'](self.plugins)
 
+    def __repr__(self):
+        '''str: The full representation of this object.'''
+        return "{cls_}(hierarchy='{hier}', assignment={ass}, data={data})".format(
+            cls_=self.__class__.__name__,
+            hier=self.hierarchy,
+            ass=self.assignment,
+            data=self.data,
+        )
+
+    def __str__(self):
+        '''str: A simple representation of this object.'''
+        return "{cls_}(hierarchy='{hier}', assignment={ass})".format(
+            cls_=self.__class__.__name__,
+            hier=(common.HIERARCHY_SEP).join(self.hierarchy),
+            ass=self.assignment,
+        )
+
 
 __FACTORY = factory.AliasAssignmentFactory(Context)
 
