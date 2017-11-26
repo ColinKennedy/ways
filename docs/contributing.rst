@@ -30,11 +30,11 @@ two critical functions.
    builds is based on hierarchies that the user has full control over.
    Hierarchies each have their own actions, data, and order of importance and
    the Context lets us write functions around them.
-2. The data that a Context is loaded exactly at the moment it is queried. This
+2. The data that a Context uses is loaded exactly when it is queried. This
    means that we can load some plugins, create a Context object, add another
    plugin, and the Context picks up that new data without you doing anything.
 
-Once you've read through the Context object, read "get_context".
+Once you've read through the Context object, read :func:`ways.api.get_context`.
 You should become familiar with the Flyweight design pattern
 (http://sourcemaking.com/design_patterns/flyweight) because that's also an
 important part about how Ways creates Context objects.
@@ -43,41 +43,39 @@ important part about how Ways creates Context objects.
 Plugins
 +++++++
 
-In the :mod:`ways.base.plugin` file, you'll find a couple very basic classes
-for plugins.
+In the :mod:`ways.base.plugin` file, you'll find a couple very basic classes.
 
 Context objects are built out of plugins. There's not much to say about plugins
-other than they're basically classes that wrap around a dict that the user
-loads. If the user writes their plugins in Python, they can write whatever
-they'd like. If they use YAML/JSON to build their plugins, there's a finite
-number of keys that they can use. As mentioned in the summary, a YAML/JSON file
-is called a "Plugin Sheet". Two great documents that cover the different
-options that users can use to create plugins are :doc:`plugin_basics` and
-:doc:`plugin_advanced`.
+other than that they wrap around a dict that the user loads.
 
-At this point, now that you have read through the Context object and Plugins,
-specifically the :doc:`plugin_basics` link, it's a good idea to re-read each
-of Context object's methods and how those relate to the different plugin keys.
+Two documents that cover all the different Plugin Sheet keyes
+are :doc:`plugin_basics` and :doc:`plugin_advanced`.
+
+At this point, it's a good idea to re-read each of Context object's methods
+and how those relate to the different plugin keys.
 
 
 Ways Cache
 ++++++++++
 
 Now that you understand Context objects, it's important to know how they are
-loaded. In the :mod:`ways.base.cache` file, you'll find the functions that are used to
-register Contexts and plugins, which we've talked about already, and also
-register Descriptors and Actions, which we haven't touched on yet. Ignore
-functions related to those two for now and lets just talk about Contexts and
-plugins.
+loaded. In the :mod:`ways.base.cache` file, you'll find the functions that are
+used to register Contexts and plugins, which we've talked about already, and also
+register Descriptors and Actions, which we haven't been explained yet.
 
 When Ways first is imported and used, it gathers plugins that it can see in
 the WAYS_PLUGINS and WAYS_DESCRIPTOR environment variables. Once you're
-actually in Python, it's best to just use the Ways functions to add additional
-objects. If you absolutely need to add paths to those environment variables,
-first ask yourself why you think you need to. If you still think its necessary,
-add the paths with os.environ and the run :func:`ways.api.init_plugins`. This
-function **will** remove any objects added in Python so it's not recommended to
-use. But you can do it.
+actually in Python, it's best to just use Python functions to add additional
+objects.
+
+If you absolutely need to add paths to those environment variables, first ask
+yourself why you think you need to. If you still think its necessary, add the
+paths with os.environ and the run :func:`ways.api.init_plugins`.
+
+.. warning ::
+
+    This function **will** remove any objects that were added using Python so
+    it's not recommended to use. But you can do it.
 
 
 Descriptors
@@ -85,18 +83,18 @@ Descriptors
 
 Read through :doc:`descriptors` to get the jist about how Descriptor
 objects are built as a user. There's not much to say about them other than
-they're an abstraction used to load Plugin Sheets. That way, you can load
+they're classes used to load Plugin Sheets. That way, you can load
 plugins into Ways from disk, a database, or whatever other method you'd like.
 
 Other than that, they are not special in any way. Everything related to
 Descriptors is found in the :mod:`ways.base.descriptor` file. To see how
-they're loaded, revisit ways.base.cache. In particular, it's good to notice two
-things in :mod:`ways.base.cache`.
+they're loaded, revisit :mod:`ways.base.cache`.
 
+In particular, two things in cache.py are interesting to maintainers.
 
 1. add_search_path is just an alias to add_descriptor. The user can add plugins
    just by giving a filepath or folder and the Descriptor object needed will be
-   built for them. Most of the time, that's all you'll need.
+   built for them. Most of the time, that's all anyone need while using Ways.
 2. add_descriptor and add_plugin both try their best to catch errors before
    they happen so the user can review any Descriptor or plugins that didn't
    load. For more information on that, check out :doc:`troubleshooting`.
@@ -105,34 +103,25 @@ things in :mod:`ways.base.cache`.
 Actions
 +++++++
 
-Many other pages talk about Actions. It's mentioned in :doc:`summary`,
+Many pages talk about Actions. It's mentioned in :doc:`summary`,
 :doc:`why`, :doc:`common_patterns` and even has its own section in
 :doc:`troubleshooting`. There's not much point in repeating what has already
 been said so lets talk just about how Ways actually exposes Actions to the
 user.
 
-When an Action is registered to Ways (using ways.base.cache.add_action), the user
-specifies a hierarchy for the Action and a name to call it.
+When an Action is registered to Ways (using :func:`ways.base.cache.add_action`),
+the user specifies a hierarchy for the Action and a name to call it.
 
 This is kept in a dictionary in :class:`ways.ACTION_CACHE`.
 
-Context and Asset objects both have an "actions" property. "actions" is
-actually an object that uses the current Asset or Context to find the hierarchy
-and assignment that the user wants to get Actions of.
-
-Asset's "actions" property is a :class:`ways.parsing.resource.AssetFinder` object
-and Context's "actions" property is a ways.base.finder.Find object. Both objects
-are basically exactly the same, functionally, with the only difference that
-once is meant to work with Asset objects and the other Context objects.
-
-When the user calls an action using "actions", the following happens:
+When the user calls an action using :class:`ways.api.Context.actions`,
+the following happens:
 
 1. Ways looks up to see if that Action/Context has a definition for that
-   Action. If it doesn't and the user has aptly given that Action name a
-   default value to return, that value is returned. If there's no Action and no
-   default value, AttributeError is raised as if the Action were an attribute.
+   Action. If there's no definition, look for a default value. If neither,
+   raise an AttributeError.
 2. If an Action is found, the function is wrapped using funtools.partial. The
-   partial function adds the Context/Asset as the first arg to the function.
+   partial function adds the Context/Asset that called it as the first arg.
 
 ::
 
@@ -168,13 +157,14 @@ sake of making it easier to search for, the two methods are called
 search methods are either scoped functions in :func:`ways.parsing.resource._get_value`
 or somewhere within :mod:`ways.parsing.resource`.
 
-The other function that's very important is :func:`ways.parsing.resource._find_context_using_info`.
+The other function that's very important is
+:func:`ways.parsing.resource._find_context_using_info`.
 
 Basically, if a user tries to run :func:`ways.api.get_asset` without giving a context,
 this function will try to "find" a matching Context to use instead. At the risk
 of reiterating the same information twice, read through
-_find_context_using_info and get_asset's docstrings to find out the common
-problems with trying to auto-find Contexts.
+:func:`ways.parsing.resource._find_context_using_info` and func:`ways.api.get_asset`
+docstrings. Both functions go in detail about the common pitfalls of auto-finding Contexts.
 
 
 api.py
@@ -216,11 +206,11 @@ When You Write The Issue
    Also, write steps to reproduce your problem. If it involves the files given,
    write steps for setting those files up too.
 2. Add the output of :func:`ways.api.trace_all_descriptor_results_info` and
-   :func:`ways.api.trace_all_plugin_results_info` as a text file in the ticket.
-3. Write a test case for your issue. It helps a lot while trying to reproduce
-   the issue and helps make sure that the issue won't happen again in the future.
+   :func:`ways.api.trace_all_plugin_results_info` as a text file or link.
+3. Write a test case for your issue. It helps a lot to just pick up a test
+   and make that test pass so that the issue won't happen again in the future.
 4. Include your WAYS_PLATFORMS and WAYS_PLATFORM environment variables, if
-   those are explicitly defined, as well as your system OS and OS version.
+   those environment variables have any information, as well as your OS and OS version.
 
 
 Maintainer Notes
