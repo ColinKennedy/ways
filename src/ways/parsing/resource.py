@@ -1165,20 +1165,22 @@ def _find_context_using_info(obj):
                 with are both valid, given the user's information.
 
         Returns:
-            :class:`ways.api.Context`: The "winner" Context.
+            :class:`ways.api.Context` or NoneType: The "winner" Context.
 
         '''
         tied_info = get_context_info_from_pool(contexts, info)
         valid_contexts = get_valid_contexts(tied_info)
 
-        if len(valid_contexts) == 1:
+        if not valid_contexts:
+            return
+        elif len(valid_contexts) == 1:
             # Tie-break succeeded
             return valid_contexts[0]
 
         raise ValueError(
-            'Ways got two or more Contexts that tied for mapping, "{mapping}. '
-            'Ways cannot decide which Contexts to use, "{contexts}".'
-            ''.format(mapping=mapping, contexts=contexts))
+            'Ways got two or more Contexts that tied for info, "{info}". '
+            'Ways cannot decide which Contexts to use, "{contexts!s}".'
+            ''.format(info=info, contexts=[str(context) for context in contexts]))
 
     def find_context_by_mapping(mapping, contexts):
         '''Get the correct Context by matching the user's mapping.
