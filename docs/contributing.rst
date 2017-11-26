@@ -97,7 +97,7 @@ things in :mod:`ways.base.cache`.
 1. add_search_path is just an alias to add_descriptor. The user can add plugins
    just by giving a filepath or folder and the Descriptor object needed will be
    built for them. Most of the time, that's all you'll need.
-2. add_descriptor and load_plugin both try their best to catch errors before
+2. add_descriptor and add_plugin both try their best to catch errors before
    they happen so the user can review any Descriptor or plugins that didn't
    load. For more information on that, check out :doc:`troubleshooting`.
 

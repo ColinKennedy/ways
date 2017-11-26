@@ -347,7 +347,7 @@ class FailureTestCase(common_test.ContextTestCase):
         with open(temp_file, 'w') as file_:
             file_.write(contents)
 
-        ways.api.load_plugin(temp_file)
+        ways.api.add_plugin(temp_file)
 
         # Because the module failed to import, the action won't be visible
         action = ways.get_action(name, hierarchy=hierarchy)
@@ -399,7 +399,7 @@ class FailureTestCase(common_test.ContextTestCase):
         with open(temp_file, 'w') as file_:
             file_.write(contents)
 
-        ways.api.load_plugin(temp_file)
+        ways.api.add_plugin(temp_file)
 
         # The module is importable so we can find out action
         action = ways.get_action(name, hierarchy=hierarchy)

@@ -194,7 +194,7 @@ def init_plugins():
         plugin_files.extend(files)
 
     for item in plugin_files:
-        load_plugin(item)
+        add_plugin(item)
 
     for item in get_items_from_env_var(common.DESCRIPTORS_ENV_VAR):
         add_descriptor(item)
@@ -373,7 +373,7 @@ def get_all_plugins():
     return ways.PLUGIN_CACHE['all']
 
 
-def load_plugin(item):
+def add_plugin(item):
     '''Load the Python file as a plugin.
 
     Args:

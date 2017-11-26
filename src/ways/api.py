@@ -11,7 +11,7 @@ It's recommended to always import and use modules, here.
 '''
 
 # IMPORT LOCAL LIBRARIES
-from .base.cache import load_plugin
+from .base.cache import add_plugin
 from .base.cache import init_plugins
 from .base.cache import add_descriptor
 from .base.cache import add_search_path
@@ -144,7 +144,7 @@ __all__ = [
 
     'add_descriptor',
     'add_search_path',
-    'load_plugin',
+    'add_plugin',
     'get_all_plugins',
     'init_plugins',
 

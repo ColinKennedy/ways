@@ -62,6 +62,17 @@ class ContextTestCase(unittest.TestCase):
 
         return plugin_file
 
+    def _make_plugin(self, contents):
+        '''str: Create a Python plugin file and load it into Ways.'''
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as file_:
+            file_.write(contents)
+            name = file_.name
+
+        # ways.api.add_plugin(name)
+        # self.temp_paths.append(name)
+
+        return name
+
     def tearDown(self):
         '''Reset any changes made to our environment during test runs.'''
         del sys.path[:]
