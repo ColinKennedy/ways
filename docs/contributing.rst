@@ -1,194 +1,78 @@
-Contributors Guide
-==================
+Contributing
+============
 
-API Details
------------
-
-The first thing to know about Ways is that it is not a tool, it is a toolkit.
-Ways is not immediately useful. You, the user, make Ways useful for your
-pipeline.
-
-If you haven't already, please read the :doc:`summary` page on each of the
-main ideas that Ways uses. This document will expand on ideas written there.
+Contributions are welcome, and they are greatly appreciated! Every
+little bit helps, and credit will always be given.
 
 
-Contexts
-++++++++
+Installation
+------------
 
-If you go to :class:`ways.base.situation.Context`, you can read more about the class.
-
-Context objects have
-
-1. a hierarchy
-2. a data property which is similar to a ChainMap
-3. an actions property which can be used to extend a Context's interface
-
-The Context object is the most important class in Ways because it encompasses
-two critical functions.
-
-1. The Context is basically a "hierarchy interface". Everything that Ways
-   builds is based on hierarchies that the user has full control over.
-   Hierarchies each have their own actions, data, and order of importance and
-   the Context lets us write functions around them.
-2. The data that a Context uses is loaded exactly when it is queried. This
-   means that we can load some plugins, create a Context object, add another
-   plugin, and the Context picks up that new data without you doing anything.
-
-Once you've read through the Context object, read :func:`ways.api.get_context`.
-You should become familiar with the Flyweight design pattern
-(http://sourcemaking.com/design_patterns/flyweight) because that's also an
-important part about how Ways creates Context objects.
-
-
-Plugins
-+++++++
-
-In the :mod:`ways.base.plugin` file, you'll find a couple very basic classes.
-
-Context objects are built out of plugins. There's not much to say about plugins
-other than that they wrap around a dict that the user loads.
-
-Two documents that cover all the different Plugin Sheet keyes
-are :doc:`plugin_basics` and :doc:`plugin_advanced`.
-
-At this point, it's a good idea to re-read each of Context object's methods
-and how those relate to the different plugin keys.
-
-
-Ways Cache
-++++++++++
-
-Now that you understand Context objects, it's important to know how they are
-loaded. In the :mod:`ways.base.cache` file, you'll find the functions that are
-used to register Contexts and plugins, which we've talked about already, and also
-register Descriptors and Actions, which we haven't been explained yet.
-
-When Ways first is imported and used, it gathers plugins that it can see in
-the WAYS_PLUGINS and WAYS_DESCRIPTOR environment variables. Once you're
-actually in Python, it's best to just use Python functions to add additional
-objects.
-
-If you absolutely need to add paths to those environment variables, first ask
-yourself why you think you need to. If you still think its necessary, add the
-paths with os.environ and the run :func:`ways.api.init_plugins`.
-
-.. warning ::
-
-    This function **will** remove any objects that were added using Python so
-    it's not recommended to use. But you can do it.
-
-
-Descriptors
-+++++++++++
-
-Read through :doc:`descriptors` to get the jist about how Descriptor
-objects are built as a user. There's not much to say about them other than
-they're classes used to load Plugin Sheets. That way, you can load
-plugins into Ways from disk, a database, or whatever other method you'd like.
-
-Other than that, they are not special in any way. Everything related to
-Descriptors is found in the :mod:`ways.base.descriptor` file. To see how
-they're loaded, revisit :mod:`ways.base.cache`.
-
-In particular, two things in cache.py are interesting to maintainers.
-
-1. add_search_path is just an alias to add_descriptor. The user can add plugins
-   just by giving a filepath or folder and the Descriptor object needed will be
-   built for them. Most of the time, that's all anyone need while using Ways.
-2. add_descriptor and add_plugin both try their best to catch errors before
-   they happen so the user can review any Descriptor or plugins that didn't
-   load. For more information on that, check out :doc:`troubleshooting`.
-
-
-Actions
-+++++++
-
-Many pages talk about Actions. It's mentioned in :doc:`summary`,
-:doc:`why`, :doc:`common_patterns` and even has its own section in
-:doc:`troubleshooting`. There's not much point in repeating what has already
-been said so lets talk just about how Ways actually exposes Actions to the
-user.
-
-When an Action is registered to Ways (using :func:`ways.base.cache.add_action`),
-the user specifies a hierarchy for the Action and a name to call it.
-
-This is kept in a dictionary in :class:`ways.ACTION_CACHE`.
-
-When the user calls an action using :class:`ways.api.Context.actions`,
-the following happens:
-
-1. Ways looks up to see if that Action/Context has a definition for that
-   Action. If there's no definition, look for a default value. If neither,
-   raise an AttributeError.
-2. If an Action is found, the function is wrapped using funtools.partial. The
-   partial function adds the Context/Asset that called it as the first arg.
+To get Ways to run locally, clone the repo from online.
 
 ::
 
-    context = ways.api.get_context('something')
-    context.actions.some_action_name()
+    git clone http://www.github.com/ColinKennedy/ways.git
+    cd ways
+    git submodule update --init --recursive
 
-So by using functools.partial, we eliminate the need for the user to write
+Test that the repository cloned successfully by running
 
 ::
 
-    context.actions.some_action_name(context)
+    tox
 
 
-Any class that inherits from :class:`ways.api.Action` is automatically registered to
-Ways, because the :class:`ways.parsing.resource.ActionRegistry` metaclass registers
-the class once it's defined.
+The latest commit in the "master" branch should have passing tests.
 
+You can also verify that your installation works by running the Ways demo file.
 
-Assets
-++++++
+::
 
-The Asset object is a simple wrapper around a Context object. Nearly all of its
-methods are used for getting data that the user has provided.
+    python -m ways.demo
 
-All classes and functions are located in the :mod:`ways.parsing.resource` file.
+Output:
 
-There are a couple functions in particular that are interesting to developers.
-The first is :func:`ways.parsing.resource._get_value`. If a user queries a part
-of an Asset that exists, the value is returned. But if the value doesn't exist,
-Ways is still able to "build" the value based on surrounding information. For the
-sake of making it easier to search for, the two methods are called
-"Parent-Search" and "Child-Search". All of the functions related to those
-search methods are either scoped functions in :func:`ways.parsing.resource._get_value`
-or somewhere within :mod:`ways.parsing.resource`.
+::
 
-The other function that's very important is
-:func:`ways.parsing.resource._find_context_using_info`.
+    Hello, World!
+    Found object, "Context"
+    A Context was found, congrats, Ways was installed correctly!
 
-Basically, if a user tries to run :func:`ways.api.get_asset` without giving a context,
-this function will try to "find" a matching Context to use instead. At the risk
-of reiterating the same information twice, read through
-:func:`ways.parsing.resource._find_context_using_info` and func:`ways.api.get_asset`
-docstrings. Both functions go in detail about the common pitfalls of auto-finding Contexts.
-
-
-api.py
-++++++
-
-This module is where almost every function or class meant to be used by
-developers is put. There's nothing really special about it, just know that it's
-there and exists for the user's convenience.
+Once you see those 3 lines, you're all set to begin.
 
 
 Reporting Issues
 ----------------
 
-Before reporting issues, check to make sure that you've installed Ways
-properly. Ways has a fair amount of unitests. It even has unittests for its
-documentation. If you're having issues setting it up, it may not be an issue
-with Ways but your environment.
+Before reporting issues, check to make sure that you've installed Ways and try
+to run its unittests. If every unittest passes and you still have your issue,
+please `use this URL to submit your issue <https://github.com/ColinKennedy/ways/issues>`_.
 
-If your issue is using Ways, then please do submit issues as you see them. Buf
-when you do, please leep this in mind:
+
+Documentation Improvements
+++++++++++++++++++++++++++
+
+Ways could always use more documentation, whether as part of the
+official Ways docs, in docstrings, or even on the web in blog posts,
+articles, and such.
+
+
+Feature Requests And Feedback
++++++++++++++++++++++++++++++
+
+The best way to send feedback is to file an issue at
+https://github.com/ColinKennedy/ways/issues.
+
+If you are proposing a new feature:
+
+* Explain in detail how it would work.
+* Keep the scope as narrow as possible, to make it easier to implement.
+* Remember that this is a volunteer-driven project, and that code contributions are welcome :)
 
 
 Before You Submit The Issue
-+++++++++++++++++++++++++++
+---------------------------
 
 **Check the docs before reporting an issue**. It may have already been addressed.
 
@@ -199,12 +83,11 @@ important enough to raise, do so, but link to the related tickets, too.
 
 
 When You Write The Issue
-++++++++++++++++++++++++
+------------------------
 
-1. If your problem is involved with an environment set up, please include one
-   compressed archive (.zip/.rar/.tar/.etc) containing all of the files needed.
-   Also, write steps to reproduce your problem. If it involves the files given,
-   write steps for setting those files up too.
+1. If your problem is involved with an environment set up, please include a
+   compressed archive (.zip/.rar/.tar/.etc) containing all of the files needed
+   and write steps to reproduce your problem.
 2. Add the output of :func:`ways.api.trace_all_descriptor_results_info` and
    :func:`ways.api.trace_all_plugin_results_info` as a text file or link.
 3. Write a test case for your issue. It helps a lot to just pick up a test
@@ -219,7 +102,7 @@ Maintainer Notes
 If you're considering adding features to Ways, the very first thing to do would
 be to clone the main repository. See :doc:`installation` for details.
 
-It's recommended to read all of the documentation here from start to end before
+It's recommended to read all of the documentation from start to end before
 making changes. But at the very least, read :doc:`summary`,
 :doc:`getting_started` and :ref:`api_details`.
 
@@ -236,8 +119,9 @@ https://github.com/ionelmc/cookiecutter-pylibrary
 Pull Requests
 +++++++++++++
 
-Ways follows PEP8. It also does its best to respect pylint rules but exceptions
-exist, even in the core database.
+If you need some code review or feedback while you're developing the code just make the pull request.
+
+For merging, keep these things in mind:
 
 1. Write easy to read/maintain code.
 
@@ -246,21 +130,21 @@ exist, even in the core database.
       you need it, first.
     - Ways has many working parts. It tries its best to not make any assumptions
       about Context mapping strings or anything else. Any OS-dependent changes
-      (like adding functions to convert "/" or "\\\\", just as an example) will be
-      met with extreme caution.
+      (like adding functions to convert "/" or "\\\\", just as an example) will
+      be met with caution.
 
-2. Write tests
+2. Write tests for your changes
 
-    At the time of writing, its coverage is over 90%. Lets keep it that way.
+    At the time of writing, its coverage is over 90% so lets keep it up!
 
 3. Explain why your pull request is needed
 
    This project was written by a single person, with a very specific pipeline
    in mind. There's bound to be ideas here that aren't going to translate as
    well for your pipeline needs. If you can explain what your change does and
-   how it adds value to the codebase, more power to you!
+   how it adds value, more power to you!
 
-To make sure your changes work correctly, just run
+To make sure your changes work with the rest of the Ways environment, run
 
 ::
 
@@ -273,9 +157,11 @@ pydocstyle and the like. If you want to only run those, use
 
     tox -e check
 
-If it runs fine on your machine, make a branch and push a build. If the build
-succeeds in travis.ci, feel free to make that pull request. And thanks for
-going through the trouble, I really appreciate it!
+If tox passes [1]_, you're almost ready.
+
+1. Update documentation when there's new API, functionality etc.
+2. Add a note to ``CHANGELOG.rst`` about the changes.
+3. Add yourself to ``AUTHORS.rst``.
 
 
 api.py
@@ -283,3 +169,21 @@ api.py
 
 If the pull request contains new functions or classes, consider adding them to
 api.py and explain why you think they'd be a good addition.
+
+
+Tips
+----
+
+To run a subset of tests::
+
+    tox -e envname -- py.test -k test_myfeature
+
+To run all the test environments in *parallel* (you need to ``pip install detox``)::
+
+    detox
+
+
+.. [1] If you don't have all the necessary python versions available locally you can rely on Travis - it will
+       `run the tests <https://travis-ci.org/ColinKennedy/ways/pull_requests>`_ for each change you add in the pull request.
+
+       It will be slower than running locally though ...
