@@ -1,4 +1,6 @@
-exclude_paths:
-    - ci/**/*
-    - src/ways/helper/pylev.py
+---
+engines:
+    exclude_paths:
+        - ci/**/*
+        - src/ways/helper/pylev.py
 
