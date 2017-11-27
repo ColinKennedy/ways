@@ -202,7 +202,7 @@ Autodesk Maya (pymel is an API for working with Maya)
     rig_sets = []
     for node_ in pm.sets(query=True):
         try:
-            if node_.attr('setType') == 'rig':
+            if node_.attr('setType').get() == 'rig':
                 rig_sets.append(node_)
         except pm.MayaAttributeError:
             pass
