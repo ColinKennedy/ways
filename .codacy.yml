@@ -1,0 +1,4 @@
+exclude_paths:
+    - ci/**/*
+    - src/ways/helper/pylev.py
+
