@@ -4,6 +4,7 @@ prune ci
 prune tests
 
 exclude .bumpversion.cfg
+exclude .codacy.yml
 exclude .coveragerc
 exclude .cookiecutterrc
 exclude .editorconfig
