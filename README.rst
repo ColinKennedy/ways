@@ -11,7 +11,7 @@ Overview
       - |docs|
     * - tests
       - | |travis| |appveyor| |requires|
-        | |codecov|
+        | |codecov| |codacy|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
@@ -35,6 +35,10 @@ Overview
 .. |codecov| image:: https://codecov.io/github/ColinKennedy/ways/coverage.svg?branch=master
     :alt: Coverage Status
     :target: https://codecov.io/github/ColinKennedy/ways
+
+.. |codacy| image:: https://api.codacy.com/project/badge/Grade/d1cf59fcfbc54733a7360e2cde26bf20
+    :alt: Codacy Code Quality Status
+    :target: https://www.codacy.com/app/ColinKennedy/ways?utm_source=github.com&utm_medium=referral&utm_content=ColinKennedy/ways&utm_campaign=badger
 
 .. |version| image:: https://img.shields.io/pypi/v/ways.svg
     :alt: PyPI Package latest release
