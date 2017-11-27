@@ -26,6 +26,7 @@ API Details
     Plugin Basics <plugin_basics>
     Advanced Plugins <plugin_advanced>
     Parsing <parsing>
+    API Details <api_details>
     Troubleshooting <troubleshooting>
 
 Appendices
