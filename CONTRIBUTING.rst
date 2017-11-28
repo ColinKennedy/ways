@@ -179,6 +179,4 @@ To run all the test environments in *parallel* (you need to ``pip install detox`
 
 
 .. [1] If you don't have all the necessary python versions available locally you can rely on Travis - it will
-       `run the tests <https://travis-ci.org/ColinKennedy/ways/pull_requests>`_ for each change you add in the pull request.
-
-       It will be slower than running locally though ...
+       for each change you add in the pull request. It will be slower than running locally though ...
