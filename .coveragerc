@@ -15,6 +15,6 @@ show_missing = true
 precision = 2
 omit =
 	*migrations*
-	src/ways/core*
+	src/ways/core/*
 	src/ways/helper/pylev.py
 	src/ways/helper/demo.py
