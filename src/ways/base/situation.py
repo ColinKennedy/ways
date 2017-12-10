@@ -544,7 +544,6 @@ def context_connection_info():
                                'a relative plugin. No absolute (root) plugin '
                                'was found.')
 
-
         abs_index = plugins.index(latest_absolute_plugin)
 
         # In order to resolve the absolute mapping, we need a root path to use

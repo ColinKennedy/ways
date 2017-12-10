@@ -12,7 +12,6 @@ Main Pages
 .. toctree::
     Installation <installation>
     Why <why>
-    Summary <summary>
     Getting Started <getting_started>
 
 
@@ -26,6 +25,7 @@ API Details
     Plugin Basics <plugin_basics>
     Advanced Plugins <plugin_advanced>
     Parsing <parsing>
+    API Details <api_details>
     Troubleshooting <troubleshooting>
 
 Appendices
@@ -38,12 +38,13 @@ Modules
 -------
 
 .. toctree::
-   :maxdepth: 4
+    :maxdepth: 4
 
-   API Documentation <ways>
+    API Summary <summary>
+    API Documentation <ways>
 
 Developers
 ----------
 
 .. toctree::
-   Contributing <contributing>
+    Contributing <contributing>

@@ -47,7 +47,7 @@ for the Descriptor using its UUID.
 
 ::
 
-    result = ways.api.trace_all_descriptor_results_info()['my_uuid_here']
+    result = ways.api.trace_all_load_results()['descriptors']['my_uuid_here']
     # Result:
     # {
     #     "status": "failed",
@@ -57,17 +57,17 @@ for the Descriptor using its UUID.
     # }
 
 
-ways.api.trace_all_descriptor_results_info will only be useful if you defined
+:func:`ways.api.trace_all_load_results` will only be useful if you defined
 UUIDs for your Descriptor. If you don't create a Descriptor with a UUID,
 Ways will just create one for you but it will be random each time. You'll
 still have to iterate over all of the loaded Descriptors to find the one you want.
 
 ::
 
-    for result in ways.api.trace_all_descriptor_results():
+    for result in ways.api.trace_all_load_results()['descriptors']:
         # ... do something to find the Descriptor you wanted
 
-    for result in ways.api.trace_all_descriptor_results().values():
+    for result in ways.api.trace_all_load_results()['descriptors'].values():
         # ... do something to find the Descriptor you wanted
 
 
@@ -319,8 +319,8 @@ Working With Contexts
 +++++++++++++++++++++
 
 Context objects have different ways for resolving its Plugin objects.
-For example, get_mapping_details resolves completely differently than
-get_platforms or get_mapping or eve get_max_folder.
+For example, :func:`ways.api.Context.get_mapping_details`
+resolves completely differently than :func:`ways.api.Context.get_platforms` or :func:`ways.api.Context.get_mapping` or even :func:`ways.api.Context.get_max_folder`.
 
 When you get back a value that you didn't expect, it's always one of two
 problems. Either the Context didn't load the plugins that you expected or
@@ -342,13 +342,13 @@ clear that all the Plugin objects needed are loaded into Ways, the last step is
 just to make sure that your Context is loading your Plugins.
 
 Not all Plugin objects are loaded by a Context. For example, if a Plugin's
-"get_platform" method doesn't return the current user's platform, it is
+:func:`ways.api.DataPlugin.get_platforms` method doesn't return the current user's platform, it is
 excluded. This Plugin-filtering lets Ways have Plugins with the same
 hierarchy but conflicting mappings coexist. It also lets the user define
 relative plugins so that Plugins meant for MacOS aren't loaded on Windows.
 
 To get the raw list of Plugins that a Context can choose from, there is the
-get_all_plugins method
+:func:`ways.api.Context.get_all_plugins` method
 
 ::
 
@@ -358,9 +358,9 @@ get_all_plugins method
     unused_plugins = [plugin for plugin in raw_plugins if plugin not in plugins]
 
 
-get_all_plugins shows you every Plugin that a Context can use. The "plugins"
-property shows you which of those Plugins were actually used and you can get
-the unused Plugin list by taking the difference between the two.
+:func:`ways.api.get_all_plugins` shows you every Plugin that a Context can use.
+The "plugins" property shows you which of those Plugins were actually used and
+you can get the unused Plugin list by taking the difference between the two.
 
 
 Checking Method Resolution
@@ -383,9 +383,9 @@ troubleshoot values that you may not expect.
     #          ('/jobs/foo/thing', DataPlugin('etc', 'etc', 'etc'))]
 
 
-trace_method_resolution works by taking the Context from its first plugin,
-running the given method, then uses the first 2 plugins and runs the given
-method again until every plugin that the Context sees has been run.
+:func:`ways.api.trace_method_resolution` works by taking the Context from its
+first plugin, running the given method, then uses the first 2 plugins and runs
+the given method again until every plugin that the Context sees has been run.
 
 That way, it's obvious which plugin was loaded at what point and that plugin's
 effect on the method.
@@ -424,8 +424,8 @@ hierarchies can use it.
 
 
 .. note ::
-    get_action_hierarchies will return every Action that matches the given
-    Action name. So if multiple classes/functions are all registered
+    :func:`ways.api.get_action_hierarchies` will return every Action that matches
+    the given Action name. So if multiple classes/functions are all registered
     under the same name, then every hierarchy that those Actions use will be
     returned. However, if a object like a function or class that was
     registered, only that object's hierarchies will be returned.

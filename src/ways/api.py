@@ -19,6 +19,7 @@ from .base.cache import get_all_plugins
 # TODO : rename Find class into "Finder"
 from .base.finder import Find
 from .base.plugin import Plugin
+from .base.plugin import DataPlugin
 # High-use classes and functions
 from .helper.common import PLUGINS_ENV_VAR
 from .helper.common import LOAD_FAILURE_KEY
@@ -96,6 +97,7 @@ __all__ = [
     'DEFAULT_ASSIGNMENT',
 
     'Plugin',
+    'DataPlugin',
 
     'Context',
     'get_context',
