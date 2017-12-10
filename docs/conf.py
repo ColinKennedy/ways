@@ -35,7 +35,6 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'sphinxcontrib.napoleon',
-    'sphinxcontrib.spelling',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
