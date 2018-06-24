@@ -176,6 +176,8 @@ def make_folder_plugin(ending='.yml', contents=None, folder=''):
     elif ending == '.json':
         return make_folder_plugin_json(contents=contents, folder=folder)
 
+    return ''
+
 
 def create_action(text, hierarchy=('a', )):
     '''Create some action with a name and hierarchy.'''

@@ -91,20 +91,23 @@ def resolve_descriptor(description):
             elif os.path.isfile(path):
                 func = descriptor.FileDescriptor
         except TypeError:
-            return
+            return func
 
         if func:
             return func(path)
 
+        return func
+
     def get_description_info(description):
         '''Build a descriptor from an encoded URI.'''
+        default = None
         if not isinstance(description, six.string_types):
-            return
+            return default
 
         description = common.decode(description)
 
         if not description:
-            return
+            return default
 
         # Make sure that single-item elements are actually single-items
         # Sometimes dicts come in like this, for example:
@@ -246,7 +249,7 @@ def add_descriptor(description, update=True):
         # TODO : logging?
         print('Description: "{desc}" could not become a descriptor class.'
               ''.format(desc=description))
-        return
+        return None
 
     try:
         final_descriptor = final_descriptor.get_plugins
@@ -270,7 +273,7 @@ def add_descriptor(description, update=True):
             # TODO : logging?
             print('Description: "{desc}" created a descriptor that cannot '
                   'load plugins.'.format(desc=description))
-            return
+            return None
 
         _, _, traceback_ = sys.exc_info()
         final_descriptor = functools.partial(return_item, final_descriptor)

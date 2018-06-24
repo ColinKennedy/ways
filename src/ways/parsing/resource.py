@@ -88,7 +88,6 @@ class Asset(object):
                 'Info is missing tokens, "{keys}"'.format(
                     info=self.info, context=self.context, keys=missing_tokens))
 
-
     def get_missing_required_tokens(self):
         '''Find any token that still needs to be filled for our parser.
 
@@ -667,7 +666,7 @@ def get_asset(info, context=None, *args, **kwargs):
     try:
         return init(info, context, *args, **kwargs)
     except Exception:
-        return
+        return None
 
 
 def _get_missing_required_tokens(context, info):
@@ -921,6 +920,8 @@ def _get_value(name, parser, info):
                     parser[parent] = value
                     return _get_value(token, parser=parser, info=info)
 
+            return ''
+
         return build_value_from_parents(token, parents, info)
 
     def get_value_from_children(token, parser, info):
@@ -1146,7 +1147,7 @@ def _find_context_using_info(obj):
 
         return valid_contexts
 
-    def tiebreak(contexts, info):
+    def tiebreak(contexts, info):  # pylint: disable=inconsistent-return-statements
         '''Attempt to find the "best" Context from a group of tied Contexts.
 
         Ways does this by looking at the parse groups defined for each Context.

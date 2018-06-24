@@ -286,7 +286,7 @@ class ContextParser(object):
 
         return engine.get_token_parse(name, self, parse_type)
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-locals
     def get_str(self, resolve_with='',
                 depth=-1, holdout=None, groups=None, display_tokens=False):
         r'''Create a string of the Context's mapping.

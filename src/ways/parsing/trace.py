@@ -216,7 +216,9 @@ def trace_context(obj):
         # Maybe this is a hierarchy. In which case, use it to create a Context
         return sit.get_context(obj)
     except Exception:
-        return
+        pass
+
+    return None
 
 
 def trace_assignment(obj):

@@ -53,7 +53,7 @@ def get_right_most_priority(plugins, method):
 
     '''
     if not plugins:
-        return
+        return None
 
     for plugin in reversed(plugins):
         try:

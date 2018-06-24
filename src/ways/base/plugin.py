@@ -146,7 +146,7 @@ class DataPlugin(Plugin):
         try:
             return self._info['path']
         except KeyError:
-            return
+            return None
 
     def get_assignment(self):
         '''str: Where this Plugin lives in Ways, along with its hierarchy.'''

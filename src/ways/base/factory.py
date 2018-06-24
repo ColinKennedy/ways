@@ -113,7 +113,7 @@ class _AssignmentFactory(object):
             # Return nothing, no Plugin objects were found so no Context
             # will be built
             #
-            return
+            return None
 
         plugins = []
 
@@ -134,7 +134,7 @@ class _AssignmentFactory(object):
             plugins.append(plugin)
 
         if not force and not plugins:
-            return
+            return None
 
         return make_and_store_instance(hierarchy, assignment)
 
