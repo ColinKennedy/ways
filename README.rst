@@ -10,7 +10,7 @@ Overview
     * - docs
       - |docs|
     * - tests
-      - | |travis| |appveyor| |requires|
+      - | |travis| |requires|
         | |codecov| |codacy|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
@@ -23,10 +23,6 @@ Overview
 .. |travis| image:: https://travis-ci.org/ColinKennedy/ways.svg?branch=master
     :alt: Travis-CI Build Status
     :target: https://travis-ci.org/ColinKennedy/ways
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/ColinKennedy/ways?branch=master&svg=true
-    :alt: AppVeyor Build Status
-    :target: https://ci.appveyor.com/project/ColinKennedy/ways
 
 .. |requires| image:: https://requires.io/github/ColinKennedy/ways/requirements.svg?branch=master
     :alt: Requirements Status
