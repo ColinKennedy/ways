@@ -24,5 +24,5 @@ Sphinx==1.6.5
 sphinxcontrib-napoleon==0.6.1
 sphinxcontrib-websupport==1.0.1
 typing==3.6.2
-urllib3==1.22
+urllib3==1.26.5
 yamlordereddictloader==0.4.0
